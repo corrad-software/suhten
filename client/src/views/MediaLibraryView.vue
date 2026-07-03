@@ -214,7 +214,7 @@ onMounted(load);
         <h1 class="page-title">Media Library</h1>
       </div>
 
-      <article class="rounded-lg border border-slate-200 bg-white shadow-sm">
+      <article class="rounded-lg border border-slate-200 bg-white shadow-xs">
         <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
           <Upload class="h-4 w-4 text-violet-600" />
           <h2 class="text-sm font-semibold text-slate-900">Upload</h2>
@@ -240,7 +240,7 @@ onMounted(load);
         </div>
       </article>
 
-      <article class="rounded-lg border border-slate-200 bg-white shadow-sm">
+      <article class="rounded-lg border border-slate-200 bg-white shadow-xs">
         <div class="flex items-center justify-between gap-2 border-b border-slate-100 px-4 py-2.5">
           <div class="flex items-center gap-2">
             <FolderOpen class="h-4 w-4 text-amber-600" />
@@ -270,15 +270,15 @@ onMounted(load);
               <button
                 v-for="item in rows"
                 :key="item.id"
-                class="group self-start overflow-hidden rounded-lg border bg-white text-left shadow-sm transition-all hover:shadow-md"
+                class="group self-start overflow-hidden rounded-lg border bg-white text-left shadow-xs transition-all hover:shadow-md"
                 :class="activeMediaId === item.id ? 'border-violet-400 ring-1 ring-violet-200' : 'border-slate-200'"
                 @click="selectItem(item.id)"
               >
                 <div class="relative aspect-square bg-slate-100">
-                  <label class="absolute left-2 top-2 z-10 inline-flex items-center rounded-md bg-white/95 px-1.5 py-1 shadow-sm backdrop-blur-sm" @click.stop>
+                  <label class="absolute left-2 top-2 z-10 inline-flex items-center rounded-md bg-white/95 px-1.5 py-1 shadow-xs backdrop-blur-xs" @click.stop>
                     <input
                       type="checkbox"
-                      class="h-3.5 w-3.5 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
+                      class="h-3.5 w-3.5 rounded-sm border-slate-300 text-violet-600 focus:ring-violet-500"
                       :checked="selectedIds.includes(item.id)"
                       @change="toggleSelect(item.id)"
                     />
@@ -289,7 +289,7 @@ onMounted(load);
                     class="absolute inset-0 h-full w-full object-cover"
                   />
                   <button
-                    class="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-lg bg-white/90 text-slate-400 opacity-0 shadow-sm backdrop-blur-sm transition-all hover:bg-rose-50 hover:text-rose-600 group-hover:opacity-100"
+                    class="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-lg bg-white/90 text-slate-400 opacity-0 shadow-xs backdrop-blur-xs transition-all hover:bg-rose-50 hover:text-rose-600 group-hover:opacity-100"
                     title="Delete"
                     @click.stop="remove(item.id)"
                   >
@@ -316,16 +316,16 @@ onMounted(load);
 
                 <div class="space-y-2 border-t border-slate-200 pt-3">
                   <label class="block text-xs font-medium text-slate-700">Title</label>
-                  <input v-model="metadataForm.title" class="w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-100" />
+                  <input v-model="metadataForm.title" class="w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm focus:border-violet-500 focus:outline-hidden focus:ring-2 focus:ring-violet-100" />
 
                   <label class="block text-xs font-medium text-slate-700">Alt Text</label>
-                  <input v-model="metadataForm.altText" class="w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-100" />
+                  <input v-model="metadataForm.altText" class="w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm focus:border-violet-500 focus:outline-hidden focus:ring-2 focus:ring-violet-100" />
 
                   <label class="block text-xs font-medium text-slate-700">Caption</label>
-                  <textarea v-model="metadataForm.caption" rows="2" class="w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-100"></textarea>
+                  <textarea v-model="metadataForm.caption" rows="2" class="w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm focus:border-violet-500 focus:outline-hidden focus:ring-2 focus:ring-violet-100"></textarea>
 
                   <label class="block text-xs font-medium text-slate-700">Description</label>
-                  <textarea v-model="metadataForm.description" rows="3" class="w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-100"></textarea>
+                  <textarea v-model="metadataForm.description" rows="3" class="w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm focus:border-violet-500 focus:outline-hidden focus:ring-2 focus:ring-violet-100"></textarea>
 
                   <button
                     class="inline-flex items-center gap-1.5 rounded-md bg-slate-900 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"

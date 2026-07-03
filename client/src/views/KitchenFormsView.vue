@@ -78,7 +78,7 @@ const sectionLinks = [
       </div>
 
       <!-- ───── Quick Jump Nav ───── -->
-      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-xs">
         <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Quick Jump</p>
         <div class="grid gap-1.5 sm:grid-cols-2 md:grid-cols-4">
           <a
@@ -96,7 +96,7 @@ const sectionLinks = [
       <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
         <section class="space-y-4">
           <!-- ═══════ BASIC FIELDS ═══════ -->
-          <article id="basic-fields" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-sm">
+          <article id="basic-fields" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-xs">
             <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
               <TextCursorInput class="h-4 w-4 text-amber-600" />
               <h2 class="text-sm font-semibold text-slate-900">Basic Fields</h2>
@@ -107,7 +107,7 @@ const sectionLinks = [
                   <label class="text-sm font-medium text-slate-700">Title</label>
                   <input
                     v-model="form.title"
-                    class="w-full rounded-lg border px-3 py-2 text-sm shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-slate-200"
+                    class="w-full rounded-lg border px-3 py-2 text-sm shadow-xs transition-colors focus:outline-hidden focus:ring-2 focus:ring-slate-200"
                     :class="titleError ? 'border-2 border-red-300 bg-red-50' : 'border-slate-300 focus:border-slate-400'"
                     placeholder="How to set up CMS"
                     @blur="touched.title = true"
@@ -122,7 +122,7 @@ const sectionLinks = [
                   </div>
                   <input
                     v-model="form.slug"
-                    class="w-full rounded-lg border px-3 py-2 text-sm shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-slate-200"
+                    class="w-full rounded-lg border px-3 py-2 text-sm shadow-xs transition-colors focus:outline-hidden focus:ring-2 focus:ring-slate-200"
                     :class="slugError ? 'border-2 border-red-300 bg-red-50' : 'border-slate-300 focus:border-slate-400'"
                     placeholder="how-to-set-up-cms"
                     @blur="touched.slug = true"
@@ -135,7 +135,7 @@ const sectionLinks = [
                   <textarea
                     v-model="form.excerpt"
                     rows="3"
-                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200"
                     placeholder="Short summary for list cards"
                   />
                 </div>
@@ -160,7 +160,7 @@ const sectionLinks = [
           </article>
 
           <!-- ═══════ CATEGORIZATION & PUBLISH ═══════ -->
-          <article id="categorization" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-sm">
+          <article id="categorization" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-xs">
             <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
               <FolderOpen class="h-4 w-4 text-cyan-600" />
               <h2 class="text-sm font-semibold text-slate-900">Categorization & Publish</h2>
@@ -169,7 +169,7 @@ const sectionLinks = [
               <div class="grid gap-4 md:grid-cols-2">
                 <div class="space-y-1.5">
                   <label class="text-sm font-medium text-slate-700">Category</label>
-                  <select v-model="form.category" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200">
+                  <select v-model="form.category" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200">
                     <option value="guides">Guides</option>
                     <option value="announcements">Announcements</option>
                     <option value="release-notes">Release Notes</option>
@@ -177,7 +177,7 @@ const sectionLinks = [
                 </div>
                 <div class="space-y-1.5">
                   <label class="text-sm font-medium text-slate-700">Status</label>
-                  <select v-model="form.status" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200">
+                  <select v-model="form.status" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200">
                     <option value="draft">Draft</option>
                     <option value="published">Published</option>
                     <option value="archived">Archived</option>
@@ -185,11 +185,11 @@ const sectionLinks = [
                 </div>
                 <div class="space-y-3 md:col-span-2">
                   <label class="flex items-center gap-2.5 text-sm text-slate-700">
-                    <input v-model="form.publishNow" type="checkbox" class="rounded" />
+                    <input v-model="form.publishNow" type="checkbox" class="rounded-sm" />
                     Publish immediately
                   </label>
                   <label class="flex items-center gap-2.5 text-sm text-slate-700">
-                    <input v-model="form.commentsEnabled" type="checkbox" class="rounded" />
+                    <input v-model="form.commentsEnabled" type="checkbox" class="rounded-sm" />
                     Enable comments
                   </label>
                 </div>
@@ -214,7 +214,7 @@ const sectionLinks = [
           </article>
 
           <!-- ═══════ MEDIA & SEO ═══════ -->
-          <article id="media-seo" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-sm">
+          <article id="media-seo" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-xs">
             <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
               <Image class="h-4 w-4 text-violet-600" />
               <h2 class="text-sm font-semibold text-slate-900">Media & SEO</h2>
@@ -225,19 +225,19 @@ const sectionLinks = [
                   <label class="text-sm font-medium text-slate-700">Featured Image URL</label>
                   <input
                     v-model="form.featuredImage"
-                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200"
                     placeholder="https://.../cover.png"
                   />
                 </div>
                 <div class="space-y-1.5">
                   <label class="text-sm font-medium text-slate-700">Upload file</label>
-                  <input type="file" class="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm shadow-sm file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-1 file:text-xs file:font-medium file:text-slate-700" />
+                  <input type="file" class="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm shadow-xs file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-1 file:text-xs file:font-medium file:text-slate-700" />
                 </div>
                 <div class="space-y-1.5">
                   <label class="text-sm font-medium text-slate-700">SEO Title</label>
                   <input
                     v-model="form.seoTitle"
-                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200"
                     placeholder="SEO optimized title"
                   />
                 </div>
@@ -246,7 +246,7 @@ const sectionLinks = [
                   <textarea
                     v-model="form.seoDescription"
                     rows="2"
-                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200"
                     placeholder="Meta description"
                   />
                 </div>
@@ -255,18 +255,18 @@ const sectionLinks = [
           </article>
 
           <!-- ═══════ FORM ACTIONS ═══════ -->
-          <article id="actions" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-sm">
+          <article id="actions" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-xs">
             <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
               <Save class="h-4 w-4 text-blue-600" />
               <h2 class="text-sm font-semibold text-slate-900">Form Actions</h2>
             </div>
             <div class="p-4">
               <div class="flex flex-wrap items-center gap-3">
-                <button class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-slate-800" @click="submit">
+                <button class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-xs transition-colors hover:bg-slate-800" @click="submit">
                   Save Changes
                 </button>
-                <button class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-slate-50">Save Draft</button>
-                <button class="rounded-lg border border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-700 shadow-sm transition-colors hover:bg-red-50">Delete</button>
+                <button class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium shadow-xs transition-colors hover:bg-slate-50">Save Draft</button>
+                <button class="rounded-lg border border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-700 shadow-xs transition-colors hover:bg-red-50">Delete</button>
               </div>
               <div class="mt-5 grid gap-4 md:grid-cols-2">
                 <div class="flex gap-3 rounded-lg border border-emerald-200 bg-emerald-50/50 p-4">
@@ -290,7 +290,7 @@ const sectionLinks = [
 
         <!-- ───── Live Preview Sidebar ───── -->
         <aside class="space-y-4">
-          <article class="sticky top-6 rounded-lg border border-slate-200 bg-white shadow-sm">
+          <article class="sticky top-6 rounded-lg border border-slate-200 bg-white shadow-xs">
             <div class="border-b border-slate-100 px-4 py-2.5">
               <div class="flex items-center gap-2">
                 <Eye class="h-4 w-4 text-slate-400" />

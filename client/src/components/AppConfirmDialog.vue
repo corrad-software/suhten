@@ -8,7 +8,7 @@ const { isOpen, options, cancel, accept } = useConfirmDialog();
 <template>
   <div
     v-if="isOpen"
-    class="fixed inset-0 z-[90] flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm"
+    class="fixed inset-0 z-90 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-xs"
     @click.self="cancel()"
   >
     <div class="w-full max-w-md rounded-lg border border-slate-200 bg-white p-4 shadow-2xl">
@@ -29,13 +29,13 @@ const { isOpen, options, cancel, accept } = useConfirmDialog();
 
       <div class="mt-4 flex justify-end gap-2">
         <button
-          class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-slate-50"
+          class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium shadow-xs transition-colors hover:bg-slate-50"
           @click="cancel()"
         >
           {{ options.cancelText }}
         </button>
         <button
-          class="rounded-lg px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors"
+          class="rounded-lg px-4 py-2 text-sm font-medium text-white shadow-xs transition-colors"
           :class="options.destructive ? 'bg-rose-600 hover:bg-rose-700' : 'bg-slate-900 hover:bg-slate-800'"
           @click="accept()"
         >

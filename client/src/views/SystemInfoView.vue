@@ -94,7 +94,7 @@ const stack: StackGroup[] = [
       </div>
 
       <!-- ───── Architecture Overview ───── -->
-      <article class="rounded-lg border border-slate-200 bg-white shadow-sm">
+      <article class="rounded-lg border border-slate-200 bg-white shadow-xs">
         <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
           <Cpu class="h-4 w-4 text-slate-600" />
           <h2 class="text-sm font-semibold text-slate-900">Architecture</h2>
@@ -128,7 +128,7 @@ const stack: StackGroup[] = [
 
       <!-- ───── Stack Groups ───── -->
       <div class="grid gap-4 lg:grid-cols-2">
-        <article v-for="group in stack" :key="group.label" class="rounded-lg border border-slate-200 bg-white shadow-sm">
+        <article v-for="group in stack" :key="group.label" class="rounded-lg border border-slate-200 bg-white shadow-xs">
           <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
             <component :is="group.icon" class="h-4 w-4" :class="group.color.text" />
             <h2 class="text-sm font-semibold text-slate-900">{{ group.label }}</h2>
@@ -146,7 +146,7 @@ const stack: StackGroup[] = [
       </div>
 
       <!-- ───── Database Schema ───── -->
-      <article class="rounded-lg border border-slate-200 bg-white shadow-sm">
+      <article class="rounded-lg border border-slate-200 bg-white shadow-xs">
         <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
           <Database class="h-4 w-4 text-emerald-600" />
           <h2 class="text-sm font-semibold text-slate-900">Database Models</h2>

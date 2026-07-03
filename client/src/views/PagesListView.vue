@@ -69,7 +69,7 @@ onMounted(load);
       <div class="flex items-center justify-between">
         <h1 class="page-title">Pages</h1>
         <button
-          class="flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-1.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-slate-800"
+          class="flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-1.5 text-sm font-medium text-white shadow-xs transition-colors hover:bg-slate-800"
           @click="router.push('/admin/pages/new')"
         >
           <Plus class="h-4 w-4" />
@@ -78,7 +78,7 @@ onMounted(load);
       </div>
 
       <!-- ───── Table Card ───── -->
-      <article class="rounded-lg border border-slate-200 bg-white shadow-sm">
+      <article class="rounded-lg border border-slate-200 bg-white shadow-xs">
         <div class="border-b border-slate-100 px-4 py-2.5">
           <div class="flex items-center gap-2">
             <FileText class="h-4 w-4 text-emerald-600" />

@@ -93,7 +93,7 @@ onMounted(load);
         <h1 class="page-title">Settings</h1>
       </div>
 
-      <article class="rounded-lg border border-slate-200 bg-white shadow-sm">
+      <article class="rounded-lg border border-slate-200 bg-white shadow-xs">
         <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
           <Globe class="h-4 w-4 text-violet-600" />
           <h2 class="text-sm font-semibold text-slate-900">Page Identity</h2>
@@ -101,16 +101,16 @@ onMounted(load);
         <div class="grid gap-3 p-4 md:grid-cols-2">
           <div class="space-y-1.5">
             <label class="text-sm font-medium text-slate-700">Page Title</label>
-            <input v-model="form.webfrontTitle" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200" />
+            <input v-model="form.webfrontTitle" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200" />
           </div>
           <div class="space-y-1.5">
             <label class="text-sm font-medium text-slate-700">Tagline</label>
-            <input v-model="form.webfrontTagline" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200" />
+            <input v-model="form.webfrontTagline" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200" />
           </div>
         </div>
       </article>
 
-      <article class="rounded-lg border border-slate-200 bg-white shadow-sm">
+      <article class="rounded-lg border border-slate-200 bg-white shadow-xs">
         <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
           <Image class="h-4 w-4 text-emerald-600" />
           <h2 class="text-sm font-semibold text-slate-900">Logo</h2>
@@ -129,7 +129,7 @@ onMounted(load);
           </div>
           <div class="space-y-1.5">
             <label class="text-sm font-medium text-slate-700">Logo URL</label>
-            <input v-model="form.webfrontLogoUrl" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="/uploads/your-logo.png" />
+            <input v-model="form.webfrontLogoUrl" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200" placeholder="/uploads/your-logo.png" />
           </div>
         </div>
       </article>

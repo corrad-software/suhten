@@ -7,9 +7,9 @@ const { toasts } = useToast();
 const latestToast = computed(() => toasts.value.at(-1) ?? null);
 
 function variantClasses(variant: "success" | "error" | "info") {
-  if (variant === "success") return "bg-gradient-to-br from-emerald-200 to-emerald-100 text-emerald-950";
-  if (variant === "error") return "bg-gradient-to-br from-rose-200 to-rose-100 text-rose-950";
-  return "bg-gradient-to-br from-blue-200 to-blue-100 text-blue-950";
+  if (variant === "success") return "bg-linear-to-br from-emerald-200 to-emerald-100 text-emerald-950";
+  if (variant === "error") return "bg-linear-to-br from-rose-200 to-rose-100 text-rose-950";
+  return "bg-linear-to-br from-blue-200 to-blue-100 text-blue-950";
 }
 
 function variantLabel(variant: "success" | "error" | "info") {
@@ -26,19 +26,19 @@ function iconTone(variant: "success" | "error" | "info") {
 </script>
 
 <template>
-  <div class="flex h-full max-w-[22rem] items-stretch gap-2 overflow-hidden py-0">
+  <div class="flex h-full max-w-88 items-stretch gap-2 overflow-hidden py-0">
     <Transition
-      enter-active-class="transition-transform duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+      enter-active-class="transition-transform duration-600 ease-[cubic-bezier(0.22,1,0.36,1)]"
       enter-from-class="translate-x-[110%]"
       enter-to-class="translate-x-0"
-      leave-active-class="transition-transform duration-[1500ms] ease-[cubic-bezier(0.4,0,1,1)]"
+      leave-active-class="transition-transform duration-1500 ease-in"
       leave-from-class="translate-x-0"
       leave-to-class="translate-x-[110%]"
     >
       <div
         v-if="latestToast"
         :key="latestToast.id"
-        class="relative flex h-full min-w-[14rem] items-center overflow-hidden px-2 py-1 shadow-sm will-change-transform"
+        class="relative flex h-full min-w-56 items-center overflow-hidden px-2 py-1 shadow-xs will-change-transform"
         :class="variantClasses(latestToast.variant)"
       >
         <div class="flex items-center gap-2">

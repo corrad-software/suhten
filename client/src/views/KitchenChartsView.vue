@@ -171,7 +171,7 @@ const sectionLinks = [
       </div>
 
       <!-- ───── Quick Jump Nav ───── -->
-      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-xs">
         <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Quick Jump</p>
         <div class="flex flex-wrap gap-1.5">
           <a
@@ -188,7 +188,7 @@ const sectionLinks = [
 
       <!-- ═══════ STAT CARDS WITH SPARKLINES ═══════ -->
       <section id="stat-cards" class="scroll-mt-24 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <article v-for="stat in sparkData" :key="stat.label" class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <article v-for="stat in sparkData" :key="stat.label" class="rounded-lg border border-slate-200 bg-white p-4 shadow-xs">
           <div class="flex items-center justify-between">
             <p class="text-xs font-medium text-slate-500">{{ stat.label }}</p>
             <span
@@ -212,7 +212,7 @@ const sectionLinks = [
 
       <section class="grid gap-4 md:grid-cols-2">
         <!-- ═══════ BAR CHART ═══════ -->
-        <article id="bar-chart" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-sm">
+        <article id="bar-chart" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-xs">
           <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
             <BarChart3 class="h-4 w-4 text-violet-600" />
             <h2 class="text-sm font-semibold text-slate-900">Bar Chart</h2>
@@ -222,7 +222,7 @@ const sectionLinks = [
               <div v-for="(value, index) in monthlyPosts" :key="labels[index]" class="flex flex-1 flex-col items-center gap-2">
                 <div class="text-xs font-medium text-slate-500">{{ value }}</div>
                 <div
-                  class="w-full rounded-t-md bg-gradient-to-t from-violet-600 to-violet-400 transition-all"
+                  class="w-full rounded-t-md bg-linear-to-t from-violet-600 to-violet-400 transition-all"
                   :style="{ height: `${(value / maxPosts) * 180}px`, minHeight: '10px' }"
                 />
                 <div class="text-xs font-medium text-slate-600">{{ labels[index] }}</div>
@@ -232,7 +232,7 @@ const sectionLinks = [
         </article>
 
         <!-- ═══════ LINE CHART ═══════ -->
-        <article id="line-chart" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-sm">
+        <article id="line-chart" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-xs">
           <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
             <TrendingUp class="h-4 w-4 text-violet-600" />
             <h2 class="text-sm font-semibold text-slate-900">Line Chart</h2>
@@ -271,7 +271,7 @@ const sectionLinks = [
 
       <section class="grid gap-4 md:grid-cols-2">
         <!-- ═══════ HORIZONTAL BAR ═══════ -->
-        <article id="horizontal-bar" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-sm">
+        <article id="horizontal-bar" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-xs">
           <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
             <BarChart3 class="h-4 w-4 text-violet-600" />
             <h2 class="text-sm font-semibold text-slate-900">Horizontal Bar (Browser Share)</h2>
@@ -285,7 +285,7 @@ const sectionLinks = [
                 </div>
                 <div class="h-4 rounded-full bg-violet-100">
                   <div
-                    class="h-full rounded-full bg-gradient-to-r from-violet-600 to-violet-400 transition-all"
+                    class="h-full rounded-full bg-linear-to-r from-violet-600 to-violet-400 transition-all"
                     :style="{ width: `${bar.value}%` }"
                   />
                 </div>
@@ -295,7 +295,7 @@ const sectionLinks = [
         </article>
 
         <!-- ═══════ STACKED BAR ═══════ -->
-        <article id="stacked-bar" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-sm">
+        <article id="stacked-bar" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-xs">
           <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
             <Layers class="h-4 w-4 text-violet-600" />
             <h2 class="text-sm font-semibold text-slate-900">Stacked Bar (Traffic Mix)</h2>
@@ -314,9 +314,9 @@ const sectionLinks = [
                 </div>
               </div>
               <div class="flex items-center gap-5 border-t border-slate-200 pt-3 text-xs text-slate-600">
-                <span class="flex items-center gap-1.5"><span class="inline-block h-2.5 w-2.5 rounded bg-violet-700" />Organic</span>
-                <span class="flex items-center gap-1.5"><span class="inline-block h-2.5 w-2.5 rounded bg-violet-400" />Social</span>
-                <span class="flex items-center gap-1.5"><span class="inline-block h-2.5 w-2.5 rounded bg-violet-200" />Referral</span>
+                <span class="flex items-center gap-1.5"><span class="inline-block h-2.5 w-2.5 rounded-sm bg-violet-700" />Organic</span>
+                <span class="flex items-center gap-1.5"><span class="inline-block h-2.5 w-2.5 rounded-sm bg-violet-400" />Social</span>
+                <span class="flex items-center gap-1.5"><span class="inline-block h-2.5 w-2.5 rounded-sm bg-violet-200" />Referral</span>
               </div>
             </div>
           </div>
@@ -325,7 +325,7 @@ const sectionLinks = [
 
       <section class="grid gap-4 md:grid-cols-2">
         <!-- ═══════ FUNNEL ═══════ -->
-        <article id="funnel" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-sm">
+        <article id="funnel" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-xs">
           <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
             <Filter class="h-4 w-4 text-violet-600" />
             <h2 class="text-sm font-semibold text-slate-900">Funnel Chart</h2>
@@ -352,7 +352,7 @@ const sectionLinks = [
         </article>
 
         <!-- ═══════ PIE CHART ═══════ -->
-        <article id="pie-chart" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-sm">
+        <article id="pie-chart" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-xs">
           <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
             <PieChart class="h-4 w-4 text-violet-600" />
             <h2 class="text-sm font-semibold text-slate-900">Pie Chart Breakdown</h2>
@@ -368,7 +368,7 @@ const sectionLinks = [
                   <div v-for="(row, idx) in sourceShare" :key="row.source" class="flex items-center justify-between text-sm">
                     <span class="flex items-center gap-2 text-slate-700">
                       <span
-                        class="inline-block h-3 w-3 rounded"
+                        class="inline-block h-3 w-3 rounded-sm"
                         :class="idx === 0 ? 'bg-violet-600' : idx === 1 ? 'bg-violet-400' : idx === 2 ? 'bg-violet-300' : 'bg-violet-200'"
                       />
                       {{ row.source }}
@@ -385,7 +385,7 @@ const sectionLinks = [
 
       <section class="grid gap-4 md:grid-cols-2">
         <!-- ═══════ PROGRESS RINGS ═══════ -->
-        <article id="progress-rings" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-sm">
+        <article id="progress-rings" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-xs">
           <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
             <Gauge class="h-4 w-4 text-violet-600" />
             <h2 class="text-sm font-semibold text-slate-900">Progress Rings</h2>
@@ -414,7 +414,7 @@ const sectionLinks = [
         </article>
 
         <!-- ═══════ HEATMAP ═══════ -->
-        <article id="heatmap" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-sm">
+        <article id="heatmap" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-xs">
           <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
             <Target class="h-4 w-4 text-violet-600" />
             <h2 class="text-sm font-semibold text-slate-900">Heatmap (Activity)</h2>
@@ -444,7 +444,7 @@ const sectionLinks = [
               <div class="mt-3 flex items-center justify-end gap-1.5">
                 <span class="text-[11px] text-slate-400">Low</span>
                 <div class="flex gap-0.5">
-                  <div v-for="i in 5" :key="i" class="h-3 w-6 rounded-sm" :style="{ backgroundColor: `rgba(124, 58, 237, ${0.15 + (i / 5) * 0.85})` }" />
+                  <div v-for="i in 5" :key="i" class="h-3 w-6 rounded-xs" :style="{ backgroundColor: `rgba(124, 58, 237, ${0.15 + (i / 5) * 0.85})` }" />
                 </div>
                 <span class="text-[11px] text-slate-400">High</span>
               </div>
@@ -455,7 +455,7 @@ const sectionLinks = [
 
       <section class="grid gap-4 md:grid-cols-2">
         <!-- ═══════ TIMELINE ═══════ -->
-        <article id="timeline" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-sm">
+        <article id="timeline" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-xs">
           <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
             <GitBranch class="h-4 w-4 text-violet-600" />
             <h2 class="text-sm font-semibold text-slate-900">Timeline</h2>
@@ -464,22 +464,22 @@ const sectionLinks = [
             <div class="rounded-lg border border-dashed border-slate-300 bg-slate-50/50 p-5">
               <div class="relative space-y-6 border-l-2 border-violet-200 pl-6">
                 <div class="relative">
-                  <div class="absolute -left-[31px] flex h-4 w-4 items-center justify-center rounded-full bg-violet-600"><div class="h-1.5 w-1.5 rounded-full bg-white" /></div>
+                  <div class="absolute left-[-31px] flex h-4 w-4 items-center justify-center rounded-full bg-violet-600"><div class="h-1.5 w-1.5 rounded-full bg-white" /></div>
                   <p class="text-xs text-violet-600 font-semibold">Today</p>
                   <p class="text-sm text-slate-700">Deployed v2.4.0 to production</p>
                 </div>
                 <div class="relative">
-                  <div class="absolute -left-[31px] flex h-4 w-4 items-center justify-center rounded-full bg-violet-400"><div class="h-1.5 w-1.5 rounded-full bg-white" /></div>
+                  <div class="absolute left-[-31px] flex h-4 w-4 items-center justify-center rounded-full bg-violet-400"><div class="h-1.5 w-1.5 rounded-full bg-white" /></div>
                   <p class="text-xs text-slate-500 font-medium">2 days ago</p>
                   <p class="text-sm text-slate-700">Merged feature branch: user-roles</p>
                 </div>
                 <div class="relative">
-                  <div class="absolute -left-[31px] flex h-4 w-4 items-center justify-center rounded-full bg-violet-300"><div class="h-1.5 w-1.5 rounded-full bg-white" /></div>
+                  <div class="absolute left-[-31px] flex h-4 w-4 items-center justify-center rounded-full bg-violet-300"><div class="h-1.5 w-1.5 rounded-full bg-white" /></div>
                   <p class="text-xs text-slate-500 font-medium">5 days ago</p>
                   <p class="text-sm text-slate-700">Database migration completed</p>
                 </div>
                 <div class="relative">
-                  <div class="absolute -left-[31px] flex h-4 w-4 items-center justify-center rounded-full bg-violet-200"><div class="h-1.5 w-1.5 rounded-full bg-violet-500" /></div>
+                  <div class="absolute left-[-31px] flex h-4 w-4 items-center justify-center rounded-full bg-violet-200"><div class="h-1.5 w-1.5 rounded-full bg-violet-500" /></div>
                   <p class="text-xs text-slate-500 font-medium">1 week ago</p>
                   <p class="text-sm text-slate-700">Initial project scaffolding</p>
                 </div>
@@ -489,7 +489,7 @@ const sectionLinks = [
         </article>
 
         <!-- ═══════ DATA TABLE ═══════ -->
-        <article id="data-table" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-sm">
+        <article id="data-table" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-xs">
           <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
             <Table2 class="h-4 w-4 text-violet-600" />
             <h2 class="text-sm font-semibold text-slate-900">Sample Dataset Table</h2>
@@ -523,7 +523,7 @@ const sectionLinks = [
 
       <section class="grid gap-4 md:grid-cols-2">
         <!-- ═══════ USAGE NOTES ═══════ -->
-        <article class="rounded-lg border border-slate-200 bg-white shadow-sm">
+        <article class="rounded-lg border border-slate-200 bg-white shadow-xs">
           <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
             <BookOpen class="h-4 w-4 text-violet-600" />
             <h2 class="text-sm font-semibold text-slate-900">Usage Notes</h2>
@@ -547,7 +547,7 @@ const sectionLinks = [
         </article>
 
         <!-- ═══════ SAMPLING NOTES ═══════ -->
-        <article class="rounded-lg border border-slate-200 bg-white shadow-sm">
+        <article class="rounded-lg border border-slate-200 bg-white shadow-xs">
           <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
             <Database class="h-4 w-4 text-violet-600" />
             <h2 class="text-sm font-semibold text-slate-900">Sampling Notes</h2>

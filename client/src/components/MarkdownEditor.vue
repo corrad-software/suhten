@@ -92,7 +92,7 @@ function insertLine(snippet: string) {
         ref="textareaRef"
         :value="modelValue"
         :rows="rows || 16"
-        class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+        class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200"
         :placeholder="placeholder || 'Write markdown content...'"
         @input="updateContent(($event.target as HTMLTextAreaElement).value)"
       />

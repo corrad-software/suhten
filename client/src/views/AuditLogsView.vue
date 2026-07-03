@@ -126,7 +126,7 @@ onMounted(load);
       </div>
 
       <!-- ───── Filters Card ───── -->
-      <article class="rounded-lg border border-slate-200 bg-white shadow-sm">
+      <article class="rounded-lg border border-slate-200 bg-white shadow-xs">
         <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
           <Filter class="h-4 w-4 text-slate-500" />
           <h2 class="text-sm font-semibold text-slate-900">Filters</h2>
@@ -135,36 +135,36 @@ onMounted(load);
           <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <div class="space-y-1.5">
               <label class="text-xs font-medium text-slate-500">Action</label>
-              <select v-model="filterAction" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200">
+              <select v-model="filterAction" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200">
                 <option value="">All actions</option>
                 <option v-for="a in actionOptions" :key="a" :value="a">{{ a }}</option>
               </select>
             </div>
             <div class="space-y-1.5">
               <label class="text-xs font-medium text-slate-500">Model Type</label>
-              <select v-model="filterType" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200">
+              <select v-model="filterType" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200">
                 <option value="">All types</option>
                 <option v-for="t in typeOptions" :key="t" :value="t">{{ typeLabel(t) }}</option>
               </select>
             </div>
             <div class="space-y-1.5">
               <label class="text-xs font-medium text-slate-500">Date From</label>
-              <input v-model="filterDateFrom" type="date" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200" />
+              <input v-model="filterDateFrom" type="date" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200" />
             </div>
             <div class="space-y-1.5">
               <label class="text-xs font-medium text-slate-500">Date To</label>
-              <input v-model="filterDateTo" type="date" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200" />
+              <input v-model="filterDateTo" type="date" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200" />
             </div>
           </div>
           <div class="mt-3 flex items-center gap-2">
-            <button class="rounded-lg bg-slate-900 px-4 py-1.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-slate-800" @click="applyFilters">Apply</button>
+            <button class="rounded-lg bg-slate-900 px-4 py-1.5 text-sm font-medium text-white shadow-xs transition-colors hover:bg-slate-800" @click="applyFilters">Apply</button>
             <button class="rounded-lg border border-slate-300 px-4 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50" @click="clearFilters">Clear</button>
           </div>
         </div>
       </article>
 
       <!-- ───── Logs List ───── -->
-      <article class="rounded-lg border border-slate-200 bg-white shadow-sm">
+      <article class="rounded-lg border border-slate-200 bg-white shadow-xs">
         <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
           <ScrollText class="h-4 w-4 text-amber-600" />
           <h2 class="text-sm font-semibold text-slate-900">Activity Log</h2>
@@ -193,7 +193,7 @@ onMounted(load);
               >{{ log.action }}</span>
 
               <!-- Model type -->
-              <span class="shrink-0 rounded bg-slate-100 px-1.5 py-0.5 text-xs font-mono text-slate-500">
+              <span class="shrink-0 rounded-sm bg-slate-100 px-1.5 py-0.5 text-xs font-mono text-slate-500">
                 {{ typeLabel(log.auditableType) }}
                 <template v-if="log.auditableId">#{{ log.auditableId }}</template>
               </span>

@@ -127,7 +127,7 @@ onMounted(load);
       <div class="flex items-center justify-between">
         <h1 class="page-title">Roles & Permissions</h1>
         <button
-          class="flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-1.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-slate-800"
+          class="flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-1.5 text-sm font-medium text-white shadow-xs transition-colors hover:bg-slate-800"
           @click="startNew"
         >
           <Plus class="h-4 w-4" />
@@ -136,7 +136,7 @@ onMounted(load);
       </div>
 
       <!-- ───── Form Card ───── -->
-      <article v-if="showForm" class="rounded-lg border border-slate-200 bg-white shadow-sm">
+      <article v-if="showForm" class="rounded-lg border border-slate-200 bg-white shadow-xs">
         <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
           <Pencil class="h-4 w-4 text-violet-600" />
           <h2 class="text-sm font-semibold text-slate-900">{{ editingId ? 'Edit Role' : 'New Role' }}</h2>
@@ -145,11 +145,11 @@ onMounted(load);
           <div class="grid gap-3 md:grid-cols-2">
             <div class="space-y-1.5">
               <label class="text-sm font-medium text-slate-700">Role Name</label>
-              <input v-model="form.name" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="e.g. Editor" />
+              <input v-model="form.name" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200" placeholder="e.g. Editor" />
             </div>
             <div class="space-y-1.5">
               <label class="text-sm font-medium text-slate-700">Description</label>
-              <input v-model="form.description" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="Brief description" />
+              <input v-model="form.description" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200" placeholder="Brief description" />
             </div>
           </div>
 
@@ -176,7 +176,7 @@ onMounted(load);
 
           <div class="flex items-center gap-3 border-t border-slate-100 pt-3">
             <button
-              class="flex items-center gap-2 rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-slate-800 disabled:opacity-50"
+              class="flex items-center gap-2 rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-medium text-white shadow-xs transition-colors hover:bg-slate-800 disabled:opacity-50"
               :disabled="saving || !form.name"
               @click="save"
             >
@@ -192,7 +192,7 @@ onMounted(load);
       </article>
 
       <!-- ───── Roles List ───── -->
-      <article class="rounded-lg border border-slate-200 bg-white shadow-sm">
+      <article class="rounded-lg border border-slate-200 bg-white shadow-xs">
         <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
           <Shield class="h-4 w-4 text-amber-600" />
           <h2 class="text-sm font-semibold text-slate-900">All Roles</h2>
@@ -206,9 +206,9 @@ onMounted(load);
                 <span
                   v-for="perm in role.permissions.slice(0, 6)"
                   :key="perm"
-                  class="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500"
+                  class="rounded-sm bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500"
                 >{{ perm }}</span>
-                <span v-if="role.permissions.length > 6" class="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-400">
+                <span v-if="role.permissions.length > 6" class="rounded-sm bg-slate-100 px-1.5 py-0.5 text-xs text-slate-400">
                   +{{ role.permissions.length - 6 }} more
                 </span>
               </div>

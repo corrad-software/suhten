@@ -89,7 +89,7 @@ function demoToast(variant: "success" | "error" | "info") {
       </div>
 
       <!-- ───── Quick Jump Nav ───── -->
-      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-xs">
         <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Quick Jump</p>
         <div class="grid gap-1.5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           <a
@@ -106,7 +106,7 @@ function demoToast(variant: "success" | "error" | "info") {
 
       <section class="space-y-4">
         <!-- ═══════ OVERVIEW ═══════ -->
-        <article id="overview" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-sm">
+        <article id="overview" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-xs">
           <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
             <Layers class="h-4 w-4 text-slate-600" />
             <h2 class="text-sm font-semibold text-slate-900">Overview</h2>
@@ -116,7 +116,7 @@ function demoToast(variant: "success" | "error" | "info") {
               <div class="rounded-lg border border-slate-200 bg-slate-50/50 p-5">
                 <p class="mb-3 text-sm font-semibold text-slate-900">Usage rules</p>
                 <ul class="space-y-2 text-sm text-slate-600">
-                  <li class="flex gap-2"><span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold text-slate-600">1</span> Use existing <code class="rounded bg-slate-200 px-1 py-0.5 text-xs">components/ui</code> primitives first.</li>
+                  <li class="flex gap-2"><span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold text-slate-600">1</span> Use existing <code class="rounded-sm bg-slate-200 px-1 py-0.5 text-xs">components/ui</code> primitives first.</li>
                   <li class="flex gap-2"><span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold text-slate-600">2</span> Keep labels explicit and action-oriented.</li>
                   <li class="flex gap-2"><span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold text-slate-600">3</span> Always include loading, empty, and error states.</li>
                   <li class="flex gap-2"><span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold text-slate-600">4</span> Validate accessibility before shipping.</li>
@@ -125,7 +125,7 @@ function demoToast(variant: "success" | "error" | "info") {
               <div class="rounded-lg border border-slate-200 bg-slate-50/50 p-5">
                 <p class="mb-3 text-sm font-semibold text-slate-900">Naming conventions</p>
                 <ul class="space-y-2 text-sm text-slate-600">
-                  <li class="flex gap-2"><span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold text-slate-600">1</span> Use semantic labels: <code class="rounded bg-slate-200 px-1 py-0.5 text-xs">Save changes</code>, not <code class="rounded bg-slate-200 px-1 py-0.5 text-xs">Submit</code>.</li>
+                  <li class="flex gap-2"><span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold text-slate-600">1</span> Use semantic labels: <code class="rounded-sm bg-slate-200 px-1 py-0.5 text-xs">Save changes</code>, not <code class="rounded-sm bg-slate-200 px-1 py-0.5 text-xs">Submit</code>.</li>
                   <li class="flex gap-2"><span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold text-slate-600">2</span> Use consistent status terms: Draft, Published, Archived.</li>
                   <li class="flex gap-2"><span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold text-slate-600">3</span> Keep page sections predictable: Header, Filters, Content, Actions.</li>
                 </ul>
@@ -135,7 +135,7 @@ function demoToast(variant: "success" | "error" | "info") {
         </article>
 
         <!-- ═══════ COLOR & TYPOGRAPHY ═══════ -->
-        <article id="tokens" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-sm">
+        <article id="tokens" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-xs">
           <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
             <Palette class="h-4 w-4 text-violet-600" />
             <h2 class="text-sm font-semibold text-slate-900">Color & Typography</h2>
@@ -172,7 +172,7 @@ function demoToast(variant: "success" | "error" | "info") {
               </div>
             </div>
             <div class="grid gap-4 md:grid-cols-2">
-              <div class="rounded-lg border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-4">
+              <div class="rounded-lg border border-slate-200 bg-linear-to-br from-slate-50 to-white p-4">
                 <p class="text-3xl font-semibold tracking-tight">Heading / 30-36px</p>
                 <p class="mt-2 text-slate-500">For page titles and section hierarchy.</p>
                 <div class="mt-3 flex gap-2">
@@ -180,7 +180,7 @@ function demoToast(variant: "success" | "error" | "info") {
                   <span class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs text-slate-500">tracking-tight</span>
                 </div>
               </div>
-              <div class="rounded-lg border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-4">
+              <div class="rounded-lg border border-slate-200 bg-linear-to-br from-slate-50 to-white p-4">
                 <p class="text-base">Body / 14-16px</p>
                 <p class="mt-2 text-sm text-slate-500">For labels, descriptions, and table values.</p>
                 <div class="mt-3 flex gap-2">
@@ -193,7 +193,7 @@ function demoToast(variant: "success" | "error" | "info") {
         </article>
 
         <!-- ═══════ BUTTONS ═══════ -->
-        <article id="buttons" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-sm">
+        <article id="buttons" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-xs">
           <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
             <MousePointerClick class="h-4 w-4 text-blue-600" />
             <h2 class="text-sm font-semibold text-slate-900">Buttons</h2>
@@ -202,26 +202,26 @@ function demoToast(variant: "success" | "error" | "info") {
             <div>
               <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">Preview</p>
               <div class="flex flex-wrap gap-3 rounded-lg border border-dashed border-slate-300 bg-slate-50/50 p-5">
-                <button class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-slate-800">Save changes</button>
-                <button class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-slate-50">Cancel</button>
+                <button class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-xs transition-colors hover:bg-slate-800">Save changes</button>
+                <button class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium shadow-xs transition-colors hover:bg-slate-50">Cancel</button>
                 <button class="rounded-lg bg-slate-200 px-4 py-2 text-sm font-medium transition-colors hover:bg-slate-300">Preview</button>
-                <button class="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-red-700">Delete</button>
+                <button class="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-xs transition-colors hover:bg-red-700">Delete</button>
                 <button class="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100">More</button>
               </div>
             </div>
             <div>
               <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">Variants</p>
               <div class="flex flex-wrap items-center gap-3 rounded-lg border border-slate-200 p-5">
-                <button class="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white shadow-sm">Small</button>
-                <button class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm">Default</button>
-                <button class="rounded-lg bg-slate-900 px-5 py-2.5 text-base font-medium text-white shadow-sm">Large</button>
+                <button class="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white shadow-xs">Small</button>
+                <button class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-xs">Default</button>
+                <button class="rounded-lg bg-slate-900 px-5 py-2.5 text-base font-medium text-white shadow-xs">Large</button>
                 <button class="text-sm font-medium text-slate-700 underline underline-offset-4 transition-colors hover:text-slate-900">Link style</button>
               </div>
             </div>
             <div>
               <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">States</p>
               <div class="flex flex-wrap items-center gap-3 rounded-lg border border-slate-200 p-5">
-                <button class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm">Default</button>
+                <button class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-xs">Default</button>
                 <button disabled class="cursor-not-allowed rounded-lg bg-slate-200 px-4 py-2 text-sm font-medium text-slate-400">Disabled</button>
                 <button class="rounded-lg border-2 border-red-300 bg-red-50 px-4 py-2 text-sm font-medium text-red-700">Invalid</button>
               </div>
@@ -246,7 +246,7 @@ function demoToast(variant: "success" | "error" | "info") {
         </article>
 
         <!-- ═══════ BADGES ═══════ -->
-        <article id="badges" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-sm">
+        <article id="badges" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-xs">
           <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
             <Tag class="h-4 w-4 text-emerald-600" />
             <h2 class="text-sm font-semibold text-slate-900">Badges</h2>
@@ -302,7 +302,7 @@ function demoToast(variant: "success" | "error" | "info") {
         </article>
 
         <!-- ═══════ INPUTS ═══════ -->
-        <article id="inputs" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-sm">
+        <article id="inputs" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-xs">
           <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
             <TextCursorInput class="h-4 w-4 text-amber-600" />
             <h2 class="text-sm font-semibold text-slate-900">Inputs, Label, Textarea</h2>
@@ -313,15 +313,15 @@ function demoToast(variant: "success" | "error" | "info") {
               <div class="grid gap-4 rounded-lg border border-dashed border-slate-300 bg-slate-50/50 p-5 md:grid-cols-2">
                 <div class="space-y-1.5">
                   <label class="text-sm font-medium text-slate-700">Title</label>
-                  <input class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="Enter title" />
+                  <input class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200" placeholder="Enter title" />
                 </div>
                 <div class="space-y-1.5">
                   <label class="text-sm font-medium text-slate-700">Slug</label>
-                  <input class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="my-first-post" />
+                  <input class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200" placeholder="my-first-post" />
                 </div>
                 <div class="space-y-1.5 md:col-span-2">
                   <label class="text-sm font-medium text-slate-700">Description</label>
-                  <textarea class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200" rows="3" placeholder="Write short description..." />
+                  <textarea class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200" rows="3" placeholder="Write short description..." />
                 </div>
               </div>
             </div>
@@ -330,7 +330,7 @@ function demoToast(variant: "success" | "error" | "info") {
               <div class="grid gap-4 rounded-lg border border-slate-200 p-5 md:grid-cols-3">
                 <div class="space-y-1.5">
                   <label class="text-xs font-medium text-slate-500">Default</label>
-                  <input class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm" placeholder="Default" />
+                  <input class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs" placeholder="Default" />
                 </div>
                 <div class="space-y-1.5">
                   <label class="text-xs font-medium text-slate-500">Disabled</label>
@@ -352,7 +352,7 @@ function demoToast(variant: "success" | "error" | "info") {
                 </div>
                 <div class="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50/50 p-3">
                   <span class="h-2 w-2 rounded-full bg-red-400" />
-                  <span class="font-medium text-red-700">Invalid:</span> <span class="text-slate-600">set <code class="rounded bg-slate-200 px-1 py-0.5 text-xs">aria-invalid</code> and show error message nearby.</span>
+                  <span class="font-medium text-red-700">Invalid:</span> <span class="text-slate-600">set <code class="rounded-sm bg-slate-200 px-1 py-0.5 text-xs">aria-invalid</code> and show error message nearby.</span>
                 </div>
                 <div class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
                   <span class="h-2 w-2 rounded-full bg-slate-300" />
@@ -380,7 +380,7 @@ function demoToast(variant: "success" | "error" | "info") {
         </article>
 
         <!-- ═══════ SELECT ═══════ -->
-        <article id="select" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-sm">
+        <article id="select" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-xs">
           <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
             <ListFilter class="h-4 w-4 text-cyan-600" />
             <h2 class="text-sm font-semibold text-slate-900">Select</h2>
@@ -391,7 +391,7 @@ function demoToast(variant: "success" | "error" | "info") {
               <div class="rounded-lg border border-dashed border-slate-300 bg-slate-50/50 p-5">
                 <div class="max-w-sm space-y-1.5">
                   <label class="text-sm font-medium text-slate-700">Status</label>
-                  <select v-model="selectValue" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200">
+                  <select v-model="selectValue" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200">
                     <option value="active">Active</option>
                     <option value="review">In Review</option>
                     <option value="archived">Archived</option>
@@ -404,11 +404,11 @@ function demoToast(variant: "success" | "error" | "info") {
               <div class="flex flex-wrap gap-4 rounded-lg border border-slate-200 p-5">
                 <div class="space-y-1.5">
                   <label class="text-xs font-medium text-slate-500">Default</label>
-                  <select class="w-44 rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm"><option>Active</option></select>
+                  <select class="w-44 rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs"><option>Active</option></select>
                 </div>
                 <div class="space-y-1.5">
                   <label class="text-xs font-medium text-slate-500">Compact</label>
-                  <select class="w-44 rounded-lg border border-slate-300 px-3 py-1.5 text-xs shadow-sm"><option>Review</option></select>
+                  <select class="w-44 rounded-lg border border-slate-300 px-3 py-1.5 text-xs shadow-xs"><option>Review</option></select>
                 </div>
               </div>
             </div>
@@ -436,7 +436,7 @@ function demoToast(variant: "success" | "error" | "info") {
         </article>
 
         <!-- ═══════ TABS ═══════ -->
-        <article id="tabs" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-sm">
+        <article id="tabs" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-xs">
           <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
             <PanelTop class="h-4 w-4 text-pink-600" />
             <h2 class="text-sm font-semibold text-slate-900">Tabs</h2>
@@ -447,17 +447,17 @@ function demoToast(variant: "success" | "error" | "info") {
               <div class="rounded-lg border border-dashed border-slate-300 bg-slate-50/50 p-5">
                 <div class="inline-flex rounded-lg bg-slate-200/60 p-1 text-sm">
                   <button
-                    :class="activeTab === 'content' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
+                    :class="activeTab === 'content' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-700'"
                     class="rounded-md px-4 py-1.5 font-medium transition-all"
                     @click="activeTab = 'content'"
                   >Content</button>
                   <button
-                    :class="activeTab === 'seo' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
+                    :class="activeTab === 'seo' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-700'"
                     class="rounded-md px-4 py-1.5 font-medium transition-all"
                     @click="activeTab = 'seo'"
                   >SEO</button>
                   <button
-                    :class="activeTab === 'publish' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
+                    :class="activeTab === 'publish' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-700'"
                     class="rounded-md px-4 py-1.5 font-medium transition-all"
                     @click="activeTab = 'publish'"
                   >Publish</button>
@@ -497,7 +497,7 @@ function demoToast(variant: "success" | "error" | "info") {
         </article>
 
         <!-- ═══════ TOAST ═══════ -->
-        <article id="toast" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-sm">
+        <article id="toast" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-xs">
           <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
             <Bell class="h-4 w-4 text-blue-600" />
             <h2 class="text-sm font-semibold text-slate-900">Toast</h2>
@@ -506,9 +506,9 @@ function demoToast(variant: "success" | "error" | "info") {
             <div>
               <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">Preview</p>
               <div class="flex flex-wrap gap-2 rounded-lg border border-dashed border-slate-300 bg-slate-50/50 p-5">
-                <button class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-emerald-700" @click="demoToast('success')">Success Toast</button>
-                <button class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700" @click="demoToast('info')">Info Toast</button>
-                <button class="rounded-lg bg-rose-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-rose-700" @click="demoToast('error')">Error Toast</button>
+                <button class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-xs transition-colors hover:bg-emerald-700" @click="demoToast('success')">Success Toast</button>
+                <button class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-xs transition-colors hover:bg-blue-700" @click="demoToast('info')">Info Toast</button>
+                <button class="rounded-lg bg-rose-600 px-4 py-2 text-sm font-medium text-white shadow-xs transition-colors hover:bg-rose-700" @click="demoToast('error')">Error Toast</button>
               </div>
             </div>
             <div>
@@ -521,7 +521,7 @@ function demoToast(variant: "success" | "error" | "info") {
         </article>
 
         <!-- ═══════ DIALOG ═══════ -->
-        <article id="dialog" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-sm">
+        <article id="dialog" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-xs">
           <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
             <MessageSquare class="h-4 w-4 text-indigo-600" />
             <h2 class="text-sm font-semibold text-slate-900">Dialog</h2>
@@ -530,7 +530,7 @@ function demoToast(variant: "success" | "error" | "info") {
             <div>
               <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">Preview</p>
               <div class="rounded-lg border border-dashed border-slate-300 bg-slate-50/50 p-5">
-                <button class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-slate-50" @click="dialogOpen = true">Open confirmation dialog</button>
+                <button class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium shadow-xs transition-colors hover:bg-slate-50" @click="dialogOpen = true">Open confirmation dialog</button>
               </div>
             </div>
             <div>
@@ -539,7 +539,7 @@ function demoToast(variant: "success" | "error" | "info") {
             </div>
             <div>
               <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">States</p>
-              <div class="rounded-lg border border-slate-200 p-5 text-sm text-slate-600">For destructive actions, use <code class="rounded bg-slate-100 px-1 py-0.5 text-xs">destructive</code> button styling and explicit confirmation text.</div>
+              <div class="rounded-lg border border-slate-200 p-5 text-sm text-slate-600">For destructive actions, use <code class="rounded-sm bg-slate-100 px-1 py-0.5 text-xs">destructive</code> button styling and explicit confirmation text.</div>
             </div>
             <div class="grid gap-4 md:grid-cols-2">
               <div class="flex gap-3 rounded-lg border border-emerald-200 bg-emerald-50/50 p-4">
@@ -561,7 +561,7 @@ function demoToast(variant: "success" | "error" | "info") {
         </article>
 
         <!-- ═══════ DROPDOWN ═══════ -->
-        <article id="dropdown" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-sm">
+        <article id="dropdown" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-xs">
           <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
             <ChevronDown class="h-4 w-4 text-teal-600" />
             <h2 class="text-sm font-semibold text-slate-900">Dropdown Menu</h2>
@@ -571,7 +571,7 @@ function demoToast(variant: "success" | "error" | "info") {
               <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">Preview</p>
               <div class="rounded-lg border border-dashed border-slate-300 bg-slate-50/50 p-5">
                 <div class="relative inline-block">
-                  <button class="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-slate-50" @click="dropdownOpen = !dropdownOpen">
+                  <button class="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium shadow-xs transition-colors hover:bg-slate-50" @click="dropdownOpen = !dropdownOpen">
                     Open menu
                     <ChevronDown class="h-4 w-4 text-slate-400" />
                   </button>
@@ -585,7 +585,7 @@ function demoToast(variant: "success" | "error" | "info") {
                       <Layers class="h-3.5 w-3.5 text-slate-400" /> Duplicate
                     </button>
                     <label class="flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm transition-colors hover:bg-slate-100">
-                      <input v-model="showMeta" type="checkbox" class="rounded" />
+                      <input v-model="showMeta" type="checkbox" class="rounded-sm" />
                       Show meta panel
                     </label>
                     <div class="my-1 border-t border-slate-100" />
@@ -629,7 +629,7 @@ function demoToast(variant: "success" | "error" | "info") {
         </article>
 
         <!-- ═══════ TOOLTIP ═══════ -->
-        <article id="tooltip" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-sm">
+        <article id="tooltip" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-xs">
           <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
             <HelpCircle class="h-4 w-4 text-orange-600" />
             <h2 class="text-sm font-semibold text-slate-900">Tooltip</h2>
@@ -638,10 +638,10 @@ function demoToast(variant: "success" | "error" | "info") {
             <div>
               <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">Preview</p>
               <div class="flex items-center gap-4 rounded-lg border border-dashed border-slate-300 bg-slate-50/50 p-5">
-                <button title="Save draft" class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 bg-white shadow-sm transition-colors hover:bg-slate-50" aria-label="Save draft">
+                <button title="Save draft" class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 bg-white shadow-xs transition-colors hover:bg-slate-50" aria-label="Save draft">
                   <Check class="h-4 w-4 text-slate-600" />
                 </button>
-                <span title="More information" class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 bg-white shadow-sm transition-colors hover:bg-slate-50">
+                <span title="More information" class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 bg-white shadow-xs transition-colors hover:bg-slate-50">
                   <Info class="h-4 w-4 text-slate-600" />
                 </span>
               </div>
@@ -674,7 +674,7 @@ function demoToast(variant: "success" | "error" | "info") {
         </article>
 
         <!-- ═══════ TABLE ═══════ -->
-        <article id="table" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-sm">
+        <article id="table" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-xs">
           <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
             <Table2 class="h-4 w-4 text-rose-600" />
             <h2 class="text-sm font-semibold text-slate-900">Table</h2>
@@ -765,7 +765,7 @@ function demoToast(variant: "success" | "error" | "info") {
         </article>
 
         <!-- ═══════ TIMELINE ═══════ -->
-        <article id="timeline" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-sm">
+        <article id="timeline" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-xs">
           <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
             <Clock3 class="h-4 w-4 text-sky-600" />
             <h2 class="text-sm font-semibold text-slate-900">Timeline</h2>
@@ -827,7 +827,7 @@ function demoToast(variant: "success" | "error" | "info") {
         </article>
 
         <!-- ═══════ STEPS ═══════ -->
-        <article id="steps" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-sm">
+        <article id="steps" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-xs">
           <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
             <ListChecks class="h-4 w-4 text-indigo-600" />
             <h2 class="text-sm font-semibold text-slate-900">Steps</h2>
@@ -913,7 +913,7 @@ function demoToast(variant: "success" | "error" | "info") {
         </article>
 
         <!-- ═══════ PAGINATION ═══════ -->
-        <article id="pagination" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-sm">
+        <article id="pagination" class="scroll-mt-24 rounded-lg border border-slate-200 bg-white shadow-xs">
           <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
             <ChevronsLeftRight class="h-4 w-4 text-fuchsia-600" />
             <h2 class="text-sm font-semibold text-slate-900">Pagination</h2>
@@ -926,13 +926,13 @@ function demoToast(variant: "success" | "error" | "info") {
                   <span class="text-slate-500">Showing {{ (page - 1) * itemsPerPage + 1 }}-{{ Math.min(page * itemsPerPage, totalItems) }} of {{ totalItems }}</span>
                   <div class="flex items-center gap-2">
                     <button
-                      class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium shadow-sm transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                      class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium shadow-xs transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                       :disabled="page <= 1"
                       @click="nextPage(-1)"
                     >Previous</button>
                     <span class="rounded-lg bg-slate-100 px-3 py-1.5 text-sm font-medium">{{ page }} / {{ totalPages }}</span>
                     <button
-                      class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium shadow-sm transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                      class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium shadow-xs transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                       :disabled="page >= totalPages"
                       @click="nextPage(1)"
                     >Next</button>
@@ -979,7 +979,7 @@ function demoToast(variant: "success" | "error" | "info") {
         leave-from-class="opacity-100"
         leave-to-class="opacity-0"
       >
-        <div v-if="dialogOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm" @click.self="dialogOpen = false">
+        <div v-if="dialogOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-xs" @click.self="dialogOpen = false">
           <Transition
             enter-active-class="transition duration-200 ease-out"
             enter-from-class="scale-95 opacity-0"
@@ -992,8 +992,8 @@ function demoToast(variant: "success" | "error" | "info") {
               <h4 class="text-lg font-semibold text-slate-900">Publish this article?</h4>
               <p class="mt-2 text-sm text-slate-500">This action will make the article visible to all visitors.</p>
               <div class="mt-5 flex justify-end gap-2">
-                <button class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-slate-50" @click="dialogOpen = false">Cancel</button>
-                <button class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-slate-800" @click="dialogOpen = false">Publish</button>
+                <button class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium shadow-xs transition-colors hover:bg-slate-50" @click="dialogOpen = false">Cancel</button>
+                <button class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-xs transition-colors hover:bg-slate-800" @click="dialogOpen = false">Publish</button>
               </div>
             </div>
           </Transition>

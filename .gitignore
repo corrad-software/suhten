@@ -24,6 +24,7 @@ Homestead.yaml
 Thumbs.db
 /client/node_modules
 /client/dist
+*.tsbuildinfo
 /_reference
 /.git.backup*
 database/database.sqlite

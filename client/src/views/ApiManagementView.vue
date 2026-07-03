@@ -200,7 +200,7 @@ async function copyCurl(endpoint: Endpoint) {
         <h1 class="page-title">API Management</h1>
       </div>
 
-      <article class="rounded-lg border border-slate-200 bg-white shadow-sm">
+      <article class="rounded-lg border border-slate-200 bg-white shadow-xs">
         <div class="space-y-3 border-b border-slate-100 px-4 py-3">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <div class="flex items-center gap-2">
@@ -230,7 +230,7 @@ async function copyCurl(endpoint: Endpoint) {
             </button>
 
             <label class="ml-auto inline-flex cursor-pointer items-center gap-2 rounded-md border border-slate-300 px-2.5 py-1.5 text-xs text-slate-700 hover:bg-slate-50">
-              <input v-model="requiresCsrfOnly" type="checkbox" class="h-3.5 w-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+              <input v-model="requiresCsrfOnly" type="checkbox" class="h-3.5 w-3.5 rounded-sm border-slate-300 text-blue-600 focus:ring-blue-500" />
               CSRF required only
             </label>
           </div>
@@ -239,7 +239,7 @@ async function copyCurl(endpoint: Endpoint) {
             <Search class="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
             <input
               v-model="query"
-              class="w-full rounded-md border border-slate-300 py-1.5 pl-8 pr-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+              class="w-full rounded-md border border-slate-300 py-1.5 pl-8 pr-2.5 text-sm focus:border-blue-500 focus:outline-hidden focus:ring-2 focus:ring-blue-100"
               placeholder="Search endpoint"
             />
           </div>
@@ -264,7 +264,7 @@ async function copyCurl(endpoint: Endpoint) {
               <details v-for="endpoint in group.endpoints" :key="endpointKey(endpoint)" class="group">
                 <summary class="flex cursor-pointer items-center justify-between gap-3 px-3 py-2.5 text-sm hover:bg-slate-50">
                   <div class="min-w-0 flex items-center gap-2">
-                    <span class="rounded px-2 py-0.5 text-[11px] font-semibold" :class="methodClass(endpoint.method)">{{ endpoint.method }}</span>
+                    <span class="rounded-sm px-2 py-0.5 text-[11px] font-semibold" :class="methodClass(endpoint.method)">{{ endpoint.method }}</span>
                     <code class="truncate text-xs text-slate-700">{{ endpoint.path }}</code>
                     <span class="truncate text-slate-500">{{ endpoint.summary }}</span>
                   </div>
@@ -290,7 +290,7 @@ async function copyCurl(endpoint: Endpoint) {
                   </div>
                   <div v-if="endpoint.body" class="space-y-1">
                     <p class="font-semibold text-slate-800">Sample Body</p>
-                    <pre class="overflow-x-auto rounded bg-slate-900 p-2 text-[11px] text-slate-100">{{ endpoint.body }}</pre>
+                    <pre class="overflow-x-auto rounded-sm bg-slate-900 p-2 text-[11px] text-slate-100">{{ endpoint.body }}</pre>
                   </div>
                 </div>
               </details>

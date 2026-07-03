@@ -252,7 +252,7 @@ onMounted(load);
         <!-- ═══════ LEFT COLUMN ═══════ -->
         <div class="space-y-4">
           <!-- ── User Information ── -->
-          <article class="rounded-lg border border-slate-200 bg-white shadow-sm">
+          <article class="rounded-lg border border-slate-200 bg-white shadow-xs">
             <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
               <User class="h-4 w-4 text-violet-600" />
               <h2 class="text-sm font-semibold text-slate-900">{{ isNew ? 'User Details' : 'Profile Information' }}</h2>
@@ -271,7 +271,7 @@ onMounted(load);
                   <input
                     v-model="profileForm.name"
                     type="text"
-                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200"
                     placeholder="Full name"
                   />
                 </div>
@@ -280,7 +280,7 @@ onMounted(load);
                   <input
                     v-model="profileForm.email"
                     type="email"
-                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200"
                     placeholder="user@example.com"
                   />
                 </div>
@@ -289,7 +289,7 @@ onMounted(load);
                   <label class="text-sm font-medium text-slate-700">Role</label>
                   <select
                     v-model="profileForm.role"
-                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200"
                   >
                     <option v-for="r in roles" :key="r.id" :value="r.name">{{ r.name }}</option>
                     <option v-if="roles.length === 0" value="admin">admin</option>
@@ -298,7 +298,7 @@ onMounted(load);
                 <div v-if="!isSelf || isNew" class="flex items-end pb-1">
                   <label class="relative inline-flex cursor-pointer items-center gap-3">
                     <input v-model="profileForm.isActive" type="checkbox" class="peer sr-only" />
-                    <div class="h-5 w-9 rounded-full bg-slate-200 after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:bg-white after:shadow-sm after:transition-all peer-checked:bg-violet-600 peer-checked:after:translate-x-full" />
+                    <div class="h-5 w-9 rounded-full bg-slate-200 after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:bg-white after:shadow-xs after:transition-all peer-checked:bg-violet-600 peer-checked:after:translate-x-full" />
                     <span class="text-sm text-slate-700">Active</span>
                   </label>
                 </div>
@@ -311,7 +311,7 @@ onMounted(load);
                   <input
                     v-model="passwordForm.newPassword"
                     type="password"
-                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200"
                     placeholder="••••••••"
                   />
                 </div>
@@ -320,7 +320,7 @@ onMounted(load);
                   <input
                     v-model="passwordForm.confirmPassword"
                     type="password"
-                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200"
                     placeholder="••••••••"
                   />
                 </div>
@@ -340,7 +340,7 @@ onMounted(load);
           </article>
 
           <!-- ── Change Password (edit mode only) ── -->
-          <article v-if="!isNew" class="rounded-lg border border-slate-200 bg-white shadow-sm">
+          <article v-if="!isNew" class="rounded-lg border border-slate-200 bg-white shadow-xs">
             <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
               <Lock class="h-4 w-4 text-amber-600" />
               <h2 class="text-sm font-semibold text-slate-900">{{ isSelf ? 'Change Password' : 'Set New Password' }}</h2>
@@ -360,7 +360,7 @@ onMounted(load);
                   <input
                     v-model="passwordForm.currentPassword"
                     type="password"
-                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200"
                   />
                 </div>
                 <div class="grid gap-3 md:grid-cols-2">
@@ -369,7 +369,7 @@ onMounted(load);
                     <input
                       v-model="passwordForm.newPassword"
                       type="password"
-                      class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                      class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200"
                     />
                   </div>
                   <div class="space-y-1.5">
@@ -377,7 +377,7 @@ onMounted(load);
                     <input
                       v-model="passwordForm.confirmPassword"
                       type="password"
-                      class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                      class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200"
                     />
                   </div>
                 </div>
@@ -399,7 +399,7 @@ onMounted(load);
         <!-- ═══════ RIGHT COLUMN ═══════ -->
         <div class="space-y-4">
           <!-- ── Profile Photo (self only) ── -->
-          <article v-if="isSelf" class="rounded-lg border border-slate-200 bg-white shadow-sm">
+          <article v-if="isSelf" class="rounded-lg border border-slate-200 bg-white shadow-xs">
             <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
               <Camera class="h-4 w-4 text-indigo-600" />
               <h2 class="text-sm font-semibold text-slate-900">Profile Photo</h2>
@@ -418,7 +418,7 @@ onMounted(load);
                 />
                 <div
                   v-else
-                  class="flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 text-2xl font-semibold text-white"
+                  class="flex h-24 w-24 items-center justify-center rounded-full bg-linear-to-br from-violet-600 to-indigo-600 text-2xl font-semibold text-white"
                 >
                   {{ userInitials }}
                 </div>

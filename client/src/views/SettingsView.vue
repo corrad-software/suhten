@@ -196,7 +196,7 @@ onMounted(load);
 
       <div class="space-y-4">
         <!-- ═══════ GENERAL ═══════ -->
-        <article class="rounded-lg border border-slate-200 bg-white shadow-sm">
+        <article class="rounded-lg border border-slate-200 bg-white shadow-xs">
           <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
             <Globe class="h-4 w-4 text-violet-600" />
             <h2 class="text-sm font-semibold text-slate-900">General</h2>
@@ -205,30 +205,30 @@ onMounted(load);
             <div class="grid gap-3 md:grid-cols-3">
               <div class="space-y-1.5">
                 <label class="text-sm font-medium text-slate-700">Site Title</label>
-                <input v-model="form.siteTitle" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200" />
+                <input v-model="form.siteTitle" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200" />
               </div>
               <div class="space-y-1.5">
                 <label class="text-sm font-medium text-slate-700">Tagline</label>
-                <input v-model="form.tagline" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200" />
+                <input v-model="form.tagline" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200" />
               </div>
               <div class="space-y-1.5">
                 <label class="text-sm font-medium text-slate-700">Language</label>
-                <input v-model="form.language" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200" />
+                <input v-model="form.language" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200" />
               </div>
               <div class="space-y-1.5">
                 <label class="text-sm font-medium text-slate-700">Timezone</label>
-                <input v-model="form.timezone" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200" />
+                <input v-model="form.timezone" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200" />
               </div>
               <div class="space-y-1.5 md:col-span-2">
                 <label class="text-sm font-medium text-slate-700">Footer Text</label>
-                <input v-model="form.footerText" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="e.g. © 2026 My Company" />
+                <input v-model="form.footerText" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200" placeholder="e.g. © 2026 My Company" />
                 <p class="text-xs text-slate-400">Displayed at the bottom of the sidebar.</p>
               </div>
               <div class="space-y-1.5 md:col-span-2">
                 <label class="text-sm font-medium text-slate-700">Front Page</label>
                 <select
                   v-model="form.frontPageId"
-                  class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200"
                 >
                   <option :value="null">None (use fallback)</option>
                   <option v-for="page in publishedPages" :key="page.id" :value="page.id">
@@ -248,7 +248,7 @@ onMounted(load);
         </article>
 
         <!-- ═══════ SEO ═══════ -->
-        <article class="rounded-lg border border-slate-200 bg-white shadow-sm">
+        <article class="rounded-lg border border-slate-200 bg-white shadow-xs">
           <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
             <Search class="h-4 w-4 text-blue-600" />
             <h2 class="text-sm font-semibold text-slate-900">SEO</h2>
@@ -257,19 +257,19 @@ onMounted(load);
             <div class="grid gap-3 md:grid-cols-2">
               <div class="space-y-1.5 md:col-span-2">
                 <label class="text-sm font-medium text-slate-700">Title Format</label>
-                <input v-model="form.titleFormat" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200" />
-                <p class="text-xs text-slate-400">Use <code class="rounded bg-slate-100 px-1 py-0.5 text-xs">%page%</code> and <code class="rounded bg-slate-100 px-1 py-0.5 text-xs">%site%</code> as placeholders.</p>
+                <input v-model="form.titleFormat" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200" />
+                <p class="text-xs text-slate-400">Use <code class="rounded-sm bg-slate-100 px-1 py-0.5 text-xs">%page%</code> and <code class="rounded-sm bg-slate-100 px-1 py-0.5 text-xs">%site%</code> as placeholders.</p>
               </div>
               <div class="space-y-1.5 md:col-span-2">
                 <label class="text-sm font-medium text-slate-700">Meta Description</label>
-                <textarea v-model="form.metaDescription" rows="3" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200" />
+                <textarea v-model="form.metaDescription" rows="3" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200" />
               </div>
             </div>
           </div>
         </article>
 
         <!-- ═══════ BRANDING ═══════ -->
-        <article class="rounded-lg border border-slate-200 bg-white shadow-sm">
+        <article class="rounded-lg border border-slate-200 bg-white shadow-xs">
           <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
             <Image class="h-4 w-4 text-amber-600" />
             <h2 class="text-sm font-semibold text-slate-900">Branding</h2>
@@ -370,7 +370,7 @@ onMounted(load);
         <div class="space-y-3">
           <div class="flex items-center gap-3">
             <button
-              class="flex items-center gap-2 rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-slate-800 disabled:opacity-50"
+              class="flex items-center gap-2 rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-medium text-white shadow-xs transition-colors hover:bg-slate-800 disabled:opacity-50"
               :disabled="saving"
               @click="save"
             >
@@ -406,7 +406,7 @@ onMounted(load);
         leave-from-class="opacity-100"
         leave-to-class="opacity-0"
       >
-        <div v-if="mediaPickerOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" @click.self="mediaPickerOpen = false">
+        <div v-if="mediaPickerOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs" @click.self="mediaPickerOpen = false">
           <div class="mx-4 flex max-h-[80vh] w-full max-w-2xl flex-col rounded-xl border border-slate-200 bg-white shadow-2xl">
             <div class="flex items-center justify-between border-b border-slate-100 px-5 py-3">
               <div class="flex items-center gap-2">
@@ -424,7 +424,7 @@ onMounted(load);
                 <button
                   v-for="item in mediaPickerItems"
                   :key="item.id"
-                  class="group relative aspect-square overflow-hidden rounded-lg border border-slate-200 bg-slate-100 transition-all hover:border-[var(--accent-400)] hover:ring-1 hover:ring-[var(--accent-200)]"
+                  class="group relative aspect-square overflow-hidden rounded-lg border border-slate-200 bg-slate-100 transition-all hover:border-(--accent-400) hover:ring-1 hover:ring-(--accent-200)"
                   @click="selectFromLibrary(item)"
                 >
                   <img :src="resolveUrl(item.url)" :alt="item.altText || item.originalName" class="absolute inset-0 h-full w-full object-cover" />

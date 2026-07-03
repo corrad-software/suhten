@@ -145,7 +145,7 @@ onMounted(load);
       <div class="grid gap-4 lg:grid-cols-[1fr_320px]">
         <!-- ═══════ LEFT COLUMN — Content ═══════ -->
         <div class="space-y-4">
-          <article class="rounded-lg border border-slate-200 bg-white shadow-sm">
+          <article class="rounded-lg border border-slate-200 bg-white shadow-xs">
             <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
               <Type class="h-4 w-4 text-blue-600" />
               <h2 class="text-sm font-semibold text-slate-900">Content</h2>
@@ -154,16 +154,16 @@ onMounted(load);
               <div class="grid gap-3 md:grid-cols-2">
                 <div class="space-y-1.5">
                   <label class="text-sm font-medium text-slate-700">Title</label>
-                  <input v-model="title" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="Enter post title" />
+                  <input v-model="title" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200" placeholder="Enter post title" />
                 </div>
                 <div class="space-y-1.5">
                   <label class="text-sm font-medium text-slate-700">Slug</label>
-                  <input v-model="slug" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="auto-generated-from-title" />
+                  <input v-model="slug" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200" placeholder="auto-generated-from-title" />
                 </div>
               </div>
               <div class="space-y-1.5">
                 <label class="text-sm font-medium text-slate-700">Excerpt</label>
-                <textarea v-model="excerpt" rows="2" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="Brief summary of the post..." />
+                <textarea v-model="excerpt" rows="2" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200" placeholder="Brief summary of the post..." />
               </div>
               <div class="space-y-1.5">
                 <label class="text-sm font-medium text-slate-700">Content</label>
@@ -176,14 +176,14 @@ onMounted(load);
         <!-- ═══════ RIGHT COLUMN — Settings, Categories, Actions ═══════ -->
         <div class="space-y-4">
           <!-- Actions -->
-          <article class="rounded-lg border border-slate-200 bg-white shadow-sm">
+          <article class="rounded-lg border border-slate-200 bg-white shadow-xs">
             <div class="border-b border-slate-100 px-4 py-2.5">
               <h3 class="text-sm font-semibold text-slate-900">Publish</h3>
             </div>
             <div class="space-y-3 p-3">
               <div class="space-y-1.5">
                 <label class="text-sm font-medium text-slate-700">Status</label>
-                <select v-model="status" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200">
+                <select v-model="status" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200">
                   <option value="draft">Draft</option>
                   <option value="published">Published</option>
                   <option value="archived">Archived</option>
@@ -191,14 +191,14 @@ onMounted(load);
               </div>
               <div class="flex items-center gap-2 pt-1">
                 <button
-                  class="flex flex-1 items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-slate-800"
+                  class="flex flex-1 items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-xs transition-colors hover:bg-slate-800"
                   @click="save"
                 >
                   <Save class="h-4 w-4" />
                   {{ isEdit ? 'Update' : 'Publish' }}
                 </button>
                 <button
-                  class="flex items-center justify-center rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-600 shadow-sm transition-colors hover:bg-slate-50"
+                  class="flex items-center justify-center rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-600 shadow-xs transition-colors hover:bg-slate-50"
                   @click="router.push('/admin/posts')"
                 >
                   <X class="h-4 w-4" />
@@ -208,7 +208,7 @@ onMounted(load);
           </article>
 
           <!-- Categories -->
-          <article class="rounded-lg border border-slate-200 bg-white shadow-sm">
+          <article class="rounded-lg border border-slate-200 bg-white shadow-xs">
             <div class="border-b border-slate-100 px-4 py-2.5">
               <h3 class="text-sm font-semibold text-slate-900">Categories</h3>
             </div>
@@ -224,7 +224,7 @@ onMounted(load);
                     type="checkbox"
                     :value="cat.id"
                     v-model="selectedCategoryIds"
-                    class="h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
+                    class="h-4 w-4 rounded-sm border-slate-300 text-violet-600 focus:ring-violet-500"
                   />
                   <span class="text-slate-700">{{ cat.name }}</span>
                 </label>
@@ -233,7 +233,7 @@ onMounted(load);
           </article>
 
           <!-- Featured Image -->
-          <article class="rounded-lg border border-slate-200 bg-white shadow-sm">
+          <article class="rounded-lg border border-slate-200 bg-white shadow-xs">
             <div class="border-b border-slate-100 px-4 py-2.5">
               <h3 class="text-sm font-semibold text-slate-900">Featured Image</h3>
             </div>

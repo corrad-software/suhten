@@ -48,7 +48,7 @@ function statusColor(status: string) {
 
       <!-- ───── Stat Cards ───── -->
       <div class="grid gap-3 sm:grid-cols-3">
-        <div class="group rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition-all hover:shadow-md">
+        <div class="group rounded-lg border border-slate-200 bg-white p-3 shadow-xs transition-all hover:shadow-md">
           <div class="flex items-center justify-between">
             <div class="flex h-7 w-7 items-center justify-center rounded-md bg-blue-100">
               <FileText class="h-3.5 w-3.5 text-blue-600" />
@@ -58,7 +58,7 @@ function statusColor(status: string) {
           <p class="mt-2 text-xl font-bold text-slate-900">{{ counts.posts }}</p>
           <p class="mt-0.5 text-xs text-slate-500">Total Posts</p>
         </div>
-        <div class="group rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition-all hover:shadow-md">
+        <div class="group rounded-lg border border-slate-200 bg-white p-3 shadow-xs transition-all hover:shadow-md">
           <div class="flex items-center justify-between">
             <div class="flex h-7 w-7 items-center justify-center rounded-md bg-emerald-100">
               <FileText class="h-3.5 w-3.5 text-emerald-600" />
@@ -68,7 +68,7 @@ function statusColor(status: string) {
           <p class="mt-2 text-xl font-bold text-slate-900">{{ counts.pages }}</p>
           <p class="mt-0.5 text-xs text-slate-500">Total Pages</p>
         </div>
-        <div class="group rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition-all hover:shadow-md">
+        <div class="group rounded-lg border border-slate-200 bg-white p-3 shadow-xs transition-all hover:shadow-md">
           <div class="flex items-center justify-between">
             <div class="flex h-7 w-7 items-center justify-center rounded-md bg-amber-100">
               <Image class="h-3.5 w-3.5 text-amber-600" />
@@ -83,7 +83,7 @@ function statusColor(status: string) {
       <!-- ───── Recent Content ───── -->
       <div class="grid gap-4 md:grid-cols-2">
         <!-- Recent Posts -->
-        <article class="rounded-lg border border-slate-200 bg-white shadow-sm">
+        <article class="rounded-lg border border-slate-200 bg-white shadow-xs">
           <div class="flex items-center justify-between border-b border-slate-100 px-4 py-2.5">
             <div class="flex items-center gap-2">
               <FileText class="h-4 w-4 text-blue-600" />
@@ -111,7 +111,7 @@ function statusColor(status: string) {
         </article>
 
         <!-- Recent Pages -->
-        <article class="rounded-lg border border-slate-200 bg-white shadow-sm">
+        <article class="rounded-lg border border-slate-200 bg-white shadow-xs">
           <div class="flex items-center justify-between border-b border-slate-100 px-4 py-2.5">
             <div class="flex items-center gap-2">
               <FileText class="h-4 w-4 text-emerald-600" />

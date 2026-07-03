@@ -16,7 +16,7 @@ const title = (route.meta.title as string) || "Coming Soon";
         <h1 class="page-title">{{ title }}</h1>
       </div>
 
-      <article class="mt-4 rounded-lg border border-slate-200 bg-white shadow-sm">
+      <article class="mt-4 rounded-lg border border-slate-200 bg-white shadow-xs">
         <div class="flex flex-col items-center justify-center px-4 py-16 text-center">
           <Construction class="h-12 w-12 text-slate-300" />
           <h2 class="mt-4 text-lg font-semibold text-slate-700">Under Development</h2>

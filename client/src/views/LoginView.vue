@@ -45,7 +45,7 @@ async function submit() {
         <div v-if="site.siteIconUrl" class="flex h-8 items-center justify-center overflow-hidden">
           <img :src="resolveUrl(site.siteIconUrl)" alt="Site logo" class="h-full w-auto object-contain" />
         </div>
-        <div v-else class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600">
+        <div v-else class="flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-violet-600 to-indigo-600">
           <Shield class="h-4 w-4 text-white" />
         </div>
       </div>
@@ -62,7 +62,7 @@ async function submit() {
             <input
               v-model="email"
               type="email"
-              class="w-full rounded-md border border-[#d8dee4] bg-white px-3 py-[9px] text-sm text-[#1a1f36] shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-shadow placeholder:text-[#a3acb9] focus:border-[#5469d4] focus:outline-none focus:ring-2 focus:ring-[#5469d4]/20"
+              class="w-full rounded-md border border-[#d8dee4] bg-white px-3 py-[9px] text-sm text-[#1a1f36] shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-shadow placeholder:text-[#a3acb9] focus:border-[#5469d4] focus:outline-hidden focus:ring-2 focus:ring-[#5469d4]/20"
               placeholder="you@example.com"
             />
           </div>
@@ -73,7 +73,7 @@ async function submit() {
               <input
                 v-model="password"
                 :type="showPassword ? 'text' : 'password'"
-                class="w-full rounded-md border border-[#d8dee4] bg-white px-3 py-[9px] pr-10 text-sm text-[#1a1f36] shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-shadow placeholder:text-[#a3acb9] focus:border-[#5469d4] focus:outline-none focus:ring-2 focus:ring-[#5469d4]/20"
+                class="w-full rounded-md border border-[#d8dee4] bg-white px-3 py-[9px] pr-10 text-sm text-[#1a1f36] shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-shadow placeholder:text-[#a3acb9] focus:border-[#5469d4] focus:outline-hidden focus:ring-2 focus:ring-[#5469d4]/20"
                 placeholder="Enter your password"
               />
               <button

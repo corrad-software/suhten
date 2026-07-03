@@ -62,7 +62,7 @@ onMounted(load);
       <h1 class="page-title">{{ isEdit ? 'Edit Category' : 'Create Category' }}</h1>
 
       <!-- ═══════ FORM ═══════ -->
-      <article class="rounded-lg border border-slate-200 bg-white shadow-sm">
+      <article class="rounded-lg border border-slate-200 bg-white shadow-xs">
         <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
           <Tag class="h-4 w-4 text-violet-600" />
           <h2 class="text-sm font-semibold text-slate-900">Category Details</h2>
@@ -71,16 +71,16 @@ onMounted(load);
           <div class="grid gap-3 md:grid-cols-2">
             <div class="space-y-1.5">
               <label class="text-sm font-medium text-slate-700">Name</label>
-              <input v-model="name" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="e.g. Technology" />
+              <input v-model="name" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200" placeholder="e.g. Technology" />
             </div>
             <div class="space-y-1.5">
               <label class="text-sm font-medium text-slate-700">Slug</label>
-              <input v-model="slug" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="auto-generated-from-name" />
+              <input v-model="slug" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200" placeholder="auto-generated-from-name" />
             </div>
           </div>
           <div class="space-y-1.5">
             <label class="text-sm font-medium text-slate-700">Description</label>
-            <textarea v-model="description" rows="3" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="Brief description of this category..." />
+            <textarea v-model="description" rows="3" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200" placeholder="Brief description of this category..." />
           </div>
         </div>
       </article>
@@ -88,14 +88,14 @@ onMounted(load);
       <!-- ═══════ ACTIONS ═══════ -->
       <div class="flex items-center gap-3">
         <button
-          class="flex items-center gap-2 rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-slate-800"
+          class="flex items-center gap-2 rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-medium text-white shadow-xs transition-colors hover:bg-slate-800"
           @click="save"
         >
           <Save class="h-4 w-4" />
           {{ isEdit ? 'Update Category' : 'Create Category' }}
         </button>
         <button
-          class="flex items-center gap-2 rounded-lg border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-600 shadow-sm transition-colors hover:bg-slate-50"
+          class="flex items-center gap-2 rounded-lg border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-600 shadow-xs transition-colors hover:bg-slate-50"
           @click="router.push('/admin/categories')"
         >
           <X class="h-4 w-4" />

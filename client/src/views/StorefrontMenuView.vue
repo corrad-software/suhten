@@ -144,7 +144,7 @@ async function save() {
 
       <p v-if="error" class="text-sm text-rose-600">{{ error }}</p>
 
-      <article class="rounded-lg border border-slate-200 bg-white shadow-sm">
+      <article class="rounded-lg border border-slate-200 bg-white shadow-xs">
         <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
           <Link2 class="h-4 w-4 text-emerald-600" />
           <h2 class="text-sm font-semibold text-slate-900">Header Menu Structure</h2>
@@ -158,13 +158,13 @@ async function save() {
           >
             <input
               v-model="item.label"
-              class="rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+              class="rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200"
               placeholder="Label (optional)"
             />
             <select
               :value="pageSelectValue(item)"
               @change="setItemPage(item, ($event.target as HTMLSelectElement).value)"
-              class="rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+              class="rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200"
             >
               <option value="">Select page</option>
               <option value="__home__">Home (/)</option>
@@ -174,7 +174,7 @@ async function save() {
             </select>
             <select
               v-model="item.parentId"
-              class="rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+              class="rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200"
             >
               <option :value="null">Top Level</option>
               <option
@@ -186,7 +186,7 @@ async function save() {
               </option>
             </select>
             <label class="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-xs text-slate-600">
-              <input v-model="item.openInNewTab" type="checkbox" class="h-3.5 w-3.5 rounded border-slate-300" />
+              <input v-model="item.openInNewTab" type="checkbox" class="h-3.5 w-3.5 rounded-sm border-slate-300" />
               New Tab
             </label>
             <div class="flex items-center gap-1">

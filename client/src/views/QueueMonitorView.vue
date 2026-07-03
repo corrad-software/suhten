@@ -69,7 +69,7 @@ const jobs: JobDef[] = [
       </div>
 
       <!-- ───── Service Connections ───── -->
-      <article class="rounded-lg border border-slate-200 bg-white shadow-sm">
+      <article class="rounded-lg border border-slate-200 bg-white shadow-xs">
         <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
           <Cog class="h-4 w-4 text-slate-500" />
           <h2 class="text-sm font-semibold text-slate-900">Service Connections</h2>
@@ -103,7 +103,7 @@ const jobs: JobDef[] = [
       </article>
 
       <!-- ───── Scheduled Jobs ───── -->
-      <article class="rounded-lg border border-slate-200 bg-white shadow-sm">
+      <article class="rounded-lg border border-slate-200 bg-white shadow-xs">
         <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
           <Clock class="h-4 w-4 text-emerald-600" />
           <h2 class="text-sm font-semibold text-slate-900">Scheduled Jobs</h2>
@@ -118,7 +118,7 @@ const jobs: JobDef[] = [
                   <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">{{ job.schedule }}</span>
                 </div>
                 <p class="mt-0.5 text-xs text-slate-500">{{ job.description }}</p>
-                <p v-if="job.config" class="mt-1 text-xs text-slate-400">Config: <code class="rounded bg-slate-100 px-1 py-0.5 text-xs">{{ job.config }}</code></p>
+                <p v-if="job.config" class="mt-1 text-xs text-slate-400">Config: <code class="rounded-sm bg-slate-100 px-1 py-0.5 text-xs">{{ job.config }}</code></p>
               </div>
             </div>
           </div>
@@ -126,7 +126,7 @@ const jobs: JobDef[] = [
       </article>
 
       <!-- ───── Worker Commands ───── -->
-      <article class="rounded-lg border border-slate-200 bg-white shadow-sm">
+      <article class="rounded-lg border border-slate-200 bg-white shadow-xs">
         <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
           <Terminal class="h-4 w-4 text-violet-600" />
           <h2 class="text-sm font-semibold text-slate-900">Worker Commands</h2>
@@ -152,7 +152,7 @@ const jobs: JobDef[] = [
       </article>
 
       <!-- ───── Environment Keys ───── -->
-      <article class="rounded-lg border border-slate-200 bg-white shadow-sm">
+      <article class="rounded-lg border border-slate-200 bg-white shadow-xs">
         <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
           <Database class="h-4 w-4 text-slate-500" />
           <h2 class="text-sm font-semibold text-slate-900">.env Configuration Keys</h2>
@@ -170,7 +170,7 @@ const jobs: JobDef[] = [
               <code class="text-sm font-medium text-slate-900">{{ item.key }}</code>
               <p class="text-xs text-slate-400">{{ item.desc }}</p>
             </div>
-            <span class="shrink-0 rounded bg-slate-100 px-2 py-0.5 font-mono text-xs text-slate-600">{{ item.value }}</span>
+            <span class="shrink-0 rounded-sm bg-slate-100 px-2 py-0.5 font-mono text-xs text-slate-600">{{ item.value }}</span>
           </div>
         </div>
       </article>

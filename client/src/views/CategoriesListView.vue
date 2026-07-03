@@ -54,7 +54,7 @@ onMounted(load);
       <div class="flex items-center justify-between">
         <h1 class="page-title">Categories</h1>
         <button
-          class="flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-1.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-slate-800"
+          class="flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-1.5 text-sm font-medium text-white shadow-xs transition-colors hover:bg-slate-800"
           @click="router.push('/admin/categories/new')"
         >
           <Plus class="h-4 w-4" />
@@ -63,7 +63,7 @@ onMounted(load);
       </div>
 
       <!-- ───── Table Card ───── -->
-      <article class="rounded-lg border border-slate-200 bg-white shadow-sm">
+      <article class="rounded-lg border border-slate-200 bg-white shadow-xs">
         <div class="border-b border-slate-100 px-4 py-2.5">
           <div class="flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center gap-2">
@@ -77,11 +77,11 @@ onMounted(load);
                 <input
                   v-model="q"
                   placeholder="Search categories..."
-                  class="w-56 rounded-lg border border-slate-300 py-1.5 pl-9 pr-3 text-sm shadow-sm transition-colors focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  class="w-56 rounded-lg border border-slate-300 py-1.5 pl-9 pr-3 text-sm shadow-xs transition-colors focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-slate-200"
                   @keyup.enter="load"
                 />
               </div>
-              <button class="rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm font-medium text-slate-600 shadow-sm transition-colors hover:bg-slate-50" @click="load">Filter</button>
+              <button class="rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm font-medium text-slate-600 shadow-xs transition-colors hover:bg-slate-50" @click="load">Filter</button>
             </div>
           </div>
         </div>

@@ -296,7 +296,7 @@ async function resetToDefaults() {
             Reset
           </button>
           <button
-            class="flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-1.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-slate-800 disabled:opacity-50"
+            class="flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-1.5 text-sm font-medium text-white shadow-xs transition-colors hover:bg-slate-800 disabled:opacity-50"
             :disabled="saving"
             @click="save"
           >
@@ -312,7 +312,7 @@ async function resetToDefaults() {
         <div
           v-for="(groupId, groupIndex) in localPrefs.groupOrder"
           :key="groupId"
-          class="rounded-lg border border-slate-200 bg-white shadow-sm transition-opacity"
+          class="rounded-lg border border-slate-200 bg-white shadow-xs transition-opacity"
           :class="{ 'opacity-50': isGroupHidden(groupId) }"
         >
           <div class="flex items-center justify-between border-b border-slate-100 px-4 py-2.5">
@@ -327,7 +327,7 @@ async function resetToDefaults() {
                 @click="toggleGroupVisibility(groupId)"
               >
                 <span
-                  class="inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform"
+                  class="inline-block h-4 w-4 rounded-full bg-white shadow-xs transition-transform"
                   :class="isGroupHidden(groupId) ? 'translate-x-[2px]' : 'translate-x-[18px]'"
                 />
               </button>
@@ -369,7 +369,7 @@ async function resetToDefaults() {
                   @click="toggleItemVisibility(itemId)"
                 >
                   <span
-                    class="inline-block h-3 w-3 rounded-full bg-white shadow-sm transition-transform"
+                    class="inline-block h-3 w-3 rounded-full bg-white shadow-xs transition-transform"
                     :class="isItemHidden(itemId) ? 'translate-x-[2px]' : 'translate-x-[14px]'"
                   />
                 </button>
@@ -411,7 +411,7 @@ async function resetToDefaults() {
                       @click="toggleChildVisibility(childId)"
                     >
                       <span
-                        class="inline-block h-3 w-3 rounded-full bg-white shadow-sm transition-transform"
+                        class="inline-block h-3 w-3 rounded-full bg-white shadow-xs transition-transform"
                         :class="isChildHidden(childId) ? 'translate-x-[2px]' : 'translate-x-[14px]'"
                       />
                     </button>
@@ -452,7 +452,7 @@ async function resetToDefaults() {
                         @click="toggleGrandchildVisibility(grandchildId)"
                       >
                         <span
-                          class="inline-block h-3 w-3 rounded-full bg-white shadow-sm transition-transform"
+                          class="inline-block h-3 w-3 rounded-full bg-white shadow-xs transition-transform"
                           :class="isGrandchildHidden(grandchildId) ? 'translate-x-[2px]' : 'translate-x-[14px]'"
                         />
                       </button>

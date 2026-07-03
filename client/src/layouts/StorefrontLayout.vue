@@ -41,7 +41,7 @@ const menuTree = computed(() => {
 
 <template>
   <div class="min-h-screen bg-slate-100 text-slate-900">
-    <header class="border-b border-slate-200 bg-white/90 backdrop-blur">
+    <header class="border-b border-slate-200 bg-white/90 backdrop-blur-sm">
       <div class="mx-auto flex w-full max-w-4xl items-center justify-between px-4 py-4">
         <div class="flex items-center gap-3">
           <div v-if="site?.webfrontLogoUrl || site?.siteIconUrl" class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white">
@@ -110,7 +110,7 @@ const menuTree = computed(() => {
 
     <main class="mx-auto w-full max-w-4xl px-4 py-8">
       <div v-if="loading" class="rounded-lg border border-slate-200 bg-white p-6 text-slate-500">Loading page...</div>
-      <div v-else-if="error === 'NETWORK_ERROR'" class="rounded-xl border border-amber-200 bg-amber-50 p-6 shadow-sm">
+      <div v-else-if="error === 'NETWORK_ERROR'" class="rounded-xl border border-amber-200 bg-amber-50 p-6 shadow-xs">
         <div class="mb-3 flex items-center gap-2">
           <span class="text-2xl">⚠️</span>
           <h2 class="text-lg font-semibold text-amber-800">Cannot connect to backend</h2>
@@ -124,7 +124,7 @@ const menuTree = computed(() => {
         <p class="mt-4 text-xs text-amber-600">Once services are running, refresh this page.</p>
       </div>
       <div v-else-if="error" class="rounded-lg border border-rose-200 bg-rose-50 p-6 text-rose-700">{{ error }}</div>
-      <article v-else-if="page" class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <article v-else-if="page" class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs">
         <img
           v-if="page.featuredImage?.url"
           :src="resolveUrl(page.featuredImage.url)"
