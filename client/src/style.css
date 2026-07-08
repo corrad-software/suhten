@@ -92,6 +92,17 @@
     --accent-ring: #a3a3a3;
   }
 
+  /* Suruhanjaya Tenaga portal accent (dark blue corporate identity) */
+  [data-theme-color='st'] {
+    --accent-50: #eff5ff;
+    --accent-100: #dbe6fe;
+    --accent-200: #bccffc;
+    --accent-500: #2563eb;
+    --accent-600: #1d4ed8;
+    --accent-700: #1e3a8a;
+    --accent-ring: #60a5fa;
+  }
+
   body {
     @apply bg-slate-50 text-slate-900;
   }

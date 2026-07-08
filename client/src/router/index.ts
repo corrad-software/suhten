@@ -33,6 +33,26 @@ import StorefrontPageView from "@/views/StorefrontPageView.vue";
 import { useAuthStore } from "@/stores/auth";
 import { useSiteStore } from "@/stores/site";
 
+// ── Suruhanjaya Tenaga (ST) — Appendix D11 prototype ──
+import StPortalLayout from "@/st/components/StPortalLayout.vue";
+import StLoginView from "@/st/views/StLoginView.vue";
+import StDashboardView from "@/st/views/StDashboardView.vue";
+import StInboxView from "@/st/views/StInboxView.vue";
+import StApplicationListView from "@/st/views/StApplicationListView.vue";
+import ApplicationFormView from "@/st/views/ApplicationFormView.vue";
+import StApplicationDetailView from "@/st/views/StApplicationDetailView.vue";
+import FpxPaymentView from "@/st/views/FpxPaymentView.vue";
+import CertificateView from "@/st/views/CertificateView.vue";
+import StNotificationsView from "@/st/views/StNotificationsView.vue";
+import { useStSessionStore } from "@/st/stores/session";
+
+// Guards the ST portal: an active demo persona is required, else go to login.
+function stAuthGuard() {
+  const session = useStSessionStore();
+  if (!session.currentPersonaId) return { path: "/st/login" };
+  return true;
+}
+
 const legacyAdminPaths = [
   "/login",
   "/portal/dashboard",
@@ -194,6 +214,25 @@ const router = createRouter({
       path,
       redirect: (to: RouteLocationGeneric) => `/admin${to.fullPath}`,
     })),
+
+    // ── Suruhanjaya Tenaga (ST) D11 prototype ──
+    { path: "/st/login", name: "st-login", component: StLoginView, meta: { title: "Log Masuk — Suruhanjaya Tenaga" } },
+    {
+      path: "/st",
+      component: StPortalLayout,
+      beforeEnter: stAuthGuard,
+      children: [
+        { path: "", redirect: () => useStSessionStore().homeRoute() },
+        { path: "dashboard", name: "st-dashboard", component: StDashboardView, meta: { title: "Papan Pemuka — ST" } },
+        { path: "inbox", name: "st-inbox", component: StInboxView, meta: { title: "Peti Tugasan — ST" } },
+        { path: "applications", name: "st-applications", component: StApplicationListView, meta: { title: "Permohonan — ST" } },
+        { path: "applications/new", name: "st-application-new", component: ApplicationFormView, meta: { title: "Permohonan Baharu — ST" } },
+        { path: "applications/:id", name: "st-application-detail", component: StApplicationDetailView, meta: { title: "Butiran Permohonan — ST" } },
+        { path: "applications/:id/pay/:kind", name: "st-payment", component: FpxPaymentView, meta: { title: "Pembayaran — ST" } },
+        { path: "applications/:id/certificate", name: "st-certificate", component: CertificateView, meta: { title: "Sijil Digital — ST" } },
+        { path: "notifications", name: "st-notifications", component: StNotificationsView, meta: { title: "Notifikasi — ST" } },
+      ],
+    },
 
     { path: "/", name: "storefront-home", component: StorefrontHomeView, meta: { title: "Webfront" } },
     { path: "/:slug", name: "storefront-page", component: StorefrontPageView, meta: { title: "Webfront" } },
