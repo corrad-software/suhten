@@ -2,10 +2,10 @@ import { computed, ref } from "vue";
 import { defineStore } from "pinia";
 
 import { useAuthStore } from "@/stores/auth";
+import { isKakitanganRole } from "../config/portal-menu";
 import type { PersonaRole } from "../types";
-import { PERSONAS, personaById } from "../mock/personas";
-
-const PERSONA_KEY = "st.session.personaId";
+import { personaFromUser } from "../auth";
+import { personaById } from "../mock/personas";
 
 // Maps a logged-in persona role to its landing route.
 function homeRouteForRole(role: PersonaRole): string {
@@ -13,6 +13,10 @@ function homeRouteForRole(role: PersonaRole): string {
     case "applicant":
     case "employer":
       return "/st/applications";
+    case "admin":
+      return "/st/dashboard";
+    case "committee":
+      return "/st/operations/committee/queue";
     default:
       return "/st/inbox";
   }
@@ -21,46 +25,49 @@ function homeRouteForRole(role: PersonaRole): string {
 export const useStSessionStore = defineStore("st-session", () => {
   const currentPersonaId = ref<string | null>(null);
 
-  const currentPersona = computed(() => personaById(currentPersonaId.value));
+  const currentPersona = computed(() => {
+    if (!currentPersonaId.value) return undefined;
+    const fromMock = personaById(currentPersonaId.value);
+    if (fromMock) return fromMock;
+    const auth = useAuthStore();
+    if (auth.user && currentPersonaId.value === `user-${auth.user.id}`) {
+      return personaFromUser(auth.user) ?? undefined;
+    }
+    return undefined;
+  });
   const role = computed<PersonaRole | null>(() => currentPersona.value?.role ?? null);
   const isApplicant = computed(() => role.value === "applicant");
   const isEmployer = computed(() => role.value === "employer");
-  const isBackOffice = computed(() => ["sos", "technical", "approver"].includes(role.value ?? ""));
+  const isKakitangan = computed(() => isKakitanganRole(role.value));
+  const isBackOffice = computed(() => isKakitangan.value);
 
-  // Push a shim user into the existing auth store so the global router guard
-  // (which checks auth.isAuthenticated) treats the ST session as authenticated.
-  function applyAuthShim() {
+  /** Sync ST session state from the Sanctum-authenticated user. */
+  function syncFromAuth() {
     const auth = useAuthStore();
-    const persona = currentPersona.value;
-    if (persona) {
-      auth.user = { id: 1, email: persona.email, name: persona.name, role: persona.title ?? persona.role };
-    } else {
-      auth.user = null;
+    if (!auth.user) {
+      currentPersonaId.value = null;
+      return;
     }
-    auth.initialized = true; // prevent initialize() from clobbering the shim
+    const persona = personaFromUser(auth.user);
+    currentPersonaId.value = persona?.id ?? null;
   }
 
-  function loginAs(personaId: string) {
-    currentPersonaId.value = personaId;
-    if (typeof window !== "undefined") localStorage.setItem(PERSONA_KEY, personaId);
-    applyAuthShim();
-  }
-
-  function logout() {
-    currentPersonaId.value = null;
-    if (typeof window !== "undefined") localStorage.removeItem(PERSONA_KEY);
+  async function loginWithCredentials(email: string, password: string) {
     const auth = useAuthStore();
-    auth.user = null;
-    auth.initialized = true;
+    await auth.signIn(email, password);
+    syncFromAuth();
+    if (!currentPersonaId.value) {
+      await auth.signOut();
+      throw new Error("ST_UNAUTHORIZED");
+    }
   }
 
-  // Called once at boot (from main.ts) before the router resolves the first route.
-  function restore() {
-    if (typeof window === "undefined") return;
-    const saved = localStorage.getItem(PERSONA_KEY);
-    if (saved && personaById(saved)) {
-      currentPersonaId.value = saved;
-      applyAuthShim();
+  async function logout() {
+    const auth = useAuthStore();
+    try {
+      await auth.signOut();
+    } finally {
+      currentPersonaId.value = null;
     }
   }
 
@@ -69,16 +76,16 @@ export const useStSessionStore = defineStore("st-session", () => {
   }
 
   return {
-    personas: PERSONAS,
     currentPersonaId,
     currentPersona,
     role,
     isApplicant,
     isEmployer,
+    isKakitangan,
     isBackOffice,
-    loginAs,
+    syncFromAuth,
+    loginWithCredentials,
     logout,
-    restore,
     homeRoute,
   };
 });

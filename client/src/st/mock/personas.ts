@@ -57,6 +57,20 @@ export const PERSONAS: Persona[] = [
     role: "approver",
     title: "Pelulus / Timbalan Pengarah",
   },
+  {
+    id: "p-noraini",
+    name: "Datin Noraini binti Yusof",
+    email: "noraini@kkr.gov.my",
+    role: "committee",
+    title: "Ahli Jawatankuasa (Kementerian)",
+  },
+  {
+    id: "p-hafiz",
+    name: "Hafiz bin Kamal",
+    email: "hafiz.kamal@st.gov.my",
+    role: "admin",
+    title: "Pentadbir Sistem",
+  },
 ];
 
 export const ROLE_LABEL: Record<PersonaRole, string> = {
@@ -65,6 +79,17 @@ export const ROLE_LABEL: Record<PersonaRole, string> = {
   sos: "Pegawai SOS",
   technical: "Pegawai Teknikal",
   approver: "Pelulus",
+  committee: "Ahli Jawatankuasa",
+  admin: "Pentadbir Sistem",
+};
+
+/** SRS Kakitangan portal — Officer, Staff (all back-office), Admin tiers. */
+export const ROLE_TIER_LABEL: Partial<Record<PersonaRole, string>> = {
+  sos: "Pegawai",
+  technical: "Pegawai",
+  approver: "Pegawai",
+  committee: "Pegawai",
+  admin: "Pentadbir",
 };
 
 export function personaById(id: string | null | undefined): Persona | undefined {

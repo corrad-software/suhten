@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "st:tick": "node scripts/st-tick.mjs",
+    "st:reset": "node scripts/st-reset.mjs"
   },
   "dependencies": {
     "dompurify": "^3.4.11",

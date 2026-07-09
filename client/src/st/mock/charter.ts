@@ -33,6 +33,8 @@ export const SLA_THRESHOLDS: Record<PersonaRole, SlaThresholds> = {
   sos: { green: 0.5, yellow: 1.0 },
   technical: { green: 0.7, yellow: 1.0 },
   approver: { green: 0.7, yellow: 1.0 },
+  committee: { green: 0.7, yellow: 1.0 },
+  admin: { green: 0.5, yellow: 1.0 },
 };
 
 export function slaThresholdsFor(role: PersonaRole | null | undefined): SlaThresholds {

@@ -9,18 +9,24 @@ export interface RegisteredOk {
   mykad: string;
   wirerType: WirerType;
   competencyCategory: CompetencyCategory;
+  certificateNo: string;
+  voltageRestriction: string;
+  placeRestriction: string;
+  /** True if already registered under another employer (panduan Bahagian C block). */
+  employedElsewhere: boolean;
+  currentEmployerName?: string;
   linkedPersonaId?: string;
 }
 
 export const REGISTERED_OKS: RegisteredOk[] = [
-  { id: "ok-ahmad", name: "Ahmad bin Ismail", mykad: "840512-10-5523", wirerType: "PW4", competencyCategory: "PW", linkedPersonaId: "p-ahmad" },
-  { id: "ok-tan", name: "Tan Chee Keong", mykad: "790238-08-6191", wirerType: "PW3", competencyCategory: "PW", linkedPersonaId: "p-tan" },
-  { id: "ok-suresh", name: "Suresh a/l Maniam", mykad: "880101-14-5099", wirerType: "PW3", competencyCategory: "PW" },
-  { id: "ok-faizal", name: "Mohd Faizal bin Yusof", mykad: "910722-05-5331", wirerType: "PW2", competencyCategory: "PW" },
-  { id: "ok-chong", name: "Chong Wei Liang", mykad: "860318-07-5217", wirerType: "PW1", competencyCategory: "PW" },
-  { id: "ok-azman", name: "Azman bin Rahim", mykad: "830909-12-5443", wirerType: "PW1", competencyCategory: "PW" },
-  { id: "ok-vimala", name: "Vimala a/p Krishnan", mykad: "920215-08-5688", wirerType: "PW1", competencyCategory: "PW" },
-  { id: "ok-hafiz", name: "Hafiz bin Kamarudin", mykad: "871130-03-5275", wirerType: "PW6", competencyCategory: "PJ" },
+  { id: "ok-ahmad", name: "Ahmad bin Ismail", mykad: "840512-10-5523", wirerType: "PW4", competencyCategory: "PW", certificateNo: "COMP/PW4/2024/00821", voltageRestriction: "LV", placeRestriction: "Tiada", employedElsewhere: false, linkedPersonaId: "p-ahmad" },
+  { id: "ok-tan", name: "Tan Chee Keong", mykad: "790238-08-6191", wirerType: "PW3", competencyCategory: "PW", certificateNo: "COMP/PW3/2023/00412", voltageRestriction: "LV", placeRestriction: "Tiada", employedElsewhere: false, linkedPersonaId: "p-tan" },
+  { id: "ok-suresh", name: "Suresh a/l Maniam", mykad: "880101-14-5099", wirerType: "PW3", competencyCategory: "PW", certificateNo: "COMP/PW3/2022/01102", voltageRestriction: "LV", placeRestriction: "Tiada", employedElsewhere: false },
+  { id: "ok-faizal", name: "Mohd Faizal bin Yusof", mykad: "910722-05-5331", wirerType: "PW2", competencyCategory: "PW", certificateNo: "COMP/PW2/2024/00211", voltageRestriction: "LV", placeRestriction: "Tiada", employedElsewhere: false },
+  { id: "ok-chong", name: "Chong Wei Liang", mykad: "860318-07-5217", wirerType: "PW1", competencyCategory: "PW", certificateNo: "COMP/PW1/2021/00990", voltageRestriction: "LV", placeRestriction: "Tiada", employedElsewhere: true, currentEmployerName: "Voltcare Services Sdn Bhd" },
+  { id: "ok-azman", name: "Azman bin Rahim", mykad: "830909-12-5443", wirerType: "PW1", competencyCategory: "PW", certificateNo: "COMP/PW1/2020/00771", voltageRestriction: "LV", placeRestriction: "Tiada", employedElsewhere: false },
+  { id: "ok-vimala", name: "Vimala a/p Krishnan", mykad: "920215-08-5688", wirerType: "PW1", competencyCategory: "PW", certificateNo: "COMP/PW1/2023/00330", voltageRestriction: "LV", placeRestriction: "Tiada", employedElsewhere: false },
+  { id: "ok-hafiz", name: "Hafiz bin Kamarudin", mykad: "871130-03-5275", wirerType: "PW6", competencyCategory: "PJ", certificateNo: "COMP/PW6/2022/00155", voltageRestriction: "MV", placeRestriction: "Lombong", employedElsewhere: false },
 ];
 
 export function okById(id: string | null | undefined): RegisteredOk | undefined {
@@ -29,9 +35,15 @@ export function okById(id: string | null | undefined): RegisteredOk | undefined 
 }
 
 export function searchOks(q: string): RegisteredOk[] {
-  const term = q.trim().toLowerCase();
+  const term = q.trim().toLowerCase().replace(/-/g, "");
   if (!term) return REGISTERED_OKS;
-  return REGISTERED_OKS.filter(
-    (o) => o.name.toLowerCase().includes(term) || o.mykad.toLowerCase().includes(term) || o.wirerType.toLowerCase().includes(term),
-  );
+  return REGISTERED_OKS.filter((o) => {
+    const mykad = o.mykad.toLowerCase().replace(/-/g, "");
+    return (
+      o.name.toLowerCase().includes(term) ||
+      mykad.includes(term) ||
+      o.wirerType.toLowerCase().includes(term) ||
+      o.certificateNo.toLowerCase().includes(term)
+    );
+  });
 }

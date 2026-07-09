@@ -6,6 +6,7 @@ import { Bell, Check, ChevronDown, LogOut, MessageCircle, Send, Settings, Shield
 import type { ThemeColor } from "@/types";
 import type { MenuItemDef, MenuNode } from "@/config/admin-menu";
 import { useSidebarCollapse } from "@/composables/useSidebarCollapse";
+import { useLocale } from "@/composables/useLocale";
 import { useToast } from "@/composables/useToast";
 import AppToastRegion from "@/components/AppToastRegion.vue";
 
@@ -21,6 +22,7 @@ const auth = useAuthStore();
 const menuStore = useMenuStore();
 const site = useSiteStore();
 const uiTheme = useUiThemeStore();
+const { t } = useLocale();
 const toast = useToast();
 const { isCollapsed, isCompact, toggle: toggleSidebar, toggleCompact } = useSidebarCollapse();
 
@@ -331,14 +333,38 @@ watch(
             @click.stop="settingsOpen = !settingsOpen"
           >
             <Settings class="h-4 w-4" />
-            <span class="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">Theme settings</span>
+            <span class="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">{{ t('theme.settings') }}</span>
           </button>
 
           <div
             v-if="settingsOpen"
             class="absolute right-0 top-full z-50 mt-2 w-56 rounded-lg border border-slate-200 bg-white p-3 shadow-lg"
           >
-            <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Theme color</p>
+            <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">{{ t('theme.language') }}</p>
+            <div class="grid grid-cols-2 gap-2">
+              <button
+                class="flex items-center justify-between rounded-md border px-2.5 py-2 text-xs font-medium transition-colors"
+                :class="uiTheme.locale === 'bm'
+                  ? 'border-(--accent-500) bg-(--accent-50) text-(--accent-700)'
+                  : 'border-slate-200 text-slate-600 hover:border-(--accent-ring) hover:text-slate-900'"
+                @click="uiTheme.setLocale('bm')"
+              >
+                <span>{{ t('theme.lang.bm') }}</span>
+                <Check v-if="uiTheme.locale === 'bm'" class="h-3.5 w-3.5" />
+              </button>
+              <button
+                class="flex items-center justify-between rounded-md border px-2.5 py-2 text-xs font-medium transition-colors"
+                :class="uiTheme.locale === 'bi'
+                  ? 'border-(--accent-500) bg-(--accent-50) text-(--accent-700)'
+                  : 'border-slate-200 text-slate-600 hover:border-(--accent-ring) hover:text-slate-900'"
+                @click="uiTheme.setLocale('bi')"
+              >
+                <span>{{ t('theme.lang.bi') }}</span>
+                <Check v-if="uiTheme.locale === 'bi'" class="h-3.5 w-3.5" />
+              </button>
+            </div>
+
+            <p class="mb-2 mt-3 text-xs font-semibold uppercase tracking-wide text-slate-500">{{ t('theme.color') }}</p>
             <div class="grid grid-cols-2 gap-2">
               <button
                 v-for="theme in themeChoices"
@@ -375,7 +401,7 @@ watch(
                 class="flex w-full items-center justify-between rounded-md border border-slate-200 px-2.5 py-2 text-xs font-medium text-slate-700 transition-colors hover:border-(--accent-ring)"
                 @click="toggleCompact"
               >
-                <span>Compact sidebar</span>
+                <span>{{ t('theme.compactSidebar') }}</span>
                 <span
                   class="relative inline-flex h-4 w-7 items-center rounded-full transition-colors"
                   :class="isCompact ? 'bg-(--accent-600)' : 'bg-slate-300'"
@@ -397,7 +423,7 @@ watch(
         >
           <Bell class="h-4 w-4" />
           <span class="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white" />
-          <span class="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">Notifications</span>
+          <span class="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">{{ t('header.notifications') }}</span>
         </button>
 
         <span class="h-full w-px bg-slate-200" />
@@ -407,7 +433,7 @@ watch(
           @click="signOut"
         >
           <LogOut class="h-4 w-4" />
-          <span class="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">Logout</span>
+          <span class="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">{{ t('header.logout') }}</span>
         </button>
       </div>
     </header>

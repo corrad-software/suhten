@@ -1,6 +1,8 @@
 import { defineStore } from "pinia";
 import { DEFAULT_MENU, type AdminMenuPrefs, type MenuGroupDef, type MenuNode } from "@/config/admin-menu";
+import { translateMenuGroups } from "@/i18n/translate-menu";
 import { getAdminMenuPrefs, saveAdminMenuPrefs } from "@/api/cms";
+import { useUiThemeStore } from "@/stores/uiTheme";
 
 type LegacyPrefs = {
   groupOrder: string[];
@@ -112,7 +114,8 @@ export const useMenuStore = defineStore("menu", {
   }),
   getters: {
     resolvedMenu(): MenuGroupDef[] {
-      return resolveMenu(this.prefs);
+      const uiTheme = useUiThemeStore();
+      return translateMenuGroups(resolveMenu(this.prefs), uiTheme.locale);
     },
   },
   actions: {

@@ -1,5 +1,7 @@
 export type PublishStatus = "draft" | "published" | "archived";
 export type ThemeColor = "violet" | "blue" | "green" | "red" | "black-white" | "grey";
+/** BM = Bahasa Malaysia (default), BI = Bahasa Inggeris */
+export type DisplayLanguage = "bm" | "bi";
 
 export type ApiError = { error: { code: string; message: string; details?: unknown } };
 

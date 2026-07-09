@@ -2,13 +2,20 @@
 import { useRouter } from "vue-router";
 import { Bell, CheckCheck } from "lucide-vue-next";
 
+import { useLocale } from "@/composables/useLocale";
 import { useStNotificationsStore } from "../stores/notifications";
 
 const router = useRouter();
+const { ts, locale } = useLocale();
 const notifications = useStNotificationsStore();
 
 function fmt(iso: string): string {
-  return new Date(iso).toLocaleString("ms-MY", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+  return new Date(iso).toLocaleString(locale.value === "bi" ? "en-MY" : "ms-MY", {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 function open(applicationId: string | undefined, id: string) {
@@ -25,8 +32,8 @@ function open(applicationId: string | undefined, id: string) {
           <Bell class="h-5 w-5 text-[var(--accent-700)]" />
         </div>
         <div>
-          <h1 class="text-xl font-semibold text-slate-900">Notifikasi</h1>
-          <p class="text-sm text-slate-500">{{ notifications.unreadCount }} belum dibaca</p>
+          <h1 class="text-xl font-semibold text-slate-900">{{ ts("st.notif.title") }}</h1>
+          <p class="text-sm text-slate-500">{{ ts("st.notif.unread", { n: notifications.unreadCount }) }}</p>
         </div>
       </div>
       <button
@@ -34,13 +41,15 @@ function open(applicationId: string | undefined, id: string) {
         class="flex items-center gap-1.5 rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50"
         @click="notifications.markAllRead()"
       >
-        <CheckCheck class="h-4 w-4" /> Tanda semua dibaca
+        <CheckCheck class="h-4 w-4" /> {{ ts("st.notif.markAll") }}
       </button>
     </div>
 
+    <p class="text-xs text-slate-400">{{ ts("st.common.mockNote") }}</p>
+
     <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
       <p v-if="notifications.forCurrentPersona.length === 0" class="px-4 py-12 text-center text-sm text-slate-400">
-        Tiada notifikasi buat masa ini.
+        {{ ts("st.notif.empty") }}
       </p>
       <button
         v-for="n in notifications.forCurrentPersona"

@@ -21,3 +21,4 @@ export * from "./personas";
 export * from "./employers";
 export * from "./competencies";
 export * from "./charter";
+export * from "./registration";
