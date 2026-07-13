@@ -1,4 +1,6 @@
 import type { Component } from "vue";
+
+import { stAdminMenuGroups } from "@/config/st-admin-menu";
 import {
   BookOpen,
   Bot,
@@ -54,6 +56,7 @@ export const DEFAULT_MENU: MenuGroupDef[] = [
       { id: "main-dashboard", label: "Dashboard", to: "/admin", icon: Gauge },
     ],
   },
+  ...stAdminMenuGroups(),
   {
     id: "portal",
     label: "Webfront",

@@ -1,25 +1,34 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { Clock, LogOut, RotateCcw, Zap } from "lucide-vue-next";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
+import { Check, LogOut, Settings, Zap } from "lucide-vue-next";
 
+import { useLocale } from "@/composables/useLocale";
 import { useToast } from "@/composables/useToast";
+import { useUiThemeStore } from "@/stores/uiTheme";
 import AppToastRegion from "@/components/AppToastRegion.vue";
 
 import { useStSessionStore } from "../stores/session";
-import { useStWorkflowStore } from "../stores/workflow";
 import { portalMenuFor } from "../config/portal-menu";
-import { ROLE_LABEL } from "../mock/personas";
+import { ROLE_LABEL, ROLE_TIER_LABEL } from "../mock/personas";
+import StSidebarNav from "./StSidebarNav.vue";
 import NotificationsBell from "./NotificationsBell.vue";
 
-const route = useRoute();
 const router = useRouter();
 const session = useStSessionStore();
-const workflow = useStWorkflowStore();
+const uiTheme = useUiThemeStore();
+const { t } = useLocale();
 const toast = useToast();
+
+const settingsOpen = ref(false);
+const settingsDropdownRef = ref<HTMLElement | null>(null);
 
 const menu = computed(() => portalMenuFor(session.role));
 const roleLabel = computed(() => (session.role ? ROLE_LABEL[session.role] : ""));
+const tierLabel = computed(() => (session.role ? ROLE_TIER_LABEL[session.role] : ""));
+const portalSubtitle = computed(() =>
+  session.isKakitangan ? "Sistem Digital ST — Kakitangan" : "Sistem Digital ST — Awam",
+);
 const initials = computed(() =>
   (session.currentPersona?.name ?? "ST")
     .split(" ")
@@ -29,32 +38,32 @@ const initials = computed(() =>
     .slice(0, 2),
 );
 
-function isActive(path: string) {
-  if (path === "/st/applications") return route.path === "/st/applications";
-  return route.path === path || route.path.startsWith(path + "/");
-}
-
-function itemClass(path: string) {
-  return isActive(path)
-    ? "border border-[var(--accent-200)] bg-[var(--accent-50)] font-medium text-[var(--accent-700)]"
-    : "border border-transparent text-slate-700 hover:bg-[var(--accent-50)]";
-}
-
 function logout() {
-  session.logout();
-  toast.info("Log keluar", "Anda telah log keluar.");
-  router.push("/st/login");
+  void session.logout().then(() => {
+    toast.info("Log keluar", "Anda telah log keluar.");
+    router.push("/st/login");
+  });
 }
 
-function advance() {
-  workflow.tick(2);
-  toast.info("Masa dimajukan", "Jam demo ditambah 2 jam.");
-}
+const handleDocumentClick = (event: MouseEvent) => {
+  if (settingsOpen.value && settingsDropdownRef.value && !settingsDropdownRef.value.contains(event.target as Node)) {
+    settingsOpen.value = false;
+  }
+};
 
-function reset() {
-  workflow.resetDemo();
-  toast.success("Demo ditetapkan semula", "Data contoh telah dimuat semula.");
-}
+const handleEscape = (event: KeyboardEvent) => {
+  if (event.key === "Escape") settingsOpen.value = false;
+};
+
+onMounted(() => {
+  document.addEventListener("click", handleDocumentClick);
+  document.addEventListener("keydown", handleEscape);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener("click", handleDocumentClick);
+  document.removeEventListener("keydown", handleEscape);
+});
 </script>
 
 <template>
@@ -66,27 +75,51 @@ function reset() {
         </div>
         <div class="leading-tight">
           <p class="text-sm font-semibold text-slate-900">Suruhanjaya Tenaga</p>
-          <p class="text-[10px] uppercase tracking-wider text-slate-400">Sistem Pendaftaran Elektrik</p>
+          <p class="text-[10px] uppercase tracking-wider text-slate-400">{{ portalSubtitle }}</p>
         </div>
       </div>
 
       <div class="flex items-center gap-1">
         <AppToastRegion />
 
-        <button
-          class="hidden items-center gap-1.5 rounded-md border border-slate-200 px-2.5 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:border-[var(--accent-ring)] hover:text-slate-900 sm:flex"
-          title="Majukan jam demo 2 jam"
-          @click="advance"
-        >
-          <Clock class="h-3.5 w-3.5" /> Maju 2j
-        </button>
-        <button
-          class="hidden items-center gap-1.5 rounded-md border border-slate-200 px-2.5 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:border-[var(--accent-ring)] hover:text-slate-900 sm:flex"
-          title="Tetapkan semula data demo"
-          @click="reset"
-        >
-          <RotateCcw class="h-3.5 w-3.5" /> Reset
-        </button>
+        <div ref="settingsDropdownRef" class="relative">
+          <button
+            class="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-[var(--accent-50)] hover:text-[var(--accent-700)]"
+            :title="t('theme.settings')"
+            @click.stop="settingsOpen = !settingsOpen"
+          >
+            <Settings class="h-4 w-4" />
+          </button>
+
+          <div
+            v-if="settingsOpen"
+            class="absolute right-0 top-full z-50 mt-2 w-56 rounded-lg border border-slate-200 bg-white p-3 shadow-lg"
+          >
+            <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">{{ t('theme.language') }}</p>
+            <div class="grid grid-cols-2 gap-2">
+              <button
+                class="flex items-center justify-between rounded-md border px-2.5 py-2 text-xs font-medium transition-colors"
+                :class="uiTheme.locale === 'bm'
+                  ? 'border-[var(--accent-500)] bg-[var(--accent-50)] text-[var(--accent-700)]'
+                  : 'border-slate-200 text-slate-600 hover:border-[var(--accent-ring)] hover:text-slate-900'"
+                @click="uiTheme.setLocale('bm')"
+              >
+                <span>{{ t('theme.lang.bm') }}</span>
+                <Check v-if="uiTheme.locale === 'bm'" class="h-3.5 w-3.5" />
+              </button>
+              <button
+                class="flex items-center justify-between rounded-md border px-2.5 py-2 text-xs font-medium transition-colors"
+                :class="uiTheme.locale === 'bi'
+                  ? 'border-[var(--accent-500)] bg-[var(--accent-50)] text-[var(--accent-700)]'
+                  : 'border-slate-200 text-slate-600 hover:border-[var(--accent-ring)] hover:text-slate-900'"
+                @click="uiTheme.setLocale('bi')"
+              >
+                <span>{{ t('theme.lang.bi') }}</span>
+                <Check v-if="uiTheme.locale === 'bi'" class="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
+        </div>
 
         <NotificationsBell />
 
@@ -96,7 +129,9 @@ function reset() {
           </div>
           <div class="hidden leading-tight sm:block">
             <p class="text-xs font-medium text-slate-800">{{ session.currentPersona?.name }}</p>
-            <p class="text-[10px] text-slate-500">{{ roleLabel }}</p>
+            <p class="text-[10px] text-slate-500">
+              <span v-if="tierLabel" class="text-slate-400">{{ tierLabel }} · </span>{{ roleLabel }}
+            </p>
           </div>
         </div>
 
@@ -111,23 +146,8 @@ function reset() {
     </header>
 
     <div class="flex flex-col md:flex-row">
-      <aside class="w-full shrink-0 border-r border-slate-200 bg-white md:min-h-[calc(100vh-48px)] md:w-60">
-        <nav class="p-3">
-          <template v-for="group in menu" :key="group.id">
-            <p v-if="group.label" class="mb-1 mt-3 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-              {{ group.label }}
-            </p>
-            <router-link
-              v-for="item in group.items"
-              :key="item.id"
-              :to="item.to"
-              :class="['mb-0.5 flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all', itemClass(item.to)]"
-            >
-              <component :is="item.icon" class="h-4 w-4 shrink-0" />
-              <span>{{ item.label }}</span>
-            </router-link>
-          </template>
-        </nav>
+      <aside class="w-full shrink-0 border-r border-slate-200 bg-white md:min-h-[calc(100vh-48px)] md:w-64 md:overflow-y-auto">
+        <StSidebarNav :menu="menu" />
       </aside>
 
       <main class="w-full min-w-0 flex-1 p-4 md:p-6">

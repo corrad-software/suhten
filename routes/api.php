@@ -11,6 +11,8 @@ use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\PublicController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\SettingController;
+use App\Http\Controllers\Api\StRegisteredEntityController;
+use App\Http\Controllers\Api\StRegistrationApplicationController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -63,4 +65,29 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/developers-guide', [DevelopersGuideController::class, 'show']);
     Route::put('/developers-guide', [DevelopersGuideController::class, 'update']);
+
+    // ST Registration — Phase 3 (RG-KE / RG-CE first)
+    Route::get('/st/registration-applications/by-code/{code}', [StRegistrationApplicationController::class, 'showByCode'])
+        ->middleware('permission:registration.view');
+    Route::get('/st/registration-applications', [StRegistrationApplicationController::class, 'index'])
+        ->middleware('permission:registration.view');
+    Route::post('/st/registration-applications', [StRegistrationApplicationController::class, 'store'])
+        ->middleware('permission:registration.create');
+    Route::get('/st/registration-applications/{id}', [StRegistrationApplicationController::class, 'show'])
+        ->middleware('permission:registration.view');
+    Route::put('/st/registration-applications/{id}', [StRegistrationApplicationController::class, 'update'])
+        ->middleware('permission:registration.edit');
+    Route::delete('/st/registration-applications/{id}', [StRegistrationApplicationController::class, 'destroy'])
+        ->middleware('permission:registration.delete');
+
+    Route::get('/st/registered-entities', [StRegisteredEntityController::class, 'index'])
+        ->middleware('permission:registration.view');
+    Route::post('/st/registered-entities', [StRegisteredEntityController::class, 'store'])
+        ->middleware('permission:registration.create');
+    Route::get('/st/registered-entities/{id}', [StRegisteredEntityController::class, 'show'])
+        ->middleware('permission:registration.view');
+    Route::put('/st/registered-entities/{id}', [StRegisteredEntityController::class, 'update'])
+        ->middleware('permission:registration.edit');
+    Route::delete('/st/registered-entities/{id}', [StRegisteredEntityController::class, 'destroy'])
+        ->middleware('permission:registration.delete');
 });

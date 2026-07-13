@@ -26,7 +26,7 @@ const auth = useAuthStore();
 const toast = useToast();
 const confirmDialog = useConfirmDialog();
 
-const isNew = computed(() => route.params.id === "new");
+const isNew = computed(() => route.name === "platform-user-create");
 const userId = computed(() => (isNew.value ? null : Number(route.params.id)));
 const isSelf = computed(() => userId.value !== null && userId.value === auth.user?.id);
 
@@ -117,7 +117,7 @@ async function saveProfile() {
         isActive: profileForm.value.isActive,
       });
       toast.success("User created");
-      router.push("/admin/settings/users");
+      router.push("/admin/platform/identity/users");
       return;
     }
 
@@ -227,7 +227,7 @@ async function onRemoveAvatar() {
   }
 }
 
-watch(() => route.params.id, load);
+watch(() => [route.name, route.params.id], load);
 onMounted(load);
 </script>
 
@@ -238,7 +238,7 @@ onMounted(load);
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-3">
           <router-link
-            to="/admin/settings/users"
+            to="/admin/platform/identity/users"
             class="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
             v-if="!isSelf"
           >

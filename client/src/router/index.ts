@@ -30,6 +30,7 @@ import UsersView from "@/views/UsersView.vue";
 import UserEditView from "@/views/UserEditView.vue";
 import StorefrontHomeView from "@/views/StorefrontHomeView.vue";
 import StorefrontPageView from "@/views/StorefrontPageView.vue";
+import AdminLayoutShell from "@/layouts/AdminLayoutShell.vue";
 import { useAuthStore } from "@/stores/auth";
 import { useSiteStore } from "@/stores/site";
 
@@ -44,14 +45,304 @@ import StApplicationDetailView from "@/st/views/StApplicationDetailView.vue";
 import FpxPaymentView from "@/st/views/FpxPaymentView.vue";
 import CertificateView from "@/st/views/CertificateView.vue";
 import StNotificationsView from "@/st/views/StNotificationsView.vue";
+import StSearchView from "@/st/views/StSearchView.vue";
+import StComingSoonView from "@/st/views/StComingSoonView.vue";
+import StRegApplicationsView from "@/st/views/registration/StRegApplicationsView.vue";
+import StRegReviewView from "@/st/views/registration/StRegReviewView.vue";
+import StRegComplianceView from "@/st/views/registration/StRegComplianceView.vue";
+import StRegReportsView from "@/st/views/registration/StRegReportsView.vue";
+import StOkElectricApplyView from "@/st/views/registration/StOkElectricApplyView.vue";
+import StOkElectricDetailView from "@/st/views/registration/StOkElectricDetailView.vue";
+import StContractorElectricApplyView from "@/st/views/registration/StContractorElectricApplyView.vue";
+import StContractorElectricDetailView from "@/st/views/registration/StContractorElectricDetailView.vue";
+import StServiceWorkspaceView from "@/st/views/workspace/StServiceWorkspaceView.vue";
+import StOpsWorkspaceView from "@/st/views/workspace/StOpsWorkspaceView.vue";
+import StAnalyticsWorkspaceView from "@/st/views/workspace/StAnalyticsWorkspaceView.vue";
+import StAdminWorkspaceView from "@/st/views/workspace/StAdminWorkspaceView.vue";
+import { staffMenuLeafRoutes } from "@/st/config/staff-menu";
+import {
+  ADMIN_SCREENS,
+  ANALYTICS_SCREENS,
+  OPS_MODULES,
+  SERVICE_MODULES,
+  workspaceImplementedPaths,
+  type OpsModuleCode,
+  type ServiceModuleCode,
+  type ServiceScreen,
+} from "@/st/modules/catalog";
 import { useStSessionStore } from "@/st/stores/session";
 
-// Guards the ST portal: an active demo persona is required, else go to login.
-function stAuthGuard() {
+/** Paths with real views — exclude from Coming Soon placeholders. */
+const ST_PHASE2_IMPLEMENTED = new Set([
+  "dashboard",
+  "inbox",
+  "notifications",
+  "search",
+  "registration/ok-electric/applications",
+  "registration/ok-electric/review",
+  "registration/ok-electric/compliance",
+  "registration/ok-electric/reports",
+  "registration/ok-gas/applications",
+  "registration/ok-gas/review",
+  "registration/ok-gas/compliance",
+  "registration/ok-gas/reports",
+  "registration/contractor-electric/applications",
+  "registration/contractor-electric/review",
+  "registration/contractor-electric/compliance",
+  "registration/contractor-electric/reports",
+  "registration/contractor-gas/applications",
+  "registration/contractor-gas/review",
+  "registration/contractor-gas/compliance",
+  "registration/contractor-gas/reports",
+  ...workspaceImplementedPaths(),
+]);
+
+const REG_MODULE_META = [
+  { path: "registration/ok-electric", code: "RG-KE", title: "OK Elektrik" },
+  { path: "registration/ok-gas", code: "RG-KG", title: "OK Gas" },
+  { path: "registration/contractor-electric", code: "RG-CE", title: "Kontraktor Elektrik" },
+  { path: "registration/contractor-gas", code: "RG-CG", title: "Kontraktor Gas" },
+] as const;
+
+function registrationRoutes(prefix: "st" | "admin-st"): RouteRecordRaw[] {
+  const base = prefix === "admin-st" ? "/admin/st" : "/st";
+  const routes: RouteRecordRaw[] = [];
+
+  // Module-owned apply + detail (RG-KE / RG-CE)
+  routes.push(
+    {
+      path: "registration/ok-electric/applications/new",
+      name: `${prefix}-registration-ok-electric-applications-new`,
+      component: StOkElectricApplyView,
+      meta: {
+        requiresAuth: prefix === "admin-st",
+        title: "Permohonan Baharu OK Elektrik — ST",
+        moduleCode: "RG-KE",
+        phase: 1,
+      },
+    },
+    {
+      path: "registration/ok-electric/applications/:id",
+      name: `${prefix}-registration-ok-electric-applications-detail`,
+      component: StOkElectricDetailView,
+      meta: {
+        requiresAuth: prefix === "admin-st",
+        title: "Butiran Permohonan OK Elektrik — ST",
+        moduleCode: "RG-KE",
+        phase: 1,
+      },
+    },
+    {
+      path: "registration/contractor-electric/applications/new",
+      name: `${prefix}-registration-contractor-electric-applications-new`,
+      component: StContractorElectricApplyView,
+      meta: {
+        requiresAuth: prefix === "admin-st",
+        title: "Permohonan Baharu Kontraktor Elektrik — ST",
+        moduleCode: "RG-CE",
+        phase: 1,
+      },
+    },
+    {
+      path: "registration/contractor-electric/applications/:id",
+      name: `${prefix}-registration-contractor-electric-applications-detail`,
+      component: StContractorElectricDetailView,
+      meta: {
+        requiresAuth: prefix === "admin-st",
+        title: "Butiran Permohonan Kontraktor Elektrik — ST",
+        moduleCode: "RG-CE",
+        phase: 1,
+      },
+    },
+  );
+
+  for (const mod of REG_MODULE_META) {
+    const children: Array<{ suffix: string; component: typeof StRegApplicationsView; titleSuffix: string }> = [
+      { suffix: "applications", component: StRegApplicationsView, titleSuffix: "Permohonan" },
+      { suffix: "review", component: StRegReviewView, titleSuffix: "Semakan" },
+      { suffix: "compliance", component: StRegComplianceView, titleSuffix: "Pematuhan" },
+      { suffix: "reports", component: StRegReportsView, titleSuffix: "Laporan" },
+    ];
+    for (const child of children) {
+      const fullPath = `${mod.path}/${child.suffix}`;
+      routes.push({
+        path: fullPath,
+        name: `${prefix}-${fullPath.replace(/\//g, "-")}`,
+        component: child.component,
+        meta: {
+          requiresAuth: prefix === "admin-st",
+          title: `${mod.title} — ${child.titleSuffix} — ST`,
+          moduleCode: mod.code,
+          phase: 1,
+        },
+      });
+    }
+    routes.push({
+      path: mod.path,
+      redirect: `${base}/${mod.path}/applications`,
+    });
+  }
+  return routes;
+}
+
+function serviceWorkspaceRoutes(prefix: "st" | "admin-st"): RouteRecordRaw[] {
+  const base = prefix === "admin-st" ? "/admin/st" : "/st";
+  const routes: RouteRecordRaw[] = [];
+  const screens: ServiceScreen[] = ["applications", "review", "compliance", "reports"];
+
+  for (const mod of Object.values(SERVICE_MODULES)) {
+    const rel = mod.basePath.replace(/^\/st\//, "");
+    for (const screen of screens) {
+      const fullPath = `${rel}/${screen}`;
+      routes.push({
+        path: fullPath,
+        name: `${prefix}-${fullPath.replace(/\//g, "-")}`,
+        component: StServiceWorkspaceView,
+        meta: {
+          requiresAuth: prefix === "admin-st",
+          title: `${mod.code} — ${screen} — ST`,
+          moduleCode: mod.code as ServiceModuleCode,
+          phase: mod.phase,
+          serviceScreen: screen,
+        },
+      });
+    }
+    routes.push({
+      path: rel,
+      redirect: `${base}/${rel}/applications`,
+    });
+  }
+  return routes;
+}
+
+function opsWorkspaceRoutes(prefix: "st" | "admin-st"): RouteRecordRaw[] {
+  const base = prefix === "admin-st" ? "/admin/st" : "/st";
+  const routes: RouteRecordRaw[] = [];
+
+  const leaves: Array<{ code: OpsModuleCode; leaf: string; opsScreen: string; title: string }> = [
+    { code: "PE-ID", leaf: "public-users", opsScreen: "public-users", title: "Pengguna Awam" },
+    { code: "PE-ID", leaf: "staff", opsScreen: "staff", title: "Kakitangan ST" },
+    { code: "PE-ID", leaf: "organisations", opsScreen: "organisations", title: "Entiti Perniagaan" },
+    { code: "PE-ID", leaf: "access", opsScreen: "access", title: "Pengurusan Akses" },
+    { code: "PE-RV", leaf: "payments", opsScreen: "payments", title: "Bayaran & Resit" },
+    { code: "PE-RV", leaf: "reconciliation", opsScreen: "reconciliation", title: "Rekonsiliasi" },
+    { code: "PE-RV", leaf: "reports", opsScreen: "revenue-reports", title: "Laporan Hasil" },
+    { code: "PE-SV", leaf: "schedule", opsScreen: "schedule", title: "Penjadualan" },
+    { code: "PE-SV", leaf: "inspections", opsScreen: "inspections", title: "Pemeriksaan" },
+    { code: "PE-SV", leaf: "reports", opsScreen: "visit-reports", title: "Laporan Lawatan" },
+    { code: "PE-JK", leaf: "queue", opsScreen: "queue", title: "Senarai JK" },
+    { code: "PE-JK", leaf: "decisions", opsScreen: "decisions", title: "Minit & Keputusan" },
+  ];
+
+  for (const item of leaves) {
+    const rel = `${OPS_MODULES[item.code].basePath.replace(/^\/st\//, "")}/${item.leaf}`;
+    routes.push({
+      path: rel,
+      name: `${prefix}-${rel.replace(/\//g, "-")}`,
+      component: StOpsWorkspaceView,
+      meta: {
+        requiresAuth: prefix === "admin-st",
+        title: `${item.title} — ST`,
+        moduleCode: item.code,
+        phase: 1,
+        opsScreen: item.opsScreen,
+      },
+    });
+  }
+
+  for (const mod of Object.values(OPS_MODULES)) {
+    const rel = mod.basePath.replace(/^\/st\//, "");
+    const first = leaves.find((l) => l.code === mod.code);
+    if (first) {
+      routes.push({
+        path: rel,
+        redirect: `${base}/${rel}/${first.leaf}`,
+      });
+    }
+  }
+
+  return routes;
+}
+
+function analyticsWorkspaceRoutes(prefix: "st" | "admin-st"): RouteRecordRaw[] {
+  return Object.entries(ANALYTICS_SCREENS).map(([key, def]) => ({
+    path: def.path,
+    name: `${prefix}-${def.path.replace(/\//g, "-")}`,
+    component: StAnalyticsWorkspaceView,
+    meta: {
+      requiresAuth: prefix === "admin-st",
+      title: `${key} — ST`,
+      analyticsScreen: key,
+      phase: 1,
+    },
+  }));
+}
+
+function adminWorkspaceRoutes(prefix: "st" | "admin-st"): RouteRecordRaw[] {
+  return Object.entries(ADMIN_SCREENS).map(([key, def]) => ({
+    path: def.path,
+    name: `${prefix}-${def.path.replace(/\//g, "-")}`,
+    component: StAdminWorkspaceView,
+    meta: {
+      requiresAuth: prefix === "admin-st",
+      title: `${key} — ST`,
+      adminScreen: key,
+      phase: 1,
+    },
+  }));
+}
+
+// Guards the ST portal: requires Sanctum auth and a valid ST role.
+async function stAuthGuard() {
+  const auth = useAuthStore();
+  await auth.initialize();
   const session = useStSessionStore();
-  if (!session.currentPersonaId) return { path: "/st/login" };
+  session.syncFromAuth();
+  if (!auth.isAuthenticated || !session.currentPersona) {
+    return { path: "/st/login" };
+  }
   return true;
 }
+
+// CMS /admin/st pages sync ST session from the authenticated CMS user.
+function stAdminBootstrap() {
+  useStSessionStore().syncFromAuth();
+  return true;
+}
+
+const stAdminPlaceholderRoutes: RouteRecordRaw[] = staffMenuLeafRoutes()
+  .filter((leaf) => !ST_PHASE2_IMPLEMENTED.has(leaf.path))
+  .map((leaf) => ({
+    path: leaf.path,
+    name: `admin-st-${leaf.path.replace(/\//g, "-")}`,
+    component: StComingSoonView,
+    meta: {
+      requiresAuth: true,
+      title: `${leaf.title} — ST`,
+      moduleCode: leaf.moduleCode,
+      phase: leaf.phase,
+    },
+  }));
+
+const stAdminRoutes: RouteRecordRaw = {
+  path: "/admin/st",
+  component: AdminLayoutShell,
+  meta: { requiresAuth: true },
+  beforeEnter: stAdminBootstrap,
+  children: [
+    { path: "", redirect: "/admin/st/dashboard" },
+    { path: "dashboard", name: "admin-st-dashboard", component: StDashboardView, meta: { requiresAuth: true, title: "Papan Pemuka — ST" } },
+    { path: "inbox", name: "admin-st-inbox", component: StInboxView, meta: { requiresAuth: true, title: "Peti Tugasan — ST" } },
+    { path: "notifications", name: "admin-st-notifications", component: StNotificationsView, meta: { requiresAuth: true, title: "Notifikasi — ST" } },
+    { path: "search", name: "admin-st-search", component: StSearchView, meta: { requiresAuth: true, title: "Carian & Semakan Status — ST" } },
+    ...registrationRoutes("admin-st"),
+    ...serviceWorkspaceRoutes("admin-st"),
+    ...opsWorkspaceRoutes("admin-st"),
+    ...analyticsWorkspaceRoutes("admin-st"),
+    ...adminWorkspaceRoutes("admin-st"),
+    ...stAdminPlaceholderRoutes,
+  ],
+};
 
 const legacyAdminPaths = [
   "/login",
@@ -215,6 +506,9 @@ const router = createRouter({
       redirect: (to: RouteLocationGeneric) => `/admin${to.fullPath}`,
     })),
 
+    // ── Sistem Digital ST under CMS admin (/admin/st/*) ──
+    stAdminRoutes,
+
     // ── Suruhanjaya Tenaga (ST) D11 prototype ──
     { path: "/st/login", name: "st-login", component: StLoginView, meta: { title: "Log Masuk — Suruhanjaya Tenaga" } },
     {
@@ -231,6 +525,25 @@ const router = createRouter({
         { path: "applications/:id/pay/:kind", name: "st-payment", component: FpxPaymentView, meta: { title: "Pembayaran — ST" } },
         { path: "applications/:id/certificate", name: "st-certificate", component: CertificateView, meta: { title: "Sijil Digital — ST" } },
         { path: "notifications", name: "st-notifications", component: StNotificationsView, meta: { title: "Notifikasi — ST" } },
+        { path: "search", name: "st-search", component: StSearchView, meta: { title: "Carian & Semakan Status — ST" } },
+        ...registrationRoutes("st"),
+        ...serviceWorkspaceRoutes("st"),
+        ...opsWorkspaceRoutes("st"),
+        ...analyticsWorkspaceRoutes("st"),
+        ...adminWorkspaceRoutes("st"),
+        // Any leftover menu leaves (should be empty once workspace covers all)
+        ...staffMenuLeafRoutes()
+          .filter((leaf) => !ST_PHASE2_IMPLEMENTED.has(leaf.path))
+          .map((leaf) => ({
+            path: leaf.path,
+            name: `st-${leaf.path.replace(/\//g, "-")}`,
+            component: StComingSoonView,
+            meta: {
+              title: `${leaf.title} — ST`,
+              moduleCode: leaf.moduleCode,
+              phase: leaf.phase,
+            },
+          })),
       ],
     },
 

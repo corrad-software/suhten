@@ -9,7 +9,9 @@ export type PersonaRole =
   | "employer"
   | "sos" // Seksyen Operasi Perkhidmatan (service-ops clerk)
   | "technical" // Pegawai Teknikal
-  | "approver"; // Pelulus
+  | "approver" // Pelulus
+  | "committee" // Ahli Jawatankuasa (PE-JK)
+  | "admin"; // Pentadbir Sistem
 
 export type CompetencyCategory = "JPE" | "JEK" | "PE" | "PJ" | "PW" | "PK";
 
@@ -62,6 +64,8 @@ export interface Persona {
   title?: string; // e.g. "Pegawai Teknikal Kanan"
 }
 
+export type Gender = "male" | "female";
+
 export interface ApplicantProfile {
   fullName: string;
   icNumber: string;
@@ -70,6 +74,7 @@ export interface ApplicantProfile {
   address: string;
   phone: string;
   email: string;
+  gender?: Gender;
 }
 
 export interface EmployerRef {

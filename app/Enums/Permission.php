@@ -60,6 +60,15 @@ class Permission
     // Audit
     const AUDIT_READ = 'audit.read';
 
+    // ST Registration (RG-KE / RG-CE Phase 3)
+    const REGISTRATION_VIEW = 'registration.view';
+
+    const REGISTRATION_CREATE = 'registration.create';
+
+    const REGISTRATION_EDIT = 'registration.edit';
+
+    const REGISTRATION_DELETE = 'registration.delete';
+
     public static function all(): array
     {
         return [
@@ -71,6 +80,7 @@ class Permission
             self::SETTINGS_VIEW, self::SETTINGS_EDIT,
             self::MENUS_VIEW, self::MENUS_EDIT,
             self::AUDIT_READ,
+            self::REGISTRATION_VIEW, self::REGISTRATION_CREATE, self::REGISTRATION_EDIT, self::REGISTRATION_DELETE,
         ];
     }
 }

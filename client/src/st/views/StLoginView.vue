@@ -1,96 +1,153 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
-import { ArrowRight, Zap } from "lucide-vue-next";
+import { Zap, ArrowRight, AlertCircle, Eye, EyeOff } from "lucide-vue-next";
 
+import { useLocale } from "@/composables/useLocale";
+import { useAuthStore } from "@/stores/auth";
+import { useSiteStore } from "@/stores/site";
+import { useUiThemeStore } from "@/stores/uiTheme";
+import { API_BASE_URL } from "@/env";
 import { useStSessionStore } from "../stores/session";
-import { DEMO_PASSWORD, PERSONAS, ROLE_LABEL } from "../mock/personas";
-import type { PersonaRole } from "../types";
 
 const router = useRouter();
+const auth = useAuthStore();
+const site = useSiteStore();
 const session = useStSessionStore();
+const uiTheme = useUiThemeStore();
+const { t } = useLocale();
 
-const selectedId = ref(PERSONAS[0].id);
-const password = ref(DEMO_PASSWORD);
+const email = ref("");
+const password = ref("");
+const error = ref("");
+const showPassword = ref(false);
+const loading = ref(false);
 
-const roleOrder: PersonaRole[] = ["applicant", "employer", "sos", "technical", "approver"];
-const grouped = computed(() =>
-  roleOrder.map((role) => ({
-    role,
-    label: ROLE_LABEL[role],
-    personas: PERSONAS.filter((p) => p.role === role),
-  })).filter((g) => g.personas.length > 0),
-);
+function resolveUrl(url: string) {
+  if (!url) return "";
+  if (url.startsWith("http")) return url;
+  return `${API_BASE_URL}${url}`;
+}
 
-const selectedPersona = computed(() => PERSONAS.find((p) => p.id === selectedId.value));
-
-onMounted(() => {
-  if (session.currentPersona) router.replace(session.homeRoute());
+onMounted(async () => {
+  if (!site.initialized) await site.load();
+  await auth.initialize();
+  session.syncFromAuth();
+  if (auth.isAuthenticated && session.currentPersona) {
+    router.replace(session.homeRoute());
+  }
 });
 
-function submit() {
-  session.loginAs(selectedId.value);
-  router.push(session.homeRoute());
+async function submit() {
+  error.value = "";
+  loading.value = true;
+  try {
+    await session.loginWithCredentials(email.value.trim(), password.value);
+    router.push(session.homeRoute());
+  } catch (e) {
+    error.value =
+      e instanceof Error && e.message === "ST_UNAUTHORIZED"
+        ? t("st.login.unauthorized")
+        : e instanceof Error
+          ? e.message
+          : t("login.failed");
+  } finally {
+    loading.value = false;
+  }
 }
 </script>
 
 <template>
-  <div data-theme-color="st" class="flex min-h-screen flex-col items-center justify-center bg-[#eef3f8] px-4">
-    <div class="w-full max-w-[420px]">
-      <div class="mb-6 flex flex-col items-center gap-2">
-        <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--accent-600)] to-[var(--accent-500)] shadow-md">
-          <Zap class="h-6 w-6 text-white" />
-        </div>
-        <div class="text-center">
-          <h1 class="text-lg font-semibold text-slate-900">Suruhanjaya Tenaga</h1>
-          <p class="text-xs uppercase tracking-wider text-slate-400">Sistem Pendaftaran Elektrik</p>
-        </div>
+  <div data-theme-color="st" class="flex min-h-screen flex-col items-center justify-center bg-[#f6f9fc] px-4">
+    <div class="w-full max-w-[400px]">
+      <!-- Language -->
+      <div class="mb-4 flex justify-center gap-2">
+        <button
+          type="button"
+          class="rounded-md border px-3 py-1 text-xs font-medium transition-colors"
+          :class="uiTheme.locale === 'bm' ? 'border-[var(--accent-500)] bg-[var(--accent-50)] text-[var(--accent-700)]' : 'border-slate-200 text-slate-600 hover:border-slate-300'"
+          @click="uiTheme.setLocale('bm')"
+        >
+          {{ t('theme.lang.bm') }}
+        </button>
+        <button
+          type="button"
+          class="rounded-md border px-3 py-1 text-xs font-medium transition-colors"
+          :class="uiTheme.locale === 'bi' ? 'border-[var(--accent-500)] bg-[var(--accent-50)] text-[var(--accent-700)]' : 'border-slate-200 text-slate-600 hover:border-slate-300'"
+          @click="uiTheme.setLocale('bi')"
+        >
+          {{ t('theme.lang.bi') }}
+        </button>
       </div>
 
-      <div class="rounded-xl border border-slate-200 bg-white px-8 pb-8 pt-7 shadow-sm">
-        <h2 class="mb-1 text-center text-base font-semibold text-slate-900">Log Masuk Demo</h2>
-        <p class="mb-6 text-center text-[13px] text-slate-500">Pilih persona untuk pembentangan prototaip</p>
+      <!-- Logo -->
+      <div class="mb-7 flex flex-col items-center gap-2">
+        <div v-if="site.siteIconUrl" class="flex h-10 items-center justify-center overflow-hidden">
+          <img :src="resolveUrl(site.siteIconUrl)" alt="Site logo" class="h-full w-auto object-contain" />
+        </div>
+        <div v-else class="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--accent-600)] to-[var(--accent-500)] shadow-sm">
+          <Zap class="h-5 w-5 text-white" />
+        </div>
+        <p class="text-sm font-semibold text-[#1a1f36]">Suruhanjaya Tenaga</p>
+      </div>
+
+      <!-- Card -->
+      <div class="rounded-lg border border-[#e3e8ee] bg-white px-10 pb-10 pt-8 shadow-[0_2px_4px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.06)]">
+        <h1 class="mb-1 text-center text-xl font-semibold tracking-tight text-[#1a1f36]">{{ t('login.title') }}</h1>
+        <p class="mb-8 text-center text-[13px] text-[#697386]">{{ t('st.login.subtitle') }}</p>
 
         <form class="space-y-5" @submit.prevent="submit">
           <div class="space-y-1.5">
-            <label class="text-[13px] font-medium text-slate-700">Pengguna (mengikut peranan)</label>
-            <select
-              v-model="selectedId"
-              class="w-full rounded-md border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-[var(--accent-500)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]/30"
-            >
-              <optgroup v-for="g in grouped" :key="g.role" :label="g.label">
-                <option v-for="p in g.personas" :key="p.id" :value="p.id">
-                  {{ p.name }} — {{ p.title }}
-                </option>
-              </optgroup>
-            </select>
+            <label class="text-[13px] font-medium text-[#1a1f36]">{{ t('login.email') }}</label>
+            <input
+              v-model="email"
+              type="email"
+              autocomplete="username"
+              required
+              class="w-full rounded-md border border-[#d8dee4] bg-white px-3 py-[9px] text-sm text-[#1a1f36] shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-shadow placeholder:text-[#a3acb9] focus:border-[var(--accent-500)] focus:outline-hidden focus:ring-2 focus:ring-[var(--accent-ring)]/30"
+              :placeholder="t('login.emailPlaceholder')"
+            />
           </div>
 
           <div class="space-y-1.5">
-            <label class="text-[13px] font-medium text-slate-700">Kata Laluan</label>
-            <input
-              v-model="password"
-              type="text"
-              class="w-full rounded-md border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-[var(--accent-500)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]/30"
-            />
-            <p class="text-[11px] text-slate-400">Kata laluan demo: <span class="font-mono">{{ DEMO_PASSWORD }}</span></p>
+            <label class="text-[13px] font-medium text-[#1a1f36]">{{ t('login.password') }}</label>
+            <div class="relative">
+              <input
+                v-model="password"
+                :type="showPassword ? 'text' : 'password'"
+                autocomplete="current-password"
+                required
+                class="w-full rounded-md border border-[#d8dee4] bg-white px-3 py-[9px] pr-10 text-sm text-[#1a1f36] shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-shadow placeholder:text-[#a3acb9] focus:border-[var(--accent-500)] focus:outline-hidden focus:ring-2 focus:ring-[var(--accent-ring)]/30"
+                :placeholder="t('login.passwordPlaceholder')"
+              />
+              <button
+                type="button"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-[#a3acb9] transition-colors hover:text-[#697386]"
+                @click="showPassword = !showPassword"
+              >
+                <EyeOff v-if="showPassword" class="h-4 w-4" />
+                <Eye v-else class="h-4 w-4" />
+              </button>
+            </div>
           </div>
 
-          <div v-if="selectedPersona" class="rounded-md bg-[var(--accent-50)] px-3 py-2 text-[12px] text-[var(--accent-700)]">
-            Log masuk sebagai <strong>{{ ROLE_LABEL[selectedPersona.role] }}</strong>
+          <div v-if="error" class="flex items-center gap-2 rounded-md border border-[#f8d7da] bg-[#fdf2f2] px-3.5 py-2.5 text-[13px] text-[#cd3d64]">
+            <AlertCircle class="h-4 w-4 shrink-0" />
+            {{ error }}
           </div>
 
           <button
             type="submit"
-            class="flex w-full items-center justify-center gap-2 rounded-md bg-[var(--accent-600)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--accent-700)]"
+            class="flex w-full items-center justify-center gap-2 rounded-md bg-[var(--accent-600)] px-4 py-[9px] text-sm font-medium text-white shadow-[0_1px_2px_rgba(0,0,0,0.08),0_2px_4px_rgba(0,0,0,0.04)] transition-all hover:bg-[var(--accent-700)] disabled:opacity-60"
+            :disabled="loading"
           >
-            Log Masuk
-            <ArrowRight class="h-4 w-4" />
+            {{ loading ? t('login.signingIn') : t('login.continue') }}
+            <ArrowRight v-if="!loading" class="h-4 w-4" />
           </button>
         </form>
       </div>
 
-      <p class="mt-6 text-center text-[12px] text-slate-400">Prototaip Appendix D11 · Demo dalaman</p>
+      <p class="mt-8 text-center text-[12px] text-[#8792a2]">&copy; {{ new Date().getFullYear() }} Suruhanjaya Tenaga</p>
     </div>
   </div>
 </template>

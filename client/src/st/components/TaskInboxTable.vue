@@ -5,11 +5,12 @@ import { Inbox, Lock, Stamp } from "lucide-vue-next";
 
 import { useToast } from "@/composables/useToast";
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
+import { useLocale } from "@/composables/useLocale";
 
 import type { PersonaRole, TaskTab } from "../types";
 import { useStWorkflowStore } from "../stores/workflow";
 import { workflowShort } from "../status";
-import StatusBadge from "./StatusBadge.vue";
+import RegStatusBadge from "./RegStatusBadge.vue";
 import SlaIndicator from "./SlaIndicator.vue";
 import DigitalSignatureModal from "./DigitalSignatureModal.vue";
 
@@ -19,6 +20,7 @@ const router = useRouter();
 const workflow = useStWorkflowStore();
 const toast = useToast();
 const { confirm } = useConfirmDialog();
+const { ts } = useLocale();
 
 const tab = ref<TaskTab>("new");
 
@@ -49,9 +51,9 @@ function toggleSelectAll() {
 async function startBulkApprove() {
   if (selectedIds.value.length === 0) return;
   const ok = await confirm({
-    title: "Lulus & tandatangan secara pukal?",
-    message: `${selectedIds.value.length} permohonan akan diluluskan dan ditandatangani secara digital dengan satu PIN.`,
-    confirmText: "Teruskan",
+    title: ts("st.inbox.bulkTitle"),
+    message: ts("st.inbox.bulkMsg", { n: selectedIds.value.length }),
+    confirmText: ts("st.inbox.continue"),
   });
   if (ok) signOpen.value = true;
 }
@@ -67,11 +69,11 @@ function onBulkSigned(pin: string) {
   selectedIds.value = [];
 }
 
-const TABS: { key: TaskTab; label: string }[] = [
-  { key: "new", label: "Baharu" },
-  { key: "query", label: "Pertanyaan" },
-  { key: "completed", label: "Selesai" },
-];
+const TABS = computed(() => [
+  { key: "new" as TaskTab, label: ts("st.inbox.tabNew") },
+  { key: "query" as TaskTab, label: ts("st.inbox.tabQuery") },
+  { key: "completed" as TaskTab, label: ts("st.inbox.tabDone") },
+]);
 
 function countFor(key: TaskTab) {
   return inbox.value[key].length;
@@ -135,28 +137,28 @@ function takeAndOpen(applicationId: string) {
           'flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium',
           atLimit ? 'bg-rose-50 text-rose-700' : 'bg-slate-100 text-slate-600',
         ]"
-        title="Bilangan tugasan aktif (had maksimum 3)"
+        :title="ts('st.common.activeTasks')"
       >
         <Lock v-if="atLimit" class="h-3.5 w-3.5" />
-        Tugasan aktif: {{ activeCount }} / {{ workflow.maxActiveTasks }}
+        {{ ts("st.common.activeTasks") }}: {{ activeCount }} / {{ workflow.maxActiveTasks }}
       </div>
     </div>
 
     <!-- Bulk approval bar -->
     <div v-if="canBulk && selectedIds.length" class="flex items-center justify-between gap-3 border-b border-[var(--accent-200)] bg-[var(--accent-50)] px-4 py-2.5">
-      <span class="text-sm font-medium text-[var(--accent-700)]">{{ selectedIds.length }} permohonan dipilih</span>
+      <span class="text-sm font-medium text-[var(--accent-700)]">{{ ts("st.inbox.selected", { n: selectedIds.length }) }}</span>
       <button
         class="flex items-center gap-1.5 rounded-md bg-[var(--accent-600)] px-3 py-1.5 text-xs font-medium text-white hover:bg-[var(--accent-700)]"
         @click="startBulkApprove"
       >
-        <Stamp class="h-3.5 w-3.5" /> Lulus & Tandatangan Pukal
+        <Stamp class="h-3.5 w-3.5" /> {{ ts("st.inbox.bulkApprove") }}
       </button>
     </div>
 
     <!-- Empty state -->
     <div v-if="items.length === 0" class="flex flex-col items-center gap-2 px-4 py-12 text-slate-400">
       <Inbox class="h-8 w-8" />
-      <p class="text-sm">Tiada tugasan dalam tab ini.</p>
+      <p class="text-sm">{{ ts("st.inbox.empty") }}</p>
     </div>
 
     <!-- Table -->
@@ -166,12 +168,12 @@ function takeAndOpen(applicationId: string) {
           <th v-if="canBulk" class="px-4 py-2 font-medium">
             <input type="checkbox" :checked="allSelected" class="h-4 w-4 rounded border-slate-300 text-[var(--accent-600)] focus:ring-[var(--accent-ring)]" @change="toggleSelectAll" />
           </th>
-          <th class="px-4 py-2 font-medium">No. Rujukan</th>
-          <th class="px-4 py-2 font-medium">Pemohon</th>
-          <th class="px-4 py-2 font-medium">Jenis</th>
-          <th class="px-4 py-2 font-medium">Status</th>
-          <th class="px-4 py-2 font-medium">Piagam (SLA)</th>
-          <th class="px-4 py-2 text-right font-medium">Tindakan</th>
+          <th class="px-4 py-2 font-medium">{{ ts("st.common.refNo") }}</th>
+          <th class="px-4 py-2 font-medium">{{ ts("st.common.applicant") }}</th>
+          <th class="px-4 py-2 font-medium">{{ ts("st.common.type") }}</th>
+          <th class="px-4 py-2 font-medium">{{ ts("st.common.status") }}</th>
+          <th class="px-4 py-2 font-medium">SLA</th>
+          <th class="px-4 py-2 text-right font-medium">{{ ts("st.common.action") }}</th>
         </tr>
       </thead>
       <tbody>
@@ -190,7 +192,7 @@ function takeAndOpen(applicationId: string) {
           </td>
           <td class="px-4 py-3">
             <div class="flex items-center gap-2">
-              <span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-slate-100 px-1 text-[10px] font-semibold text-slate-500" title="Giliran FIFO">{{ i + 1 }}</span>
+              <span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-slate-100 px-1 text-[10px] font-semibold text-slate-500" :title="ts('st.common.fifo')">{{ i + 1 }}</span>
               <span class="font-mono text-xs text-slate-700">{{ item.refNo }}</span>
             </div>
           </td>
@@ -198,7 +200,7 @@ function takeAndOpen(applicationId: string) {
           <td class="px-4 py-3">
             <span class="rounded bg-slate-100 px-1.5 py-0.5 text-[11px] font-medium text-slate-600">{{ workflowShort(item.workflowType) }}</span>
           </td>
-          <td class="px-4 py-3"><StatusBadge :status="item.status" /></td>
+          <td class="px-4 py-3"><RegStatusBadge :status="item.status" /></td>
           <td class="px-4 py-3">
             <SlaIndicator :stage-entered-at="item.stageEnteredAt" :target-hours="item.slaTargetHours" :role="role" />
           </td>
@@ -215,14 +217,14 @@ function takeAndOpen(applicationId: string) {
               ]"
               @click="takeAndOpen(item.applicationId)"
             >
-              {{ isTaken(item.applicationId) ? "Buka" : atLimit ? "Had penuh" : "Ambil & Buka" }}
+              {{ isTaken(item.applicationId) ? ts("st.common.open") : atLimit ? ts("st.common.limitFull") : ts("st.common.takeOpen") }}
             </button>
             <button
               v-else
               class="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50"
               @click="open(item.applicationId)"
             >
-              Buka
+              {{ ts("st.common.open") }}
             </button>
           </td>
         </tr>
