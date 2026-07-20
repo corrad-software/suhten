@@ -1,5 +1,5 @@
 import type { Component } from "vue";
-import { Bell, FilePlus2, FileText, Gauge, ShieldCheck } from "lucide-vue-next";
+import { Bell, Building2, FilePlus2, FileText, Gauge, ShieldCheck } from "lucide-vue-next";
 
 import type { PersonaRole } from "../types";
 import { KAKITANGAN_ROLES, staffMenuFor } from "./staff-menu";
@@ -7,6 +7,8 @@ import { KAKITANGAN_ROLES, staffMenuFor } from "./staff-menu";
 export interface PortalMenuItem {
   id: string;
   label: string;
+  /** Short label for the mobile bottom navigation bar. */
+  shortLabel?: string;
   to: string;
   icon: Component;
   phase?: 1 | 2;
@@ -19,8 +21,8 @@ export interface PortalMenuGroup {
   items: PortalMenuItem[];
 }
 
-const DASHBOARD: PortalMenuItem = { id: "dashboard", label: "Papan Pemuka", to: "/st/dashboard", icon: Gauge };
-const NOTIFICATIONS: PortalMenuItem = { id: "notifications", label: "Notifikasi", to: "/st/notifications", icon: Bell };
+const DASHBOARD: PortalMenuItem = { id: "dashboard", label: "Papan Pemuka", shortLabel: "Utama", to: "/st/dashboard", icon: Gauge };
+const NOTIFICATIONS: PortalMenuItem = { id: "notifications", label: "Notifikasi", shortLabel: "Notifikasi", to: "/st/notifications", icon: Bell };
 
 /** Public portal menu for external users (Pemohon / Majikan). */
 function publicMenuFor(role: PersonaRole): PortalMenuGroup[] {
@@ -31,8 +33,8 @@ function publicMenuFor(role: PersonaRole): PortalMenuGroup[] {
         label: "",
         items: [
           DASHBOARD,
-          { id: "applications", label: "Permohonan Saya", to: "/st/applications", icon: FileText },
-          { id: "new", label: "Permohonan Baharu", to: "/st/applications/new", icon: FilePlus2 },
+          { id: "applications", label: "Permohonan Saya", shortLabel: "Permohonan", to: "/st/applications", icon: FileText },
+          { id: "new", label: "Permohonan Baharu", shortLabel: "Baharu", to: "/st/applications/new", icon: FilePlus2 },
           NOTIFICATIONS,
         ],
       },
@@ -46,7 +48,8 @@ function publicMenuFor(role: PersonaRole): PortalMenuGroup[] {
         label: "",
         items: [
           DASHBOARD,
-          { id: "applications", label: "Pengesahan Lantikan", to: "/st/applications", icon: ShieldCheck },
+          { id: "applications", label: "Pengesahan Lantikan", shortLabel: "Lantikan", to: "/st/applications", icon: ShieldCheck },
+          { id: "employer-profile", label: "Maklumat Majikan", shortLabel: "Majikan", to: "/st/majikan/profil", icon: Building2 },
           NOTIFICATIONS,
         ],
       },
