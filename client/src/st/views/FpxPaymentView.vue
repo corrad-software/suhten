@@ -32,7 +32,7 @@ const payment = computed(() => {
 function onPaid(bank: string) {
   if (!app.value) return;
   const action = kind.value === "processing" ? "pay_processing" : "pay_registration";
-  workflow.transition(app.value.id, action, { bank });
+  workflow.transition(app.value.id, action, { bank, payment: { provider: bank } });
   paid.value = true;
   toast.success("Bayaran berjaya", `${title.value} telah dibayar.`);
 }
@@ -49,7 +49,7 @@ function onPaid(bank: string) {
       <p class="text-sm text-slate-500">{{ workflowLabel(app.workflowType) }} · {{ app.refNo }}</p>
     </div>
 
-    <FpxPaymentScreen v-if="!paid" :amount="amount" :title="title" @paid="onPaid" />
+    <FpxPaymentScreen v-if="!paid" :amount="amount" :title="title" :reference="app.refNo" @paid="onPaid" />
 
     <template v-else-if="payment">
       <ReceiptCard :payment="payment" :ref-no="app.refNo" :payer-name="app.applicant.fullName" />
