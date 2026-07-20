@@ -44,6 +44,8 @@ export interface RegistrationApplication {
   assignedOfficer?: string;
   feeAmount?: number;
   note?: string;
+  /** Engine workflow instance UUID when linked (RG-KE → pfd-rg-ke-na, RG-CE → pfd-rg-ce-na). */
+  workflowInstanceId?: string;
   /** Extended detail from module wizards (RG-KE / RG-CE). */
   detail?: {
     gender?: Gender;

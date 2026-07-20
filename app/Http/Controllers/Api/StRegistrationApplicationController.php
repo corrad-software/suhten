@@ -7,6 +7,7 @@ use App\Http\Requests\StoreStRegistrationApplicationRequest;
 use App\Http\Requests\UpdateStRegistrationApplicationRequest;
 use App\Http\Traits\ApiResponse;
 use App\Models\StRegistrationApplication;
+use App\Services\RegistrationWorkflowStarter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -14,6 +15,10 @@ use Illuminate\Support\Str;
 class StRegistrationApplicationController extends Controller
 {
     use ApiResponse;
+
+    public function __construct(
+        protected RegistrationWorkflowStarter $workflowStarter,
+    ) {}
 
     /**
      * List registration applications with pagination, search, and filters.
@@ -101,8 +106,9 @@ class StRegistrationApplicationController extends Controller
         $data['stage_entered_at'] = $data['stage_entered_at'] ?? now();
 
         $row = StRegistrationApplication::create($data);
+        $this->workflowStarter->startForApplication($row);
 
-        return $this->sendCreated($row);
+        return $this->sendCreated($row->fresh());
     }
 
     /**

@@ -69,6 +69,9 @@ class Permission
 
     const REGISTRATION_DELETE = 'registration.delete';
 
+    // AINA — User Chat
+    const CHAT_USE = 'chat.use';
+
     public static function all(): array
     {
         return [
@@ -81,6 +84,7 @@ class Permission
             self::MENUS_VIEW, self::MENUS_EDIT,
             self::AUDIT_READ,
             self::REGISTRATION_VIEW, self::REGISTRATION_CREATE, self::REGISTRATION_EDIT, self::REGISTRATION_DELETE,
+            self::CHAT_USE,
         ];
     }
 }

@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
 import { useToast } from "@/composables/useToast";
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
 
-import type { AppDocument, Application } from "../types";
+import type { AppDocument, Application, PersonaRole } from "../types";
+import { ROLE_LABEL } from "../mock/personas";
 import { useStSessionStore } from "../stores/session";
 import { useStWorkflowStore, type WorkflowAction } from "../stores/workflow";
 import DigitalSignatureModal from "./DigitalSignatureModal.vue";
@@ -23,11 +24,14 @@ interface ActionBtn {
 
 const props = defineProps<{ application: Application }>();
 
+const route = useRoute();
 const router = useRouter();
 const session = useStSessionStore();
 const workflow = useStWorkflowStore();
 const toast = useToast();
 const { confirm } = useConfirmDialog();
+
+const portalBase = computed(() => (route.path.startsWith("/admin/st") ? "/admin/st" : "/st"));
 
 const signOpen = ref(false);
 const notePrompt = ref<{ action: ActionKey; label: string } | null>(null);
@@ -62,13 +66,13 @@ const actions = computed<ActionBtn[]>(() => {
   // Applicant-owned actions
   if (mine) {
     if (status === "awaiting_processing_payment")
-      list.push({ key: "pay_processing", label: "Bayar Yuran Pemprosesan", variant: "primary", to: `/st/applications/${props.application.id}/pay/processing` });
+      list.push({ key: "pay_processing", label: "Bayar Yuran Pemprosesan", variant: "primary", to: `${portalBase.value}/applications/${props.application.id}/pay/processing` });
     if (status === "awaiting_registration_payment")
-      list.push({ key: "pay_registration", label: "Bayar Yuran Pendaftaran", variant: "primary", to: `/st/applications/${props.application.id}/pay/registration` });
+      list.push({ key: "pay_registration", label: "Bayar Yuran Pendaftaran", variant: "primary", to: `${portalBase.value}/applications/${props.application.id}/pay/registration` });
     if (status === "query_applicant")
       list.push({ key: "resubmit", label: "Hantar Semula", variant: "primary", needsNote: true });
     if (status === "certificate_issued")
-      list.push({ key: "submit", label: "Lihat Sijil", variant: "primary", to: `/st/applications/${props.application.id}/certificate` });
+      list.push({ key: "submit", label: "Lihat Sijil", variant: "primary", to: `${portalBase.value}/applications/${props.application.id}/certificate` });
     if (["awaiting_employer_confirm", "awaiting_processing_payment", "query_applicant", "awaiting_registration_payment"].includes(status))
       list.push({ key: "withdraw", label: "Tarik Balik", variant: "outline" });
     return list;
@@ -93,6 +97,24 @@ const actions = computed<ActionBtn[]>(() => {
   }
 
   return list;
+});
+
+/** Which back-office role can act on the current status (if any). */
+const requiredRole = computed<PersonaRole | null>(() => {
+  const status = props.application.status;
+  if (status === "sos_review") return "sos";
+  if (status === "technical_review") return "technical";
+  if (status === "pending_approval") return "approver";
+  return null;
+});
+
+const idleHint = computed(() => {
+  if (actions.value.length > 0) return null;
+  const need = requiredRole.value;
+  if (!need) {
+    return "Tiada tindakan untuk peranan anda pada status permohonan ini.";
+  }
+  return `Permohonan ini menunggu ${ROLE_LABEL[need]}.`;
 });
 
 function variantClass(v: ActionBtn["variant"]) {
@@ -159,9 +181,14 @@ function onSigned(pin: string) {
 }
 
 function doTransition(action: ActionKey, payload: { note?: string } = {}) {
+  const actedAsTechnical = session.role === "technical";
   try {
     workflow.transition(props.application.id, action, payload);
     toast.success("Berjaya", "Tindakan telah direkodkan.");
+    // After Technical processes a task, return to Peti Tugasan (Baharu).
+    if (actedAsTechnical && ["forward", "reject", "raise_query"].includes(action)) {
+      router.push(`${portalBase.value}/inbox`);
+    }
   } catch (e) {
     toast.error("Gagal", e instanceof Error ? e.message : "Tindakan gagal.");
   }
@@ -179,6 +206,9 @@ function doTransition(action: ActionKey, payload: { note?: string } = {}) {
       {{ btn.label }}
     </button>
   </div>
+  <p v-else-if="idleHint" class="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+    {{ idleHint }}
+  </p>
 
   <DigitalSignatureModal :open="signOpen" @confirm="onSigned" @cancel="signOpen = false" />
 

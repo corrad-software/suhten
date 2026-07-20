@@ -33,6 +33,7 @@ class StRegistrationApplication extends Model
         'fee_amount',
         'note',
         'detail',
+        'workflow_instance_id',
     ];
 
     /**

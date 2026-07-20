@@ -28,6 +28,9 @@ import SettingsView from "@/views/SettingsView.vue";
 import SystemInfoView from "@/views/SystemInfoView.vue";
 import UsersView from "@/views/UsersView.vue";
 import UserEditView from "@/views/UserEditView.vue";
+import WorkflowsListView from "@/views/workflows/WorkflowsListView.vue";
+import WorkflowEditorView from "@/views/workflows/WorkflowEditorView.vue";
+import WorkflowInstancesView from "@/views/workflows/WorkflowInstancesView.vue";
 import StorefrontHomeView from "@/views/StorefrontHomeView.vue";
 import StorefrontPageView from "@/views/StorefrontPageView.vue";
 import AdminLayoutShell from "@/layouts/AdminLayoutShell.vue";
@@ -46,6 +49,7 @@ import FpxPaymentView from "@/st/views/FpxPaymentView.vue";
 import CertificateView from "@/st/views/CertificateView.vue";
 import StNotificationsView from "@/st/views/StNotificationsView.vue";
 import StSearchView from "@/st/views/StSearchView.vue";
+import AinaUserChatView from "@/st/views/aina/AinaUserChatView.vue";
 import StComingSoonView from "@/st/views/StComingSoonView.vue";
 import StRegApplicationsView from "@/st/views/registration/StRegApplicationsView.vue";
 import StRegReviewView from "@/st/views/registration/StRegReviewView.vue";
@@ -78,6 +82,7 @@ const ST_PHASE2_IMPLEMENTED = new Set([
   "inbox",
   "notifications",
   "search",
+  "aina",
   "registration/ok-electric/applications",
   "registration/ok-electric/review",
   "registration/ok-electric/compliance",
@@ -333,8 +338,11 @@ const stAdminRoutes: RouteRecordRaw = {
     { path: "", redirect: "/admin/st/dashboard" },
     { path: "dashboard", name: "admin-st-dashboard", component: StDashboardView, meta: { requiresAuth: true, title: "Papan Pemuka — ST" } },
     { path: "inbox", name: "admin-st-inbox", component: StInboxView, meta: { requiresAuth: true, title: "Peti Tugasan — ST" } },
+    { path: "applications", name: "admin-st-applications", component: StApplicationListView, meta: { requiresAuth: true, title: "Permohonan — ST" } },
+    { path: "applications/:id", name: "admin-st-application-detail", component: StApplicationDetailView, meta: { requiresAuth: true, title: "Butiran Permohonan — ST" } },
     { path: "notifications", name: "admin-st-notifications", component: StNotificationsView, meta: { requiresAuth: true, title: "Notifikasi — ST" } },
     { path: "search", name: "admin-st-search", component: StSearchView, meta: { requiresAuth: true, title: "Carian & Semakan Status — ST" } },
+    { path: "aina", name: "admin-st-aina", component: AinaUserChatView, meta: { requiresAuth: true, title: "AINA — User" } },
     ...registrationRoutes("admin-st"),
     ...serviceWorkspaceRoutes("admin-st"),
     ...opsWorkspaceRoutes("admin-st"),
@@ -414,6 +422,10 @@ const router = createRouter({
     { path: "/admin/development/database-schema", name: "database-schema", component: DatabaseSchemaView, meta: { requiresAuth: true, title: "Database Schema" } },
     { path: "/admin/development/api-explorer", name: "api-explorer", component: ApiManagementView, meta: { requiresAuth: true, title: "API Explorer" } },
     { path: "/admin/development/api-management", redirect: "/admin/development/api-explorer" },
+    { path: "/admin/workflows", name: "workflows", component: WorkflowsListView, meta: { requiresAuth: true, title: "Workflows" } },
+    { path: "/admin/workflows/new", name: "workflow-create", component: WorkflowEditorView, meta: { requiresAuth: true, title: "New Workflow" } },
+    { path: "/admin/workflows/instances", name: "workflow-instances", component: WorkflowInstancesView, meta: { requiresAuth: true, title: "Workflow Instances" } },
+    { path: "/admin/workflows/:id", name: "workflow-edit", component: WorkflowEditorView, meta: { requiresAuth: true, title: "Edit Workflow" } },
     {
       path: "/admin/profile",
       name: "profile",
@@ -526,6 +538,7 @@ const router = createRouter({
         { path: "applications/:id/certificate", name: "st-certificate", component: CertificateView, meta: { title: "Sijil Digital — ST" } },
         { path: "notifications", name: "st-notifications", component: StNotificationsView, meta: { title: "Notifikasi — ST" } },
         { path: "search", name: "st-search", component: StSearchView, meta: { title: "Carian & Semakan Status — ST" } },
+        { path: "aina", name: "st-aina", component: AinaUserChatView, meta: { title: "AINA — User" } },
         ...registrationRoutes("st"),
         ...serviceWorkspaceRoutes("st"),
         ...opsWorkspaceRoutes("st"),
@@ -552,15 +565,33 @@ const router = createRouter({
   ],
 });
 
+function safeInternalRedirect(raw: unknown): string | null {
+  if (typeof raw !== "string" || !raw.startsWith("/") || raw.startsWith("//")) {
+    return null;
+  }
+  // Only allow in-app admin/ST paths (email deep links).
+  if (!raw.startsWith("/admin")) {
+    return null;
+  }
+  return raw;
+}
+
 router.beforeEach(async (to) => {
   const auth = useAuthStore();
   await auth.initialize();
 
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
-    return { name: "login" };
+    return {
+      name: "login",
+      query: { redirect: to.fullPath },
+    };
   }
 
   if (to.meta.guestOnly && auth.isAuthenticated) {
+    const redirect = safeInternalRedirect(to.query.redirect);
+    if (redirect) {
+      return redirect;
+    }
     return { name: "main-dashboard" };
   }
 

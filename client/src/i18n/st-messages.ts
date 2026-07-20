@@ -27,6 +27,7 @@ export type StMessageKey =
   | "st.common.submitted"
   | "st.common.takeOpen"
   | "st.common.limitFull"
+  | "st.common.waitFifo"
   | "st.common.activeTasks"
   | "st.common.fifo"
   // Inbox
@@ -380,6 +381,7 @@ const BM: Record<StMessageKey, string> = {
   "st.common.submitted": "Dihantar",
   "st.common.takeOpen": "Ambil & Buka",
   "st.common.limitFull": "Had penuh",
+  "st.common.waitFifo": "Menunggu giliran",
   "st.common.activeTasks": "Tugasan aktif",
   "st.common.fifo": "Giliran FIFO",
 
@@ -394,7 +396,7 @@ const BM: Record<StMessageKey, string> = {
   "st.inbox.slaGreen": "Dalam tempoh",
   "st.inbox.slaYellow": "Hampir tamat",
   "st.inbox.slaRed": "Melebihi tempoh",
-  "st.inbox.fifoHint": "Giliran disusun FIFO · Had 3 tugasan aktif",
+  "st.inbox.fifoHint": "Giliran FIFO mengikut SLA (terlama dahulu) · Had 3 tugasan aktif",
   "st.inbox.selected": "{n} permohonan dipilih",
   "st.inbox.bulkApprove": "Lulus & Tandatangan Pukal",
   "st.inbox.bulkTitle": "Lulus & tandatangan secara pukal?",
@@ -735,6 +737,7 @@ const BI: Record<StMessageKey, string> = {
   "st.common.submitted": "Submitted",
   "st.common.takeOpen": "Take & Open",
   "st.common.limitFull": "At limit",
+  "st.common.waitFifo": "Waiting in queue",
   "st.common.activeTasks": "Active tasks",
   "st.common.fifo": "FIFO queue",
 
@@ -749,7 +752,7 @@ const BI: Record<StMessageKey, string> = {
   "st.inbox.slaGreen": "On track",
   "st.inbox.slaYellow": "At risk",
   "st.inbox.slaRed": "Overdue",
-  "st.inbox.fifoHint": "FIFO queue · Max 3 active tasks",
+  "st.inbox.fifoHint": "FIFO by SLA (oldest first) · Max 3 active tasks",
   "st.inbox.selected": "{n} applications selected",
   "st.inbox.bulkApprove": "Bulk Approve & Sign",
   "st.inbox.bulkTitle": "Bulk approve & sign?",

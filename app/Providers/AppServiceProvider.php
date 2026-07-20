@@ -2,7 +2,10 @@
 
 namespace App\Providers;
 
+use App\Listeners\SendStaffWorkflowTaskEmail;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
+use SolutionForest\WorkflowEngine\Events\WorkflowWaitingEvent;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +22,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Event::listen(WorkflowWaitingEvent::class, SendStaffWorkflowTaskEmail::class);
     }
 }

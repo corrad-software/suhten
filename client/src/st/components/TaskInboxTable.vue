@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { Inbox, Lock, Stamp } from "lucide-vue-next";
 
 import { useToast } from "@/composables/useToast";
@@ -16,16 +16,21 @@ import DigitalSignatureModal from "./DigitalSignatureModal.vue";
 
 const props = defineProps<{ role: PersonaRole }>();
 
+const route = useRoute();
 const router = useRouter();
 const workflow = useStWorkflowStore();
 const toast = useToast();
 const { confirm } = useConfirmDialog();
 const { ts } = useLocale();
 
+const portalBase = computed(() => (route.path.startsWith("/admin/st") ? "/admin/st" : "/st"));
+
 const tab = ref<TaskTab>("new");
 
 const inbox = computed(() => workflow.inboxFor(props.role));
 const items = computed(() => inbox.value[tab.value]);
+/** SLA FIFO head = oldest stageEnteredAt in Baharu (next claim candidate). */
+const fifoHeadId = computed(() => workflow.fifoHeadId(props.role));
 
 const activeCount = computed(() => workflow.activeCountFor(props.role));
 const atLimit = computed(() => workflow.atActiveLimit(props.role));
@@ -79,28 +84,63 @@ function countFor(key: TaskTab) {
   return inbox.value[key].length;
 }
 
-// Whether this specific application is already taken (assigned to someone).
 function isTaken(applicationId: string): boolean {
   return Boolean(workflow.byId(applicationId)?.assigneePersonaId);
 }
 
+type NewAction = "open" | "take" | "limit" | "wait";
+
+function newActionFor(applicationId: string): NewAction {
+  // Already claimed → Buka (officer can work their 3 active tasks even at capacity).
+  if (isTaken(applicationId)) return "open";
+  // Untaken: only SLA FIFO head (#1 / oldest stage clock) may be claimed.
+  if (fifoHeadId.value !== applicationId) return "wait";
+  if (atLimit.value) return "limit";
+  return "take";
+}
+
+const actionsById = computed(() => {
+  const map = new Map<string, NewAction>();
+  for (const item of items.value) {
+    map.set(item.applicationId, newActionFor(item.applicationId));
+  }
+  return map;
+});
+
+function newActionLabel(action: NewAction): string {
+  if (action === "open") return ts("st.common.open");
+  if (action === "take") return ts("st.common.takeOpen");
+  if (action === "limit") return ts("st.common.limitFull");
+  return ts("st.common.waitFifo");
+}
+
+function newActionClass(action: NewAction): string {
+  if (action === "open") return "border border-slate-300 text-slate-700 hover:bg-slate-50";
+  if (action === "take") return "bg-[var(--accent-600)] text-white hover:bg-[var(--accent-700)]";
+  return "cursor-not-allowed bg-slate-100 text-slate-400";
+}
+
 function open(applicationId: string) {
-  router.push(`/st/applications/${applicationId}`);
+  router.push(`${portalBase.value}/applications/${applicationId}`);
 }
 
 function takeAndOpen(applicationId: string) {
-  // Already taken → just open.
-  if (isTaken(applicationId)) {
+  const action = newActionFor(applicationId);
+  if (action === "open") {
     open(applicationId);
     return;
   }
-  if (atLimit.value) {
+  if (action === "limit") {
     toast.error("Had tugasan dicapai", `Maksimum ${workflow.maxActiveTasks} tugasan aktif pada satu masa. Selesaikan satu dahulu.`);
+    return;
+  }
+  if (action === "wait") {
+    toast.error(ts("st.common.fifo"), ts("st.common.waitFifo"));
     return;
   }
   const ok = workflow.takeTask(applicationId);
   if (!ok) {
-    toast.error("Tidak dapat mengambil tugasan", "Sila cuba lagi.");
+    toast.error("Tidak dapat mengambil tugasan", ts("st.common.waitFifo"));
     return;
   }
   toast.success("Tugasan diambil", "Tugasan kini di bawah tanggungjawab anda.");
@@ -192,7 +232,15 @@ function takeAndOpen(applicationId: string) {
           </td>
           <td class="px-4 py-3">
             <div class="flex items-center gap-2">
-              <span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-slate-100 px-1 text-[10px] font-semibold text-slate-500" :title="ts('st.common.fifo')">{{ i + 1 }}</span>
+              <span
+                :class="[
+                  'flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-semibold',
+                  tab === 'new' && item.applicationId === fifoHeadId
+                    ? 'bg-[var(--accent-600)] text-white'
+                    : 'bg-slate-100 text-slate-500',
+                ]"
+                :title="ts('st.common.fifo')"
+              >{{ i + 1 }}</span>
               <span class="font-mono text-xs text-slate-700">{{ item.refNo }}</span>
             </div>
           </td>
@@ -206,21 +254,16 @@ function takeAndOpen(applicationId: string) {
           </td>
           <td class="px-4 py-3 text-right">
             <button
-              v-if="tab === 'new'"
-              :class="[
-                'rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
-                isTaken(item.applicationId)
-                  ? 'border border-slate-300 text-slate-700 hover:bg-slate-50'
-                  : atLimit
-                    ? 'cursor-not-allowed bg-slate-100 text-slate-400'
-                    : 'bg-[var(--accent-600)] text-white hover:bg-[var(--accent-700)]',
-              ]"
+              v-if="tab === 'new' && actionsById.get(item.applicationId)"
+              :disabled="['wait', 'limit'].includes(actionsById.get(item.applicationId)!)"
+              :title="actionsById.get(item.applicationId) === 'wait' ? ts('st.common.fifo') : undefined"
+              :class="['rounded-md px-3 py-1.5 text-xs font-medium transition-colors', newActionClass(actionsById.get(item.applicationId)!)]"
               @click="takeAndOpen(item.applicationId)"
             >
-              {{ isTaken(item.applicationId) ? ts("st.common.open") : atLimit ? ts("st.common.limitFull") : ts("st.common.takeOpen") }}
+              {{ newActionLabel(actionsById.get(item.applicationId)!) }}
             </button>
             <button
-              v-else
+              v-else-if="tab !== 'new'"
               class="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50"
               @click="open(item.applicationId)"
             >

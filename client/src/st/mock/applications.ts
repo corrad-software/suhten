@@ -159,10 +159,10 @@ export function seedApplications(baseNow: number): Application[] {
       ]),
       identityVerified: true,
     },
-    // 4) OK — SOS review, RED (6h, overdue)
+    // 4) OK — SOS review, RED (6h, overdue) — unassigned (max-3 lock demo)
     {
       ref: 105, type: "OK", status: "sos_review", applicantPersonaId: "p-ahmad", applicant: ahmad,
-      competencyCategory: "PK", period: 2, employerId: "emp-tenaga-murni", assignedRole: "sos", assigneePersonaId: "p-faridah",
+      competencyCategory: "PK", period: 2, employerId: "emp-tenaga-murni", assignedRole: "sos", assigneePersonaId: null,
       stageHoursAgo: 6, createdHoursAgo: 40, documents: docs(baseNow, OK_DOCS),
       payments: [paidPayment(baseNow, "processing", 50, 6.2)],
       auditTrail: audit(baseNow, [
@@ -170,7 +170,7 @@ export function seedApplications(baseNow: number): Application[] {
         { actorPersonaId: "p-ahmad", action: "Membayar yuran pemprosesan", hoursAgo: 6.2, toStatus: "sos_review" },
       ]),
     },
-    // 5) OK — SOS review, GREEN (0.4h) — the 4th unassigned item (max-3 lock demo)
+    // 5) OK — SOS review, GREEN (0.4h) — unassigned (max-3 lock demo)
     {
       ref: 106, type: "OK", status: "sos_review", applicantPersonaId: "p-tan", applicant: tan,
       competencyCategory: "PJ", period: 3, employerId: "emp-kuasa-bistari", assignedRole: "sos", assigneePersonaId: null,
@@ -248,10 +248,10 @@ export function seedApplications(baseNow: number): Application[] {
         trustmarkId: "ST-TRUST-00110",
       },
     },
-    // 10) CE — SOS review, YELLOW (unassigned → queued behind the max-3 lock)
+    // 10) CE — SOS review, YELLOW (assigned to Faridah — one of the active 3)
     {
       ref: 202, type: "CE", status: "sos_review", applicantPersonaId: "p-lim", applicant: lim,
-      contractorClass: "B", period: 2, employerId: "emp-elektrik-maju", assignedRole: "sos", assigneePersonaId: null,
+      contractorClass: "B", period: 2, employerId: "emp-elektrik-maju", assignedRole: "sos", assigneePersonaId: "p-faridah",
       stageHoursAgo: 2.5, createdHoursAgo: 20, documents: docs(baseNow, CE_DOCS),
       payments: [paidPayment(baseNow, "processing", 100, 2.6)],
       // Class B needs PW4×1 + PW3×1 + PW1×1 — satisfied & confirmed.
@@ -264,7 +264,48 @@ export function seedApplications(baseNow: number): Application[] {
         { actorPersonaId: "p-lim", action: "Menghantar permohonan kontraktor", hoursAgo: 20 },
         { actorPersonaId: "p-tan", action: "Mengesahkan lantikan Orang Kompeten", hoursAgo: 14 },
         { actorPersonaId: "p-lim", action: "Membayar yuran pemprosesan", hoursAgo: 2.6, toStatus: "sos_review" },
+        { actorPersonaId: "p-faridah", action: "Mengambil tugasan", hoursAgo: 2.4 },
       ]),
+    },
+    // 11) CE — technical review (assigned to Kumar — Pegawai Teknikal inbox)
+    {
+      ref: 203, type: "CE", status: "technical_review", applicantPersonaId: "p-lim", applicant: lim,
+      contractorClass: "C", period: 3, employerId: "emp-elektrik-maju", assignedRole: "technical", assigneePersonaId: "p-kumar",
+      stageHoursAgo: 10, createdHoursAgo: 55, documents: docs(baseNow, CE_DOCS, "accepted"),
+      payments: [paidPayment(baseNow, "processing", 100, 48)],
+      appointedOks: [
+        { registeredOkId: "ok-ahmad", personaId: "p-ahmad", name: "Ahmad bin Ismail", mykad: "840512-10-5523", wirerType: "PW4", competencyCategory: "PW", confirmed: true, confirmedAt: iso(baseNow, 40) },
+        { registeredOkId: "ok-tan", personaId: "p-tan", name: "Tan Chee Keong", mykad: "790238-08-6191", wirerType: "PW3", competencyCategory: "PW", confirmed: true, confirmedAt: iso(baseNow, 40) },
+      ],
+      auditTrail: audit(baseNow, [
+        { actorPersonaId: "p-lim", action: "Menghantar permohonan kontraktor", hoursAgo: 55 },
+        { actorPersonaId: "p-ahmad", action: "Mengesahkan lantikan Orang Kompeten", hoursAgo: 40 },
+        { actorPersonaId: "p-lim", action: "Membayar yuran pemprosesan", hoursAgo: 48, toStatus: "sos_review" },
+        { actorPersonaId: "p-faridah", action: "Memajukan ke Pegawai Teknikal", hoursAgo: 10, fromStatus: "sos_review", toStatus: "technical_review" },
+        { actorPersonaId: "p-kumar", action: "Mengambil tugasan", hoursAgo: 9.5 },
+      ]),
+      identityVerified: true,
+    },
+    // 12) CE — pending approval (assigned to Zainab — Pelulus inbox)
+    {
+      ref: 204, type: "CE", status: "pending_approval", applicantPersonaId: "p-lim", applicant: lim,
+      contractorClass: "A", period: 5, employerId: "emp-elektrik-maju", assignedRole: "approver", assigneePersonaId: "p-zainab",
+      stageHoursAgo: 4, createdHoursAgo: 70, documents: docs(baseNow, CE_DOCS, "accepted"),
+      payments: [paidPayment(baseNow, "processing", 100, 62)],
+      appointedOks: [
+        { registeredOkId: "ok-ahmad", personaId: "p-ahmad", name: "Ahmad bin Ismail", mykad: "840512-10-5523", wirerType: "PW4", competencyCategory: "PW", confirmed: true, confirmedAt: iso(baseNow, 55) },
+        { registeredOkId: "ok-tan", personaId: "p-tan", name: "Tan Chee Keong", mykad: "790238-08-6191", wirerType: "PW3", competencyCategory: "PW", confirmed: true, confirmedAt: iso(baseNow, 55) },
+        { registeredOkId: "ok-chong", name: "Chong Wei Liang", mykad: "860318-07-5217", wirerType: "PW1", competencyCategory: "PW", confirmed: true, confirmedAt: iso(baseNow, 55) },
+      ],
+      auditTrail: audit(baseNow, [
+        { actorPersonaId: "p-lim", action: "Menghantar permohonan kontraktor", hoursAgo: 70 },
+        { actorPersonaId: "p-ahmad", action: "Mengesahkan lantikan Orang Kompeten", hoursAgo: 55 },
+        { actorPersonaId: "p-lim", action: "Membayar yuran pemprosesan", hoursAgo: 62, toStatus: "sos_review" },
+        { actorPersonaId: "p-faridah", action: "Memajukan ke Pegawai Teknikal", hoursAgo: 30, fromStatus: "sos_review", toStatus: "technical_review" },
+        { actorPersonaId: "p-kumar", action: "Memajukan ke Pelulus", hoursAgo: 4, fromStatus: "technical_review", toStatus: "pending_approval" },
+        { actorPersonaId: "p-zainab", action: "Mengambil tugasan", hoursAgo: 3.5 },
+      ]),
+      identityVerified: true,
     },
   ];
 

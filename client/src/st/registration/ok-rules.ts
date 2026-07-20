@@ -63,3 +63,42 @@ export const PLACE_RESTRICTIONS = [
 
 export type VoltageRestriction = (typeof VOLTAGE_RESTRICTIONS)[number]["code"];
 export type PlaceRestriction = (typeof PLACE_RESTRICTIONS)[number]["code"];
+
+/** Strip separators from MyKad / IC numbers. */
+export function myKadDigits(ic: string): string {
+  return ic.replace(/\D/g, "");
+}
+
+/**
+ * Derive YYYY-MM-DD date of birth from MyKad (first 6 digits = YYMMDD).
+ * Century: YY greater than current year's last two digits → 19xx, else 20xx.
+ */
+export function parseMyKadDob(ic: string, asOf: Date = new Date()): string | null {
+  const digits = myKadDigits(ic);
+  if (digits.length < 6) return null;
+
+  const yy = Number(digits.slice(0, 2));
+  const mm = Number(digits.slice(2, 4));
+  const dd = Number(digits.slice(4, 6));
+  if (!Number.isFinite(yy) || mm < 1 || mm > 12 || dd < 1 || dd > 31) return null;
+
+  const currentYy = asOf.getFullYear() % 100;
+  const year = yy > currentYy ? 1900 + yy : 2000 + yy;
+  const date = new Date(year, mm - 1, dd);
+  if (date.getFullYear() !== year || date.getMonth() !== mm - 1 || date.getDate() !== dd) {
+    return null;
+  }
+
+  return `${year}-${String(mm).padStart(2, "0")}-${String(dd).padStart(2, "0")}`;
+}
+
+/** Whole-year age from an ISO date string (YYYY-MM-DD). */
+export function ageFromDob(dob: string, asOf: Date = new Date()): number {
+  const [y, m, d] = dob.split("-").map(Number);
+  if (!y || !m || !d) return 0;
+  let age = asOf.getFullYear() - y;
+  if (asOf.getMonth() + 1 < m || (asOf.getMonth() + 1 === m && asOf.getDate() < d)) {
+    age -= 1;
+  }
+  return age;
+}

@@ -44,6 +44,8 @@ const regStore = useStRegistrationStore();
 const portalBase = computed(() => (route.path.startsWith("/admin/st") ? "/admin/st" : "/st"));
 
 const step = ref(0);
+/** Highest step index the user has reached — enables jumping back/forward among visited tabs. */
+const maxReachedStep = ref(0);
 const STEPS = computed(() => [
   ts("st.ceApply.stepA"),
   ts("st.ceApply.stepB"),
@@ -135,6 +137,17 @@ function loadDraft() {
     equipment.value = (d.equipment as TestEquipment[]) ?? [];
     confirmationChecks.value = (d.confirmationChecks as string[]) ?? [];
     documents.value = (d.documents as AppDocument[]) ?? [];
+    if (typeof d.step === "number" && d.step >= 0) {
+      step.value = Math.min(d.step as number, STEPS.value.length - 1);
+    }
+    if (typeof d.maxReachedStep === "number" && (d.maxReachedStep as number) >= 0) {
+      maxReachedStep.value = Math.min(
+        Math.max(d.maxReachedStep as number, step.value),
+        STEPS.value.length - 1,
+      );
+    } else {
+      maxReachedStep.value = step.value;
+    }
   } catch {
     /* ignore */
   }
@@ -152,8 +165,17 @@ function persistDraft() {
       equipment: equipment.value,
       confirmationChecks: confirmationChecks.value,
       documents: documents.value,
+      step: step.value,
+      maxReachedStep: maxReachedStep.value,
     }),
   );
+}
+
+function saveDraft(showToast = true) {
+  persistDraft();
+  if (showToast) {
+    toast.info(ts("st.okApply.saveDraft"), ts("st.okApply.draftSaved"));
+  }
 }
 
 onMounted(() => {
@@ -280,10 +302,24 @@ function next() {
     toast.error(ts("st.okApply.incomplete"), ts("st.okApply.incomplete"));
     return;
   }
-  if (step.value < STEPS.value.length - 1) step.value++;
+  if (step.value < STEPS.value.length - 1) {
+    step.value++;
+    if (step.value > maxReachedStep.value) maxReachedStep.value = step.value;
+  }
+  saveDraft(true);
 }
+
 function back() {
-  if (step.value > 0) step.value--;
+  if (step.value > 0) {
+    step.value--;
+    persistDraft();
+  }
+}
+
+function goToStep(target: number) {
+  if (target < 0 || target > maxReachedStep.value || target === step.value) return;
+  step.value = target;
+  saveDraft(true);
 }
 
 async function submit() {
@@ -332,26 +368,45 @@ async function submit() {
 
 <template>
   <div class="space-y-5">
-    <div>
-      <div class="flex flex-wrap items-center gap-2">
-        <h1 class="text-xl font-semibold text-slate-900">{{ ts("st.ceApply.title") }}</h1>
-        <span class="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs text-slate-600">RG-CE</span>
+    <div class="flex flex-wrap items-start justify-between gap-3">
+      <div>
+        <div class="flex flex-wrap items-center gap-2">
+          <h1 class="text-xl font-semibold text-slate-900">{{ ts("st.ceApply.title") }}</h1>
+          <span class="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs text-slate-600">RG-CE</span>
+        </div>
+        <p class="text-sm text-slate-500">{{ ts("st.ceApply.subtitle") }}</p>
       </div>
-      <p class="text-sm text-slate-500">{{ ts("st.ceApply.subtitle") }}</p>
+      <button
+        type="button"
+        class="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+        @click="saveDraft()"
+      >
+        {{ ts("st.okApply.saveDraft") }}
+      </button>
     </div>
 
     <ol class="flex items-center gap-1 text-xs">
       <li v-for="(s, i) in STEPS" :key="s" class="flex flex-1 items-center gap-1">
-        <span
-          :class="[
-            'flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold',
-            i < step ? 'bg-emerald-500 text-white' : i === step ? 'bg-[var(--accent-600)] text-white' : 'bg-slate-200 text-slate-500',
-          ]"
+        <button
+          type="button"
+          class="flex min-w-0 items-center gap-1 rounded-md text-left transition-opacity"
+          :class="i <= maxReachedStep && i !== step ? 'cursor-pointer hover:opacity-80' : i === step ? 'cursor-default' : 'cursor-not-allowed opacity-60'"
+          :disabled="i > maxReachedStep"
+          :aria-current="i === step ? 'step' : undefined"
+          :title="i <= maxReachedStep ? s : undefined"
+          @click="goToStep(i)"
         >
-          <Check v-if="i < step" class="h-3.5 w-3.5" />
-          <template v-else>{{ i + 1 }}</template>
-        </span>
-        <span :class="['hidden truncate lg:inline', i === step ? 'font-medium text-slate-700' : 'text-slate-400']">{{ s }}</span>
+          <span
+            :class="[
+              'flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold',
+              i < step ? 'bg-emerald-500 text-white' : i === step ? 'bg-[var(--accent-600)] text-white' : i <= maxReachedStep ? 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-300' : 'bg-slate-200 text-slate-500',
+            ]"
+          >
+            <Check v-if="i < step" class="h-3.5 w-3.5" />
+            <template v-else>{{ i + 1 }}</template>
+          </span>
+          <span :class="['hidden truncate lg:inline', i === step ? 'font-medium text-slate-700' : i <= maxReachedStep ? 'text-slate-600' : 'text-slate-400']">{{ s }}</span>
+        </button>
         <span v-if="i < STEPS.length - 1" class="h-px flex-1 bg-slate-200" />
       </li>
     </ol>
