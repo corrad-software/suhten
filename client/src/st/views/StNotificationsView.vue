@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { useRouter } from "vue-router";
-import { Bell, CheckCheck } from "lucide-vue-next";
+import { CheckCheck } from "lucide-vue-next";
 
 import { useLocale } from "@/composables/useLocale";
 import { useStNotificationsStore } from "../stores/notifications";
+import StPageHero from "../components/StPageHero.vue";
 
 const router = useRouter();
 const { ts, locale } = useLocale();
@@ -26,24 +27,19 @@ function open(applicationId: string | undefined, id: string) {
 
 <template>
   <div class="space-y-4">
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--accent-50)]">
-          <Bell class="h-5 w-5 text-[var(--accent-700)]" />
-        </div>
-        <div>
-          <h1 class="text-xl font-semibold text-slate-900">{{ ts("st.notif.title") }}</h1>
-          <p class="text-sm text-slate-500">{{ ts("st.notif.unread", { n: notifications.unreadCount }) }}</p>
-        </div>
-      </div>
-      <button
-        v-if="notifications.unreadCount > 0"
-        class="flex items-center gap-1.5 rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50"
-        @click="notifications.markAllRead()"
-      >
-        <CheckCheck class="h-4 w-4" /> {{ ts("st.notif.markAll") }}
-      </button>
-    </div>
+    <StPageHero
+      :title="ts('st.notif.title')"
+      :subtitle="ts('st.notif.unread', { n: notifications.unreadCount })"
+    >
+      <template v-if="notifications.unreadCount > 0" #action>
+        <button
+          class="flex shrink-0 items-center gap-1.5 rounded-md bg-white px-4 py-2 text-sm font-medium text-[var(--accent-700)] transition-colors hover:bg-white/90"
+          @click="notifications.markAllRead()"
+        >
+          <CheckCheck class="h-4 w-4" /> {{ ts("st.notif.markAll") }}
+        </button>
+      </template>
+    </StPageHero>
 
     <p class="text-xs text-slate-400">{{ ts("st.common.mockNote") }}</p>
 

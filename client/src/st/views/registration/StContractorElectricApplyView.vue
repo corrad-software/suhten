@@ -6,6 +6,8 @@ import { Check, Plus, Search, Trash2, X } from "lucide-vue-next";
 import { useLocale } from "@/composables/useLocale";
 import { useToast } from "@/composables/useToast";
 import type { AppDocument, ContractorClass, Gender, RegistrationPeriod } from "../../types";
+import { isAddressComplete, parseAddress, type StAddress } from "../../address";
+import AddressFieldset from "../../components/AddressFieldset.vue";
 import { CONTRACTOR_CLASSES } from "../../mock/competencies";
 import { searchOks, type RegisteredOk } from "../../mock/competent-persons";
 import { useStSessionStore } from "../../stores/session";
@@ -124,6 +126,20 @@ function prefill() {
   }
 }
 
+// Structured address entry. Kept mapped onto the existing payload fields:
+// line1+line2 → companyAddress (street), district → city, postcode, state.
+const addressForm = ref<StAddress>(parseAddress("Lot 8, Jalan Teknologi 3/5, 47810 Petaling Jaya, Selangor"));
+watch(
+  addressForm,
+  (a) => {
+    form.companyAddress = [a.line1, a.line2].map((s) => s.trim()).filter(Boolean).join(", ");
+    form.city = a.district;
+    form.postcode = a.postcode;
+    form.state = a.state;
+  },
+  { deep: true, immediate: true },
+);
+
 function loadDraft() {
   const raw = localStorage.getItem(DRAFT_KEY);
   if (!raw) return;
@@ -181,6 +197,13 @@ function saveDraft(showToast = true) {
 onMounted(() => {
   prefill();
   loadDraft();
+  // Re-hydrate the structured address from whatever the draft/prefill left behind.
+  addressForm.value = {
+    ...parseAddress(form.companyAddress),
+    district: form.city || parseAddress(form.companyAddress).district,
+    postcode: form.postcode || parseAddress(form.companyAddress).postcode,
+    state: form.state || parseAddress(form.companyAddress).state,
+  };
 });
 
 watch(
@@ -259,10 +282,7 @@ function canProceed(): boolean {
       return Boolean(
         form.companyName &&
           form.companyRegNo &&
-          form.companyAddress &&
-          form.postcode &&
-          form.city &&
-          form.state &&
+          isAddressComplete(addressForm.value) &&
           form.companyEmail &&
           form.companyPhone &&
           directors.value.length > 0 &&
@@ -508,22 +528,10 @@ async function submit() {
             <span class="mb-1 block text-sm font-medium text-slate-700">{{ ts("st.ceApply.companyEmail") }}</span>
             <input v-model="form.companyEmail" type="email" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm" />
           </label>
-          <label class="block sm:col-span-2">
-            <span class="mb-1 block text-sm font-medium text-slate-700">{{ ts("st.ceApply.companyAddress") }}</span>
-            <input v-model="form.companyAddress" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm" />
-          </label>
-          <label class="block">
-            <span class="mb-1 block text-sm font-medium text-slate-700">{{ ts("st.ceApply.postcode") }}</span>
-            <input v-model="form.postcode" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm" />
-          </label>
-          <label class="block">
-            <span class="mb-1 block text-sm font-medium text-slate-700">{{ ts("st.ceApply.city") }}</span>
-            <input v-model="form.city" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm" />
-          </label>
-          <label class="block">
-            <span class="mb-1 block text-sm font-medium text-slate-700">{{ ts("st.ceApply.state") }}</span>
-            <input v-model="form.state" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm" />
-          </label>
+          <div class="sm:col-span-2">
+            <p class="mb-2 text-sm font-medium text-slate-700">{{ ts("st.ceApply.companyAddress") }}</p>
+            <AddressFieldset v-model="addressForm" />
+          </div>
           <label class="block">
             <span class="mb-1 block text-sm font-medium text-slate-700">{{ ts("st.ceApply.companyPhone") }}</span>
             <input v-model="form.companyPhone" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm" />

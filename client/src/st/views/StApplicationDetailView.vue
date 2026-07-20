@@ -161,21 +161,38 @@ function fmt(iso?: string): string {
       </ul>
     </div>
 
-    <!-- Certificate link -->
-    <button
-      v-if="app.status === 'certificate_issued'"
-      class="flex w-full items-center justify-between rounded-xl border border-[var(--accent-200)] bg-gradient-to-r from-[var(--accent-50)] to-white p-4 text-left shadow-sm hover:from-[var(--accent-100)]"
-      @click="router.push(`/st/applications/${app.id}/certificate`)"
-    >
-      <span class="flex items-center gap-3">
-        <BadgeCheck class="h-6 w-6 text-[var(--accent-600)]" />
-        <span>
-          <span class="block text-sm font-semibold text-slate-800">Sijil Digital Tersedia</span>
-          <span class="block text-xs text-slate-500">Lihat sijil dengan kod QR & trustmark</span>
+    <!-- Certificate & receipt links -->
+    <div v-if="app.status === 'certificate_issued' || app.payments.length" class="grid gap-3 sm:grid-cols-2">
+      <button
+        v-if="app.payments.length"
+        class="flex w-full items-center justify-between rounded-xl border border-emerald-200 bg-gradient-to-r from-emerald-50 to-white p-4 text-left shadow-sm hover:from-emerald-100"
+        @click="router.push(`/st/applications/${app.id}/receipt`)"
+      >
+        <span class="flex items-center gap-3">
+          <Receipt class="h-6 w-6 text-emerald-600" />
+          <span>
+            <span class="block text-sm font-semibold text-slate-800">Resit Pembayaran</span>
+            <span class="block text-xs text-slate-500">{{ app.payments.length }} resit · muat turun / cetak</span>
+          </span>
         </span>
-      </span>
-      <span class="text-sm font-medium text-[var(--accent-700)]">Buka →</span>
-    </button>
+        <span class="text-sm font-medium text-emerald-700">Buka →</span>
+      </button>
+
+      <button
+        v-if="app.status === 'certificate_issued'"
+        class="flex w-full items-center justify-between rounded-xl border border-[var(--accent-200)] bg-gradient-to-r from-[var(--accent-50)] to-white p-4 text-left shadow-sm hover:from-[var(--accent-100)]"
+        @click="router.push(`/st/applications/${app.id}/certificate`)"
+      >
+        <span class="flex items-center gap-3">
+          <BadgeCheck class="h-6 w-6 text-[var(--accent-600)]" />
+          <span>
+            <span class="block text-sm font-semibold text-slate-800">Sijil Digital Tersedia</span>
+            <span class="block text-xs text-slate-500">Lihat sijil dengan kod QR & trustmark</span>
+          </span>
+        </span>
+        <span class="text-sm font-medium text-[var(--accent-700)]">Buka →</span>
+      </button>
+    </div>
 
     <!-- Audit trail -->
     <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">

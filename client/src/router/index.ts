@@ -47,9 +47,16 @@ import ApplicationFormView from "@/st/views/ApplicationFormView.vue";
 import StApplicationDetailView from "@/st/views/StApplicationDetailView.vue";
 import FpxPaymentView from "@/st/views/FpxPaymentView.vue";
 import CertificateView from "@/st/views/CertificateView.vue";
+import ReceiptView from "@/st/views/ReceiptView.vue";
 import StNotificationsView from "@/st/views/StNotificationsView.vue";
 import StSearchView from "@/st/views/StSearchView.vue";
 import AinaUserChatView from "@/st/views/aina/AinaUserChatView.vue";
+// ST public portal (pre-login) + post-login service landing
+import StPublicHomeView from "@/st/views/public/StPublicHomeView.vue";
+import StPublicServicesView from "@/st/views/public/StPublicServicesView.vue";
+import StPublicStatusView from "@/st/views/public/StPublicStatusView.vue";
+import StServiceLandingView from "@/st/views/StServiceLandingView.vue";
+import StEmployerProfileView from "@/st/views/StEmployerProfileView.vue";
 import StComingSoonView from "@/st/views/StComingSoonView.vue";
 import StRegApplicationsView from "@/st/views/registration/StRegApplicationsView.vue";
 import StRegReviewView from "@/st/views/registration/StRegReviewView.vue";
@@ -298,13 +305,15 @@ function adminWorkspaceRoutes(prefix: "st" | "admin-st"): RouteRecordRaw[] {
 }
 
 // Guards the ST portal: requires Sanctum auth and a valid ST role.
-async function stAuthGuard() {
+// Unauthenticated visitors to the bare `/st` root are sent to the public
+// landing; deep links (e.g. /st/dashboard) still route through login.
+async function stAuthGuard(to: RouteLocationGeneric) {
   const auth = useAuthStore();
   await auth.initialize();
   const session = useStSessionStore();
   session.syncFromAuth();
   if (!auth.isAuthenticated || !session.currentPersona) {
-    return { path: "/st/login" };
+    return to.path === "/st" ? { path: "/st/utama" } : { path: "/st/login" };
   }
   return true;
 }
@@ -521,6 +530,11 @@ const router = createRouter({
     // ── Sistem Digital ST under CMS admin (/admin/st/*) ──
     stAdminRoutes,
 
+    // ── Suruhanjaya Tenaga (ST) — public portal (pre-login) ──
+    { path: "/st/utama", name: "st-public-home", component: StPublicHomeView, meta: { title: "Suruhanjaya Tenaga" } },
+    { path: "/st/perkhidmatan", name: "st-public-services", component: StPublicServicesView, meta: { title: "Perkhidmatan — Suruhanjaya Tenaga" } },
+    { path: "/st/semak-status", name: "st-public-status", component: StPublicStatusView, meta: { title: "Semak Status — Suruhanjaya Tenaga" } },
+
     // ── Suruhanjaya Tenaga (ST) D11 prototype ──
     { path: "/st/login", name: "st-login", component: StLoginView, meta: { title: "Log Masuk — Suruhanjaya Tenaga" } },
     {
@@ -529,6 +543,8 @@ const router = createRouter({
       beforeEnter: stAuthGuard,
       children: [
         { path: "", redirect: () => useStSessionStore().homeRoute() },
+        { path: "perkhidmatan-saya", name: "st-service-landing", component: StServiceLandingView, meta: { title: "Perkhidmatan ST" } },
+        { path: "majikan/profil", name: "st-employer-profile", component: StEmployerProfileView, meta: { title: "Maklumat Majikan — ST" } },
         { path: "dashboard", name: "st-dashboard", component: StDashboardView, meta: { title: "Papan Pemuka — ST" } },
         { path: "inbox", name: "st-inbox", component: StInboxView, meta: { title: "Peti Tugasan — ST" } },
         { path: "applications", name: "st-applications", component: StApplicationListView, meta: { title: "Permohonan — ST" } },
@@ -536,6 +552,7 @@ const router = createRouter({
         { path: "applications/:id", name: "st-application-detail", component: StApplicationDetailView, meta: { title: "Butiran Permohonan — ST" } },
         { path: "applications/:id/pay/:kind", name: "st-payment", component: FpxPaymentView, meta: { title: "Pembayaran — ST" } },
         { path: "applications/:id/certificate", name: "st-certificate", component: CertificateView, meta: { title: "Sijil Digital — ST" } },
+        { path: "applications/:id/receipt", name: "st-receipt", component: ReceiptView, meta: { title: "Resit Bayaran — ST" } },
         { path: "notifications", name: "st-notifications", component: StNotificationsView, meta: { title: "Notifikasi — ST" } },
         { path: "search", name: "st-search", component: StSearchView, meta: { title: "Carian & Semakan Status — ST" } },
         { path: "aina", name: "st-aina", component: AinaUserChatView, meta: { title: "AINA — User" } },
