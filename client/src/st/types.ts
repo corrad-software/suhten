@@ -77,6 +77,15 @@ export interface ApplicantProfile {
   gender?: Gender;
 }
 
+/** Map coordinate for the employer's operating premises (OpenStreetMap). */
+export interface GeoPoint {
+  lat: number;
+  lng: number;
+}
+
+/** Employer registration category (D11 §4.2.2 / Jadual 6). */
+export type EmployerCategory = "kontraktor" | "pepasangan" | "pelesenan" | "institusi" | "individu" | "lain";
+
 export interface EmployerRef {
   id: string;
   name: string;
@@ -86,6 +95,23 @@ export interface EmployerRef {
   // The persona that must confirm the appointment.
   // OK workflow: the employer (Majikan). CE workflow: the selected Orang Kompeten.
   confirmerPersonaId: string;
+  // ── Fields powering the "elastic" employer search (D11 §4.2.2) ──
+  /** No. Pendaftaran ST. */
+  stRegNo?: string;
+  category?: EmployerCategory;
+  city?: string;
+  state?: string;
+  /** Only ACTIVE registrations are shown in the employer search. */
+  status?: "active" | "inactive";
+  // ── Employer-maintained profile (Kemaskini Maklumat Majikan) ──
+  phone?: string;
+  email?: string;
+  /** Premises location pinned on the map. */
+  location?: GeoPoint;
+  /** Company logo as a data URL (prototype: stored client-side). */
+  logoUrl?: string;
+  /** Supporting company documents (SSM, Borang 49, …). */
+  documents?: AppDocument[];
 }
 
 export type DocumentStatus = "pending" | "accepted" | "rejected";

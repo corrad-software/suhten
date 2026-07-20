@@ -6,6 +6,8 @@ import { AlertTriangle, Check, Download, Search, Sparkles } from "lucide-vue-nex
 import { useLocale } from "@/composables/useLocale";
 import { useToast } from "@/composables/useToast";
 import type { AppDocument, CompetencyCategory, Gender, RegistrationPeriod } from "../../types";
+import { formatAddress, parseAddress, type StAddress } from "../../address";
+import AddressFieldset from "../../components/AddressFieldset.vue";
 import { COMPETENCY_CATEGORIES } from "../../mock/competencies";
 import { EMPLOYERS } from "../../mock/employers";
 import { useStSessionStore } from "../../stores/session";
@@ -129,6 +131,17 @@ function prefill() {
   form.email = persona.value?.email ?? "";
 }
 
+// Structured address entry; kept flattened in form.address so the draft and the
+// submit payload (which expect a single string) stay unchanged.
+const addressForm = ref<StAddress>(parseAddress("No. 1, Jalan Contoh, 40000 Shah Alam, Selangor"));
+watch(
+  addressForm,
+  (a) => {
+    form.address = formatAddress(a);
+  },
+  { deep: true },
+);
+
 function loadDraft() {
   if (typeof window === "undefined") return;
   const raw = localStorage.getItem(DRAFT_KEY);
@@ -155,6 +168,8 @@ function clearDraft() {
 onMounted(() => {
   prefill();
   loadDraft();
+  // Re-hydrate the structured address from whatever the draft/prefill left behind.
+  addressForm.value = parseAddress(form.address);
 });
 
 // Auto-save draft every change (debounced lightly via watch)
@@ -343,10 +358,10 @@ async function submit() {
             <span class="mb-1 block text-sm font-medium text-slate-700">{{ ts("st.okApply.email") }}</span>
             <input v-model="form.email" type="email" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm" />
           </label>
-          <label class="block sm:col-span-2">
-            <span class="mb-1 block text-sm font-medium text-slate-700">{{ ts("st.okApply.address") }}</span>
-            <input v-model="form.address" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm" />
-          </label>
+          <div class="sm:col-span-2">
+            <p class="mb-2 text-sm font-medium text-slate-700">{{ ts("st.okApply.address") }}</p>
+            <AddressFieldset v-model="addressForm" />
+          </div>
         </div>
       </div>
 
