@@ -5,6 +5,9 @@ import { Check, Search, X } from "lucide-vue-next";
 
 import { useToast } from "@/composables/useToast";
 
+import { formatAddress, isAddressComplete, parseAddress, type StAddress } from "../address";
+import AddressFieldset from "../components/AddressFieldset.vue";
+
 import type {
   AppDocument,
   AppointedOk,
@@ -18,7 +21,7 @@ import type {
 import { useStSessionStore } from "../stores/session";
 import { useStWorkflowStore, DEMO_SUBMIT_PIN } from "../stores/workflow";
 import { COMPETENCY_CATEGORIES, CONTRACTOR_CLASSES, validateOkSet } from "../mock/competencies";
-import { EMPLOYERS } from "../mock/employers";
+import { employerById, searchEmployers, EMPLOYER_CATEGORY_LABEL } from "../mock/employers";
 import { okById, searchOks } from "../mock/competent-persons";
 import { workflowLabel } from "../status";
 import DocumentUploadField from "../components/DocumentUploadField.vue";
@@ -70,11 +73,10 @@ const DOC_LABELS = computed(() =>
 );
 
 // ── employer search (OK) ─────────────────────────────────────────────────────
+// "Elastic" employer search — fuzzy, multi-field, ranked, ACTIVE-only.
 const search = ref("");
-const employerResults = computed(() =>
-  EMPLOYERS.filter((e) => e.name.toLowerCase().includes(search.value.toLowerCase())),
-);
-const selectedEmployer = computed(() => EMPLOYERS.find((e) => e.id === form.employerId));
+const employerHits = computed(() => searchEmployers(search.value));
+const selectedEmployer = computed(() => employerById(form.employerId));
 
 // ── appointed Orang Kompeten (CE): multi-select + class validation ────────────
 const okSearch = ref("");
@@ -91,12 +93,15 @@ function toggleOk(id: string) {
 // Live check of the selected OK set against the chosen contractor class.
 const okValidation = computed(() => validateOkSet(selectedOks.value.map((o) => o.wirerType), form.contractorClass));
 
-// Step-0 address field maps to company address (CE) or personal address (OK).
+// Structured address entry (Alamat Baris 1/2, Daerah, Poskod, Negeri).
+// Maps to company address (CE) or personal address (OK); flattened on submit.
+const addressForm = ref<StAddress>(parseAddress(form.address));
+const companyAddressForm = ref<StAddress>(parseAddress(form.companyAddress));
 const addressModel = computed({
-  get: () => (isCE.value ? form.companyAddress : form.address),
-  set: (v: string) => {
-    if (isCE.value) form.companyAddress = v;
-    else form.address = v;
+  get: () => (isCE.value ? companyAddressForm.value : addressForm.value),
+  set: (v: StAddress) => {
+    if (isCE.value) companyAddressForm.value = v;
+    else addressForm.value = v;
   },
 });
 
@@ -112,7 +117,12 @@ const periods: RegistrationPeriod[] = [1, 2, 3, 4, 5];
 function canProceed(): boolean {
   switch (step.value) {
     case 0:
-      return Boolean(form.fullName && form.email && (isCE.value ? form.companyName : form.icNumber));
+      return Boolean(
+        form.fullName &&
+          form.email &&
+          (isCE.value ? form.companyName : form.icNumber) &&
+          isAddressComplete(addressModel.value),
+      );
     case 2:
       return isCE.value ? okValidation.value.valid : Boolean(form.employerId);
     case 3:
@@ -182,7 +192,7 @@ function submit() {
       id: `ce-${form.companyRegNo}`,
       name: form.companyName,
       registrationNo: form.companyRegNo,
-      address: form.companyAddress,
+      address: formatAddress(companyAddressForm.value),
       contactPerson: lead?.name ?? form.fullName,
       confirmerPersonaId,
     };
@@ -196,7 +206,7 @@ function submit() {
       icNumber: form.icNumber,
       dob: form.dob,
       age: Number(form.age),
-      address: isCE.value ? form.companyAddress : form.address,
+      address: formatAddress(isCE.value ? companyAddressForm.value : addressForm.value),
       phone: form.phone,
       email: form.email,
     },
@@ -275,10 +285,10 @@ function submit() {
             <span class="mb-1 block text-sm font-medium text-slate-700">E-mel</span>
             <input v-model="form.email" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-[var(--accent-500)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]/30" />
           </label>
-          <label class="block sm:col-span-2">
-            <span class="mb-1 block text-sm font-medium text-slate-700">{{ isCE ? "Alamat Syarikat" : "Alamat" }}</span>
-            <input v-model="addressModel" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-[var(--accent-500)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]/30" />
-          </label>
+          <div class="sm:col-span-2">
+            <p class="mb-2 text-sm font-medium text-slate-700">{{ isCE ? "Alamat Syarikat" : "Alamat" }}</p>
+            <AddressFieldset v-model="addressModel" />
+          </div>
         </div>
       </div>
 
@@ -326,23 +336,41 @@ function submit() {
       <!-- STEP 2: employer (OK) / competent person (CE) -->
       <div v-else-if="step === 2" class="space-y-3">
         <template v-if="!isCE">
-          <p class="text-sm text-slate-600">Cari dan pilih majikan yang akan mengesahkan lantikan anda.</p>
+          <p class="text-sm text-slate-600">
+            Cari majikan melalui carian pintar (nama, No. Pendaftaran SSM, No. Pendaftaran ST, bandar atau negeri). Hanya pendaftaran <span class="font-medium text-emerald-700">AKTIF</span> dipaparkan.
+          </p>
           <div class="relative">
             <Search class="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-            <input v-model="search" placeholder="Cari nama syarikat majikan..." class="w-full rounded-md border border-slate-300 py-2 pl-9 pr-3 text-sm focus:border-[var(--accent-500)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]/30" />
+            <input
+              v-model="search"
+              placeholder="Cth: elektrik, 1245678, ST-CE, Petaling Jaya…"
+              class="w-full rounded-md border border-slate-300 py-2 pl-9 pr-3 text-sm focus:border-[var(--accent-500)] focus:outline-hidden focus:ring-2 focus:ring-[var(--accent-ring)]/30"
+            />
           </div>
           <div class="space-y-2">
             <button
-              v-for="e in employerResults"
-              :key="e.id"
+              v-for="hit in employerHits"
+              :key="hit.employer.id"
               type="button"
-              :class="['block w-full rounded-lg border px-3 py-2.5 text-left transition-colors', form.employerId === e.id ? 'border-[var(--accent-500)] bg-[var(--accent-50)]' : 'border-slate-200 hover:border-[var(--accent-ring)]']"
-              @click="form.employerId = e.id"
+              :class="['block w-full rounded-lg border px-3 py-2.5 text-left transition-colors', form.employerId === hit.employer.id ? 'border-[var(--accent-500)] bg-[var(--accent-50)]' : 'border-slate-200 hover:border-[var(--accent-ring)]']"
+              @click="form.employerId = hit.employer.id"
             >
-              <p class="text-sm font-semibold text-slate-800">{{ e.name }}</p>
-              <p class="text-xs text-slate-500">{{ e.registrationNo }} · {{ e.contactPerson }}</p>
+              <div class="flex items-start justify-between gap-2">
+                <p class="text-sm font-semibold text-slate-800">{{ hit.employer.name }}</p>
+                <span class="shrink-0 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-500">
+                  {{ hit.employer.category ? EMPLOYER_CATEGORY_LABEL[hit.employer.category] : "—" }}
+                </span>
+              </div>
+              <p class="mt-0.5 text-xs text-slate-500">
+                {{ hit.employer.registrationNo }}
+                <template v-if="hit.employer.stRegNo"> · <span class="font-mono">{{ hit.employer.stRegNo }}</span></template>
+              </p>
+              <p class="text-xs text-slate-400">{{ hit.employer.contactPerson }} · {{ hit.employer.city }}, {{ hit.employer.state }}</p>
+              <p v-if="search.trim() && hit.matchedField" class="mt-1 text-[11px] text-[var(--accent-700)]">
+                dipadan pada: {{ hit.matchedField }}
+              </p>
             </button>
-            <p v-if="employerResults.length === 0" class="py-4 text-center text-sm text-slate-400">Tiada majikan sepadan.</p>
+            <p v-if="employerHits.length === 0" class="py-4 text-center text-sm text-slate-400">Tiada majikan sepadan.</p>
           </div>
         </template>
         <template v-else>

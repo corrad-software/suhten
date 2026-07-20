@@ -10,7 +10,9 @@ import { personaById } from "../mock/personas";
 // Maps a logged-in persona role to its landing route.
 function homeRouteForRole(role: PersonaRole): string {
   switch (role) {
+    // D11 §4.2.1/§5.2.1: applicants land on the ST services picker after login.
     case "applicant":
+      return "/st/perkhidmatan-saya";
     case "employer":
       return "/st/applications";
     case "admin":

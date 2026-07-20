@@ -101,9 +101,20 @@
     --accent-600: #1d4ed8;
     --accent-700: #1e3a8a;
     --accent-ring: #60a5fa;
+    /* Official Suruhanjaya Tenaga brand gradient (blue → red). */
+    --st-brand-gradient: linear-gradient(49.64deg, #3a42a9 4.05%, #e73239 95.95%);
+    --st-brand-gradient-reverse: linear-gradient(49.64deg, #ed1c24 20%, #3a42a9 40%);
   }
 
   body {
     @apply bg-slate-50 text-slate-900;
   }
+}
+
+@utility st-brand-gradient {
+  background-image: var(--st-brand-gradient);
+}
+
+@utility st-brand-gradient-reverse {
+  background-image: var(--st-brand-gradient-reverse);
 }

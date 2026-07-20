@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRouter } from "vue-router";
-import { FilePlus2, FileText, ShieldCheck } from "lucide-vue-next";
+import { FilePlus2 } from "lucide-vue-next";
 
 import { useStSessionStore } from "../stores/session";
 import { useStWorkflowStore } from "../stores/workflow";
 import { workflowShort } from "../status";
 import StatusBadge from "../components/StatusBadge.vue";
+import StPageHero from "../components/StPageHero.vue";
 
 const router = useRouter();
 const session = useStSessionStore();
@@ -30,24 +31,19 @@ function open(id: string) {
 
 <template>
   <div class="space-y-5">
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--accent-50)]">
-          <component :is="isEmployer ? ShieldCheck : FileText" class="h-5 w-5 text-[var(--accent-700)]" />
-        </div>
-        <div>
-          <h1 class="text-xl font-semibold text-slate-900">{{ isEmployer ? "Pengesahan Lantikan" : "Permohonan Saya" }}</h1>
-          <p class="text-sm text-slate-500">{{ rows.length }} {{ isEmployer ? "menunggu pengesahan" : "permohonan" }}</p>
-        </div>
-      </div>
-      <button
-        v-if="!isEmployer"
-        class="flex items-center gap-2 rounded-md bg-[var(--accent-600)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--accent-700)]"
-        @click="router.push('/st/applications/new')"
-      >
-        <FilePlus2 class="h-4 w-4" /> Permohonan Baharu
-      </button>
-    </div>
+    <StPageHero
+      :title="isEmployer ? 'Pengesahan Lantikan' : 'Permohonan Saya'"
+      :subtitle="`${rows.length} ${isEmployer ? 'menunggu pengesahan' : 'permohonan'}`"
+    >
+      <template v-if="!isEmployer" #action>
+        <button
+          class="flex shrink-0 items-center gap-1.5 rounded-md bg-white px-4 py-2 text-sm font-medium text-[var(--accent-700)] transition-colors hover:bg-white/90"
+          @click="router.push('/st/applications/new')"
+        >
+          <FilePlus2 class="h-4 w-4" /> Permohonan Baharu
+        </button>
+      </template>
+    </StPageHero>
 
     <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
       <p v-if="rows.length === 0" class="px-4 py-12 text-center text-sm text-slate-400">
