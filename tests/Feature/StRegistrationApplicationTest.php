@@ -6,6 +6,7 @@ use App\Enums\Permission;
 use App\Models\Role;
 use App\Models\StRegistrationApplication;
 use App\Models\User;
+use App\Models\WorkflowDefinition;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -96,6 +97,134 @@ class StRegistrationApplicationTest extends TestCase
             ->assertJsonPath('data.applicantName', 'Test Applicant');
 
         $this->assertDatabaseCount('st_registration_applications', 1);
+    }
+
+    public function test_store_rg_ke_starts_linked_workflow(): void
+    {
+        $this->actingAs($this->userWithPermissions([Permission::REGISTRATION_CREATE]));
+
+        WorkflowDefinition::create([
+            'name' => 'Pendaftaran OK Elektrik (PFD-RG-KE-NA)',
+            'slug' => 'pfd-rg-ke-na',
+            'version' => '1.0',
+            'description' => 'Test link',
+            'is_active' => true,
+            'definition' => [
+                'name' => 'Pendaftaran OK Elektrik (PFD-RG-KE-NA)',
+                'version' => '1.0',
+                'steps' => [
+                    [
+                        'id' => 'na-01',
+                        'name' => 'Membuat Permohonan',
+                        'action' => 'log',
+                        'parameters' => [
+                            'message' => 'RG-KE started for {{ applicant_name }}',
+                            'level' => 'info',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $response = $this->postJson('/api/st/registration-applications', [
+            'moduleCode' => 'RG-KE',
+            'appType' => 'new_registration',
+            'applicantName' => 'Workflow Linked Applicant',
+            'identityNo' => '900101-01-0002',
+            'categoryOrClass' => 'PW4',
+            'status' => 'awaiting_employer_confirm',
+            'feeAmount' => 50,
+            'detail' => [
+                'email' => 'ok@example.com',
+            ],
+        ]);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.moduleCode', 'RG-KE');
+
+        $instanceId = $response->json('data.workflowInstanceId');
+        $this->assertNotEmpty($instanceId);
+        $this->assertDatabaseHas('st_registration_applications', [
+            'applicant_name' => 'Workflow Linked Applicant',
+            'workflow_instance_id' => $instanceId,
+        ]);
+        $this->assertDatabaseHas('workflow_instances', [
+            'id' => $instanceId,
+        ]);
+
+        $applicationCode = $response->json('data.code');
+        $list = $this->getJson('/api/workflow-instances?limit=50');
+        $list->assertStatus(200);
+        $row = collect($list->json('data'))->firstWhere('id', $instanceId);
+        $this->assertNotNull($row);
+        $this->assertSame($applicationCode, $row['applicationCode'] ?? null);
+        $this->assertSame('RG-KE', $row['moduleCode'] ?? null);
+        $this->assertSame('Workflow Linked Applicant', $row['applicantName'] ?? null);
+        $this->assertNotEmpty($row['refNo'] ?? null);
+    }
+
+    public function test_store_rg_ce_starts_linked_workflow(): void
+    {
+        $this->actingAs($this->userWithPermissions([Permission::REGISTRATION_CREATE]));
+
+        WorkflowDefinition::create([
+            'name' => 'Pendaftaran Kontraktor Elektrik (PFD-RG-CE-NA)',
+            'slug' => 'pfd-rg-ce-na',
+            'version' => '1.0',
+            'description' => 'Test link',
+            'is_active' => true,
+            'definition' => [
+                'name' => 'Pendaftaran Kontraktor Elektrik (PFD-RG-CE-NA)',
+                'version' => '1.0',
+                'steps' => [
+                    [
+                        'id' => 'na-01',
+                        'name' => 'Membuat Permohonan',
+                        'action' => 'log',
+                        'parameters' => [
+                            'message' => 'RG-CE started for {{ applicant_name }}',
+                            'level' => 'info',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $response = $this->postJson('/api/st/registration-applications', [
+            'moduleCode' => 'RG-CE',
+            'appType' => 'new_registration',
+            'applicantName' => 'Contractor Co',
+            'identityNo' => '201501012345',
+            'categoryOrClass' => 'B',
+            'status' => 'awaiting_employer_confirm',
+            'feeAmount' => 200,
+            'detail' => [
+                'email' => 'contractor@example.com',
+            ],
+        ]);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.moduleCode', 'RG-CE');
+
+        $instanceId = $response->json('data.workflowInstanceId');
+        $this->assertNotEmpty($instanceId);
+        $this->assertDatabaseHas('st_registration_applications', [
+            'applicant_name' => 'Contractor Co',
+            'workflow_instance_id' => $instanceId,
+        ]);
+        $this->assertDatabaseHas('workflow_instances', [
+            'id' => $instanceId,
+        ]);
+
+        $applicationCode = $response->json('data.code');
+        $list = $this->getJson('/api/workflow-instances?limit=50');
+        $list->assertStatus(200);
+        $row = collect($list->json('data'))->firstWhere('id', $instanceId);
+        $this->assertNotNull($row);
+        $this->assertSame($applicationCode, $row['applicationCode'] ?? null);
+        $this->assertSame('RG-CE', $row['moduleCode'] ?? null);
+        $this->assertSame('Contractor Co', $row['applicantName'] ?? null);
+        $this->assertNotEmpty($row['refNo'] ?? null);
     }
 
     public function test_show_by_code(): void

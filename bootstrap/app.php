@@ -32,6 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'permission' => CheckPermission::class,
+            'user_chat_access' => \App\Http\Middleware\EnsureUserChatAccess::class,
         ]);
 
         $middleware->appendToGroup('api', [

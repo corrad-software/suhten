@@ -27,6 +27,7 @@ class RoleSeeder extends Seeder
                 'permissions' => [
                     Permission::REGISTRATION_VIEW,
                     Permission::REGISTRATION_CREATE,
+                    Permission::CHAT_USE,
                 ],
             ],
             [
@@ -35,6 +36,7 @@ class RoleSeeder extends Seeder
                 'permissions' => [
                     Permission::REGISTRATION_VIEW,
                     Permission::REGISTRATION_EDIT,
+                    Permission::CHAT_USE,
                 ],
             ],
             [
@@ -44,6 +46,7 @@ class RoleSeeder extends Seeder
                     Permission::AUDIT_READ,
                     Permission::REGISTRATION_VIEW,
                     Permission::REGISTRATION_EDIT,
+                    Permission::CHAT_USE,
                 ],
             ],
             [
@@ -53,6 +56,7 @@ class RoleSeeder extends Seeder
                     Permission::AUDIT_READ,
                     Permission::REGISTRATION_VIEW,
                     Permission::REGISTRATION_EDIT,
+                    Permission::CHAT_USE,
                 ],
             ],
             [
@@ -62,6 +66,7 @@ class RoleSeeder extends Seeder
                     Permission::AUDIT_READ,
                     Permission::REGISTRATION_VIEW,
                     Permission::REGISTRATION_EDIT,
+                    Permission::CHAT_USE,
                 ],
             ],
             [
@@ -71,6 +76,7 @@ class RoleSeeder extends Seeder
                     Permission::AUDIT_READ,
                     Permission::REGISTRATION_VIEW,
                     Permission::REGISTRATION_EDIT,
+                    Permission::CHAT_USE,
                 ],
             ],
             [

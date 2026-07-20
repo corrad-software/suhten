@@ -18,6 +18,7 @@ import type {
   TaskTab,
   WorkflowType,
 } from "../types";
+import { notifyStaffWorkflowTask } from "@/api/st-registration";
 import { seedState } from "../mock";
 import { feeFor as charterFeeFor, slaTargetFor } from "../mock/charter";
 import { personaById } from "../mock/personas";
@@ -25,7 +26,7 @@ import { employerById } from "../mock/employers";
 import { useStSessionStore } from "./session";
 import { useStNotificationsStore } from "./notifications";
 
-const STORAGE_KEY = "st.workflow.state.v1";
+const STORAGE_KEY = "st.workflow.state.v5";
 const MAX_ACTIVE_TASKS = 3;
 
 // Demo PIN for the digital signature step.
@@ -129,18 +130,20 @@ export const useStWorkflowStore = defineStore("st-workflow", () => {
     return q?.actorRole;
   }
 
+  /** Oldest stage entry first — matches SLA countdown urgency. */
+  const fifoBySla = (arr: Application[]) =>
+    [...arr].sort((a, b) => Date.parse(a.stageEnteredAt) - Date.parse(b.stageEnteredAt));
+
   const inboxFor = (role: PersonaRole): Record<TaskTab, InboxItem[]> => {
     const active = activeStatusForRole[role];
-    const fifo = (arr: Application[]) =>
-      [...arr].sort((a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt));
 
-    const newItems = active ? fifo(applications.value.filter((a) => a.status === active)) : [];
+    const newItems = active ? fifoBySla(applications.value.filter((a) => a.status === active)) : [];
 
-    const queryItems = fifo(
+    const queryItems = fifoBySla(
       applications.value.filter((a) => a.status === "query_applicant" && lastQueryRole(a) === role),
     );
 
-    const completedItems = fifo(
+    const completedItems = fifoBySla(
       applications.value.filter(
         (a) =>
           a.assignedRole !== role &&
@@ -154,6 +157,21 @@ export const useStWorkflowStore = defineStore("st-workflow", () => {
       query: queryItems.map((a) => toInboxItem(a, role, "query")),
       completed: completedItems.map((a) => toInboxItem(a, role, "completed")),
     };
+  };
+
+  /** SLA FIFO head for "Baharu" — oldest stageEnteredAt in the role queue. */
+  const fifoHeadId = (role: PersonaRole): string | null => {
+    const active = activeStatusForRole[role];
+    if (!active) return null;
+    const head = fifoBySla(applications.value.filter((a) => a.status === active))[0];
+    return head?.id ?? null;
+  };
+
+  /** Only the SLA head may be claimed, and only while still untaken. */
+  const canClaimByFifo = (applicationId: string, role: PersonaRole): boolean => {
+    if (fifoHeadId(role) !== applicationId) return false;
+    const app = byId(applicationId);
+    return Boolean(app && !app.assigneePersonaId);
   };
 
   const activeCountFor = (role: PersonaRole): number =>
@@ -210,6 +228,84 @@ export const useStWorkflowStore = defineStore("st-workflow", () => {
     } else {
       app.slaTargetHours = 0;
     }
+  }
+
+  const STAGE_FOR_STAFF_ROLE: Record<"sos" | "technical" | "approver", ApplicationStatus> = {
+    sos: "sos_review",
+    technical: "technical_review",
+    approver: "pending_approval",
+  };
+
+  /** Progress rank — used to heal stale localStorage when opening an email deep link. */
+  function statusRank(status: ApplicationStatus): number {
+    const order: ApplicationStatus[] = [
+      "draft",
+      "awaiting_employer_confirm",
+      "awaiting_processing_payment",
+      "sos_review",
+      "query_applicant",
+      "technical_review",
+      "pending_approval",
+      "awaiting_registration_payment",
+      "certificate_issued",
+      "rejected",
+      "withdrawn",
+    ];
+    const i = order.indexOf(status);
+    return i < 0 ? 0 : i;
+  }
+
+  /**
+   * When an email deep link includes ?stage=…, advance a stale mock app so the
+   * recipient sees the same stage the email promised (localStorage can lag/reset).
+   */
+  function syncFromEmailStage(applicationId: string, stage: string): boolean {
+    const app = byId(applicationId);
+    if (!app) return false;
+    if (
+      stage !== "sos_review" &&
+      stage !== "technical_review" &&
+      stage !== "pending_approval"
+    ) {
+      return false;
+    }
+    if (statusRank(app.status) >= statusRank(stage)) {
+      return false;
+    }
+
+    const role: PersonaRole =
+      stage === "sos_review" ? "sos" : stage === "technical_review" ? "technical" : "approver";
+    const roleLabel =
+      role === "sos" ? "Pegawai SOS" : role === "technical" ? "Pegawai Teknikal" : "Pelulus";
+    const from = app.status;
+    app.status = stage;
+    assignTo(app, role, null);
+    app.updatedAt = new Date(now.value).toISOString();
+    addAudit(app, "system", `Disegerakkan dari e-mel tugasan (${roleLabel})`, {
+      actorRole: "system",
+      actorName: "Sistem",
+      fromStatus: from,
+      toStatus: stage,
+    });
+    return true;
+  }
+
+  /** Email SOS / technical / approver via backend (simulation inbox override). */
+  function emailStaffTask(app: Application, role: "sos" | "technical" | "approver") {
+    const moduleCode = app.workflowType === "CE" ? "RG-CE" : "RG-KE";
+    const stage = STAGE_FOR_STAFF_ROLE[role];
+    void notifyStaffWorkflowTask({
+      role,
+      refNo: app.refNo,
+      applicantName: app.applicant.fullName,
+      moduleCode,
+      applicationCode: app.id,
+      // Embed target stage so opening the link heals stale browser mock state.
+      actionPath: `/admin/st/applications/${app.id}?stage=${stage}`,
+      stepId: `mock-${role}`,
+    }).catch(() => {
+      // Non-blocking: UI transition must not fail if mail/API is unavailable.
+    });
   }
 
   // ── state machine ──────────────────────────────────────────────────────────
@@ -282,6 +378,7 @@ export const useStWorkflowStore = defineStore("st-workflow", () => {
         addAudit(app, actorId, "Permohonan memasuki giliran SOS", { toStatus: app.status });
         notify("p-faridah", "task_assigned", "Tugasan baharu di peti masuk",
           `Permohonan ${app.refNo} menunggu semakan SOS.`, app.id);
+        emailStaffTask(app, "sos");
         break;
       }
       case "verify_identity": {
@@ -310,12 +407,14 @@ export const useStWorkflowStore = defineStore("st-workflow", () => {
           addAudit(app, actorId, "Memajukan ke Pegawai Teknikal", { fromStatus: from, toStatus: app.status });
           notify("p-kumar", "task_assigned", "Tugasan semakan teknikal",
             `Permohonan ${app.refNo} menunggu semakan teknikal.`, app.id);
+          emailStaffTask(app, "technical");
         } else if (from === "technical_review") {
           setStatus("pending_approval");
           assignTo(app, "approver", null);
           addAudit(app, actorId, "Memajukan ke Pelulus", { fromStatus: from, toStatus: app.status });
           notify("p-zainab", "task_assigned", "Permohonan menunggu kelulusan",
             `Permohonan ${app.refNo} menunggu kelulusan & tandatangan digital.`, app.id);
+          emailStaffTask(app, "approver");
         }
         break;
       }
@@ -339,6 +438,7 @@ export const useStWorkflowStore = defineStore("st-workflow", () => {
         resolveNotifications(app.id, ["query_raised"], app.applicantPersonaId);
         notify("p-faridah", "task_assigned", "Pertanyaan dijawab",
           `Permohonan ${app.refNo} telah dikemas kini oleh pemohon.`, app.id);
+        emailStaffTask(app, "sos");
         break;
       }
       case "approve_sign": {
@@ -473,6 +573,8 @@ export const useStWorkflowStore = defineStore("st-workflow", () => {
     if (!app || !app.assignedRole || !session.role) return false;
     if (app.assigneePersonaId) return true; // already taken
     if (atActiveLimit(app.assignedRole)) return false; // max-3 rule
+    // Strict FIFO by SLA: only the oldest untaken stage clock may be claimed.
+    if (!canClaimByFifo(applicationId, app.assignedRole)) return false;
     app.assigneePersonaId = session.currentPersonaId;
     addAudit(app, session.currentPersonaId ?? "system", "Mengambil tugasan");
     return true;
@@ -496,13 +598,30 @@ export const useStWorkflowStore = defineStore("st-workflow", () => {
   }
 
   // ── persistence / lifecycle ──────────────────────────────────────────────
+  let applyingRemote = false;
+
   function persist() {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || applyingRemote) return;
     const notifications = useStNotificationsStore();
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify({ applications: applications.value, notifications: notifications.notifications, now: now.value }),
     );
+  }
+
+  function hydrateFromRaw(raw: string): boolean {
+    try {
+      const parsed = JSON.parse(raw);
+      applyingRemote = true;
+      applications.value = parsed.applications ?? [];
+      now.value = parsed.now ?? Date.now();
+      useStNotificationsStore().setAll(parsed.notifications ?? []);
+      applyingRemote = false;
+      return true;
+    } catch {
+      applyingRemote = false;
+      return false;
+    }
   }
 
   function seedFresh() {
@@ -516,17 +635,19 @@ export const useStWorkflowStore = defineStore("st-workflow", () => {
   function init() {
     if (typeof window !== "undefined") {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        try {
-          const parsed = JSON.parse(raw);
-          applications.value = parsed.applications ?? [];
-          now.value = parsed.now ?? Date.now();
-          useStNotificationsStore().setAll(parsed.notifications ?? []);
-          return;
-        } catch {
-          /* fall through to fresh seed */
-        }
+      if (raw && hydrateFromRaw(raw)) {
+        window.addEventListener("storage", (event) => {
+          if (event.key === STORAGE_KEY && event.newValue) {
+            hydrateFromRaw(event.newValue);
+          }
+        });
+        return;
       }
+      window.addEventListener("storage", (event) => {
+        if (event.key === STORAGE_KEY && event.newValue) {
+          hydrateFromRaw(event.newValue);
+        }
+      });
     }
     seedFresh();
   }
@@ -535,7 +656,29 @@ export const useStWorkflowStore = defineStore("st-workflow", () => {
     seedFresh();
   }
 
-  watch([applications, now], persist, { deep: true });
+  // Persist app changes; keep `now` updates from clobbering newer apps written by another tab.
+  watch(applications, persist, { deep: true });
+  watch(now, () => {
+    if (typeof window === "undefined" || applyingRemote) return;
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) {
+        persist();
+        return;
+      }
+      const parsed = JSON.parse(raw) as { applications?: Application[]; notifications?: unknown; now?: number };
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          applications: parsed.applications ?? applications.value,
+          notifications: parsed.notifications ?? useStNotificationsStore().notifications,
+          now: now.value,
+        }),
+      );
+    } catch {
+      persist();
+    }
+  });
 
   return {
     applications,
@@ -546,10 +689,13 @@ export const useStWorkflowStore = defineStore("st-workflow", () => {
     myApplications,
     confirmationsFor,
     inboxFor,
+    fifoHeadId,
+    canClaimByFifo,
     activeCountFor,
     atActiveLimit,
     feeFor,
     transition,
+    syncFromEmailStage,
     submitNewApplication,
     bulkApprove,
     takeTask,

@@ -17,10 +17,12 @@ import DocumentUploadField from "../../components/DocumentUploadField.vue";
 import {
   PLACE_RESTRICTIONS,
   VOLTAGE_RESTRICTIONS,
+  ageFromDob,
   allowedPeriods,
   canSelfEmploy,
   maxPeriodForAge,
   oshRequired,
+  parseMyKadDob,
   type EmployerCategory,
   type PlaceRestriction,
   type VoltageRestriction,
@@ -39,6 +41,8 @@ const regStore = useStRegistrationStore();
 const portalBase = computed(() => (route.path.startsWith("/admin/st") ? "/admin/st" : "/st"));
 
 const step = ref(0);
+/** Highest step index the user has reached — enables jumping back/forward among visited tabs. */
+const maxReachedStep = ref(0);
 const STEPS = computed(() => [
   ts("st.okApply.stepProfile"),
   ts("st.okApply.stepCompetency"),
@@ -115,6 +119,16 @@ watch(
   },
 );
 
+/** Set Tarikh Lahir + Umur from MyKad YYMMDD prefix. */
+function applyDobFromMyKad() {
+  const dob = parseMyKadDob(form.icNumber);
+  if (!dob) return;
+  form.dob = dob;
+  form.age = ageFromDob(dob);
+}
+
+watch(() => form.icNumber, applyDobFromMyKad);
+
 function voltageLabel(code: VoltageRestriction): string {
   const row = VOLTAGE_RESTRICTIONS.find((v) => v.code === code);
   return locale.value === "bi" ? (row?.bi ?? code) : (row?.bm ?? code);
@@ -129,6 +143,24 @@ function prefill() {
   form.fullName = persona.value?.name ?? "";
   form.icNumber = persona.value?.icNumber ?? "850101105432";
   form.email = persona.value?.email ?? "";
+  applyDobFromMyKad();
+}
+
+type DraftPayload = Partial<typeof form> & {
+  documents?: AppDocument[];
+  step?: number;
+  maxReachedStep?: number;
+};
+
+function persistDraft() {
+  if (typeof window === "undefined") return;
+  const payload: DraftPayload = {
+    ...form,
+    documents: documents.value,
+    step: step.value,
+    maxReachedStep: maxReachedStep.value,
+  };
+  localStorage.setItem(DRAFT_KEY, JSON.stringify(payload));
 }
 
 // Structured address entry; kept flattened in form.address so the draft and the
@@ -147,18 +179,28 @@ function loadDraft() {
   const raw = localStorage.getItem(DRAFT_KEY);
   if (!raw) return;
   try {
-    const d = JSON.parse(raw) as Partial<typeof form> & { documents?: AppDocument[] };
-    Object.assign(form, d);
-    if (d.documents) documents.value = d.documents;
+    const d = JSON.parse(raw) as DraftPayload;
+    const { documents: docs, step: savedStep, maxReachedStep: savedMax, ...fields } = d;
+    Object.assign(form, fields);
+    if (docs) documents.value = docs;
+    if (typeof savedStep === "number" && savedStep >= 0) {
+      step.value = Math.min(savedStep, STEPS.value.length - 1);
+    }
+    if (typeof savedMax === "number" && savedMax >= 0) {
+      maxReachedStep.value = Math.min(Math.max(savedMax, step.value), STEPS.value.length - 1);
+    } else {
+      maxReachedStep.value = step.value;
+    }
   } catch {
     /* ignore */
   }
 }
 
-function saveDraft() {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(DRAFT_KEY, JSON.stringify({ ...form, documents: documents.value }));
-  toast.info(ts("st.okApply.saveDraft"), ts("st.okApply.draftSaved"));
+function saveDraft(showToast = true) {
+  persistDraft();
+  if (showToast) {
+    toast.info(ts("st.okApply.saveDraft"), ts("st.okApply.draftSaved"));
+  }
 }
 
 function clearDraft() {
@@ -168,6 +210,7 @@ function clearDraft() {
 onMounted(() => {
   prefill();
   loadDraft();
+  applyDobFromMyKad();
   // Re-hydrate the structured address from whatever the draft/prefill left behind.
   addressForm.value = parseAddress(form.address);
 });
@@ -179,7 +222,7 @@ watch(
   () => {
     if (draftTimer) window.clearTimeout(draftTimer);
     draftTimer = window.setTimeout(() => {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify({ ...form, documents: documents.value }));
+      persistDraft();
     }, 800);
   },
   { deep: true },
@@ -220,11 +263,24 @@ function next() {
     toast.error(ts("st.okApply.incomplete"), ts("st.okApply.incomplete"));
     return;
   }
-  if (step.value < STEPS.value.length - 1) step.value++;
+  if (step.value < STEPS.value.length - 1) {
+    step.value++;
+    if (step.value > maxReachedStep.value) maxReachedStep.value = step.value;
+  }
+  saveDraft(true);
 }
 
 function back() {
-  if (step.value > 0) step.value--;
+  if (step.value > 0) {
+    step.value--;
+    persistDraft();
+  }
+}
+
+function goToStep(target: number) {
+  if (target < 0 || target > maxReachedStep.value || target === step.value) return;
+  step.value = target;
+  saveDraft(true);
 }
 
 function downloadOsh() {
@@ -297,7 +353,7 @@ async function submit() {
       <button
         type="button"
         class="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
-        @click="saveDraft"
+        @click="saveDraft()"
       >
         {{ ts("st.okApply.saveDraft") }}
       </button>
@@ -305,16 +361,26 @@ async function submit() {
 
     <ol class="flex items-center gap-1 text-xs">
       <li v-for="(s, i) in STEPS" :key="s" class="flex flex-1 items-center gap-1">
-        <span
-          :class="[
-            'flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold',
-            i < step ? 'bg-emerald-500 text-white' : i === step ? 'bg-[var(--accent-600)] text-white' : 'bg-slate-200 text-slate-500',
-          ]"
+        <button
+          type="button"
+          class="flex min-w-0 items-center gap-1 rounded-md text-left transition-opacity"
+          :class="i <= maxReachedStep && i !== step ? 'cursor-pointer hover:opacity-80' : i === step ? 'cursor-default' : 'cursor-not-allowed opacity-60'"
+          :disabled="i > maxReachedStep"
+          :aria-current="i === step ? 'step' : undefined"
+          :title="i <= maxReachedStep ? s : undefined"
+          @click="goToStep(i)"
         >
-          <Check v-if="i < step" class="h-3.5 w-3.5" />
-          <template v-else>{{ i + 1 }}</template>
-        </span>
-        <span :class="['hidden truncate sm:inline', i === step ? 'font-medium text-slate-700' : 'text-slate-400']">{{ s }}</span>
+          <span
+            :class="[
+              'flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold',
+              i < step ? 'bg-emerald-500 text-white' : i === step ? 'bg-[var(--accent-600)] text-white' : i <= maxReachedStep ? 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-300' : 'bg-slate-200 text-slate-500',
+            ]"
+          >
+            <Check v-if="i < step" class="h-3.5 w-3.5" />
+            <template v-else>{{ i + 1 }}</template>
+          </span>
+          <span :class="['hidden truncate sm:inline', i === step ? 'font-medium text-slate-700' : i <= maxReachedStep ? 'text-slate-600' : 'text-slate-400']">{{ s }}</span>
+        </button>
         <span v-if="i < STEPS.length - 1" class="h-px flex-1 bg-slate-200" />
       </li>
     </ol>
@@ -344,11 +410,11 @@ async function submit() {
           </label>
           <label class="block">
             <span class="mb-1 block text-sm font-medium text-slate-700">{{ ts("st.okApply.dob") }}</span>
-            <input v-model="form.dob" type="date" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm" />
+            <input v-model="form.dob" type="date" readonly class="w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-700" />
           </label>
           <label class="block">
             <span class="mb-1 block text-sm font-medium text-slate-700">{{ ts("st.okApply.age") }}</span>
-            <input v-model.number="form.age" type="number" min="18" max="90" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm" />
+            <input v-model.number="form.age" type="number" min="18" max="90" readonly class="w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-700" />
           </label>
           <label class="block">
             <span class="mb-1 block text-sm font-medium text-slate-700">{{ ts("st.okApply.phone") }}</span>

@@ -170,3 +170,46 @@ export type AuditLog = {
   createdAt: string;
   user?: { id: number; name: string; email: string } | null;
 };
+
+/** AINA — User Chat */
+export type ChatMessage = {
+  id: number;
+  chatSessionId: number;
+  role: "user" | "assistant";
+  content: string;
+  citations: string[];
+  replyToMessageId?: number | null;
+  replyToUserId?: number | null;
+  replyToMessage?: ChatMessage | null;
+  replyToUser?: { id: number; name: string } | null;
+  mentionToUserId?: number | null;
+  mentionToUser?: { id: number; name: string } | null;
+  createdAt: string;
+};
+
+export type ChatSession = {
+  id: number;
+  openaiThreadId: string;
+  title: string;
+  moduleFilter: string | null;
+  userId: number | null;
+  sessionType?: "solo" | "group";
+  chatType?: string;
+  messages?: ChatMessage[];
+  isFavorited?: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ChatSuggestion = {
+  id: string;
+  label: string;
+  module: string;
+};
+
+export type ChatFavoriteItem = {
+  id: number;
+  message: ChatMessage;
+  session: ChatSession | null;
+  createdAt: string;
+};

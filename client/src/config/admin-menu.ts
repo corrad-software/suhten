@@ -10,6 +10,7 @@ import {
   Eye,
   FileText,
   Gauge,
+  GitBranch,
   Image,
   LayoutGrid,
   Link2,
@@ -209,6 +210,17 @@ export const DEFAULT_MENU: MenuGroupDef[] = [
     id: "development",
     label: "Development",
     items: [
+      {
+        id: "workflows",
+        label: "Workflows",
+        to: "/admin/workflows",
+        icon: GitBranch,
+        children: [
+          { id: "workflows-all", label: "Definitions", to: "/admin/workflows" },
+          { id: "workflows-new", label: "New Workflow", to: "/admin/workflows/new" },
+          { id: "workflows-instances", label: "Instances", to: "/admin/workflows/instances" },
+        ],
+      },
       { id: "developers-guide", label: "Developers Guide", to: "/admin/development/developers-guide", icon: BookOpen },
       { id: "database-schema", label: "Database Schema", to: "/admin/development/database-schema", icon: Database },
       { id: "api-explorer", label: "API Explorer", to: "/admin/development/api-explorer", icon: Cable },

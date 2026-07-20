@@ -9,8 +9,30 @@
         "php": "^8.3",
         "laravel/framework": "^13.0",
         "laravel/sanctum": "^4.3",
-        "laravel/tinker": "^3.0"
+        "laravel/tinker": "^3.0",
+        "phpoffice/phpspreadsheet": "^5.9",
+        "phpoffice/phpword": "^1.4",
+        "resend/resend-php": "^1.5",
+        "smalot/pdfparser": "^2.12",
+        "solution-forest/workflow-engine-core": "@dev",
+        "solution-forest/workflow-engine-laravel": "@dev"
     },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "C:/ST/workflow-engine-core",
+            "options": {
+                "symlink": true
+            }
+        },
+        {
+            "type": "path",
+            "url": "C:/ST/workflow-suhten",
+            "options": {
+                "symlink": true
+            }
+        }
+    ],
     "require-dev": {
         "fakerphp/faker": "^1.23",
         "laravel/pail": "^1.2.2",

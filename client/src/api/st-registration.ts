@@ -28,6 +28,7 @@ export type StRegistrationApplicationDto = {
   feeAmount?: number | string | null;
   note?: string | null;
   detail?: RegistrationApplication["detail"] | null;
+  workflowInstanceId?: string | null;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -88,6 +89,7 @@ export function mapApplicationDto(dto: StRegistrationApplicationDto): Registrati
     assignedOfficer: dto.assignedOfficer ?? undefined,
     feeAmount: dto.feeAmount != null ? Number(dto.feeAmount) : undefined,
     note: dto.note ?? undefined,
+    workflowInstanceId: dto.workflowInstanceId ?? undefined,
     detail: dto.detail ?? undefined,
   };
 }
@@ -126,6 +128,37 @@ export async function createStRegistrationApplication(input: StRegistrationAppli
     method: "POST",
     body: JSON.stringify(input),
   });
+}
+
+export type StaffTaskNotifyInput = {
+  role: "sos" | "technical" | "approver";
+  refNo?: string;
+  applicantName?: string;
+  moduleCode?: string;
+  applicationId?: number;
+  applicationCode?: string;
+  stepId?: string;
+  actionPath?: string;
+};
+
+/** Fire-and-forget staff task email (simulation override applies server-side). */
+export async function notifyStaffWorkflowTask(input: StaffTaskNotifyInput) {
+  return apiRequest<{ data: { success: boolean } }>("/api/st/staff-task-notify", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export async function getStaffTaskNotifyState(applicationCode: string) {
+  return apiRequest<{
+    data: {
+      role: "sos" | "technical" | "approver";
+      refNo?: string | null;
+      moduleCode?: string | null;
+      actionUrl?: string | null;
+      notifiedAt?: string | null;
+    };
+  }>(`/api/st/staff-task-notify/${encodeURIComponent(applicationCode)}`);
 }
 
 export async function listStRegisteredEntities(params = "") {

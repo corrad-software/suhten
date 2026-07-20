@@ -13,6 +13,7 @@ import {
   GraduationCap,
   Inbox,
   Landmark,
+  MessageSquare,
   Search,
   Settings,
   Shield,
@@ -114,6 +115,7 @@ export const STAFF_MENU: StaffMenuGroup[] = [
       },
       { id: "notifications", label: "Notifikasi", to: "/st/notifications", icon: Bell },
       { id: "search", label: "Carian & Semakan Status", to: "/st/search", icon: Search },
+      { id: "aina", label: "AINA — User", to: "/st/aina", icon: MessageSquare },
     ],
   },
   {

@@ -288,10 +288,10 @@ export function seedApplications(baseNow: number): Application[] {
       ]),
       identityVerified: true,
     },
-    // 4) OK — SOS review, RED (6h, overdue)
+    // 4) OK — SOS review, RED (6h, overdue) — unassigned (max-3 lock demo)
     {
       ref: 105, type: "OK", status: "sos_review", applicantPersonaId: "p-ahmad", applicant: ahmad,
-      competencyCategory: "PK", period: 2, employerId: "emp-tenaga-murni", assignedRole: "sos", assigneePersonaId: "p-faridah",
+      competencyCategory: "PK", period: 2, employerId: "emp-tenaga-murni", assignedRole: "sos", assigneePersonaId: null,
       stageHoursAgo: 6, createdHoursAgo: 40, documents: docs(baseNow, OK_DOCS),
       payments: [paidPayment(baseNow, "processing", 50, 6.2)],
       auditTrail: audit(baseNow, [
@@ -299,7 +299,7 @@ export function seedApplications(baseNow: number): Application[] {
         { actorPersonaId: "p-ahmad", action: "Membayar yuran pemprosesan", hoursAgo: 6.2, toStatus: "sos_review" },
       ]),
     },
-    // 5) OK — SOS review, GREEN (0.4h) — the 4th unassigned item (max-3 lock demo)
+    // 5) OK — SOS review, GREEN (0.4h) — unassigned (max-3 lock demo)
     {
       ref: 106, type: "OK", status: "sos_review", applicantPersonaId: "p-tan", applicant: tan,
       competencyCategory: "PJ", period: 3, employerId: "emp-kuasa-bistari", assignedRole: "sos", assigneePersonaId: null,
@@ -377,10 +377,10 @@ export function seedApplications(baseNow: number): Application[] {
         trustmarkId: "ST-TRUST-00110",
       },
     },
-    // 10) CE — SOS review, YELLOW (unassigned → queued behind the max-3 lock)
+    // 10) CE — SOS review, YELLOW (assigned to Faridah — one of the active 3)
     {
       ref: 202, type: "CE", status: "sos_review", applicantPersonaId: "p-lim", applicant: lim,
-      contractorClass: "B", period: 2, employerId: "emp-elektrik-maju", assignedRole: "sos", assigneePersonaId: null,
+      contractorClass: "B", period: 2, employerId: "emp-elektrik-maju", assignedRole: "sos", assigneePersonaId: "p-faridah",
       stageHoursAgo: 2.5, createdHoursAgo: 20, documents: docs(baseNow, CE_DOCS),
       payments: [paidPayment(baseNow, "processing", 100, 2.6)],
       // Class B needs PW4×1 + PW3×1 + PW1×1 — satisfied & confirmed.
@@ -393,6 +393,7 @@ export function seedApplications(baseNow: number): Application[] {
         { actorPersonaId: "p-lim", action: "Menghantar permohonan kontraktor", hoursAgo: 20 },
         { actorPersonaId: "p-tan", action: "Mengesahkan lantikan Orang Kompeten", hoursAgo: 14 },
         { actorPersonaId: "p-lim", action: "Membayar yuran pemprosesan", hoursAgo: 2.6, toStatus: "sos_review" },
+        { actorPersonaId: "p-faridah", action: "Mengambil tugasan", hoursAgo: 2.4 },
       ]),
     },
 

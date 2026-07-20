@@ -1,6 +1,11 @@
 @echo off
 REM SSH tunnel: localhost:5433 -> Postgres on private host via bastion
 REM Keep this window open while developing against PostgreSQL.
+REM From Git Bash / MINGW64 use instead:
+REM   ./scripts/ssh-tunnel-pgsql.sh
+REM Or from cmd.exe / PowerShell (this file):
+REM   scripts\ssh-tunnel-pgsql.bat
+REM   cmd //c scripts\ssh-tunnel-pgsql.bat
 
 set KEY=%USERPROFILE%\.ssh\bastion-key-st.pem
 if not exist "%KEY%" (

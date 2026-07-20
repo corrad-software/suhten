@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { ArrowLeft, BadgeCheck, Building2, FileText, Receipt, ShieldCheck, UserCheck } from "lucide-vue-next";
 
+import { getStaffTaskNotifyState } from "@/api/st-registration";
 import { useStWorkflowStore } from "../stores/workflow";
 import { competencyMeta, contractorClassMeta } from "../mock/competencies";
 import { workflowLabel } from "../status";
@@ -17,6 +18,44 @@ const router = useRouter();
 const workflow = useStWorkflowStore();
 
 const app = computed(() => workflow.byId(String(route.params.id)));
+
+const STAGE_BY_ROLE: Record<string, string> = {
+  sos: "sos_review",
+  technical: "technical_review",
+  approver: "pending_approval",
+};
+
+/** Heal mock status from email deep-link (?stage=) or last server notify. */
+async function applyEmailStageSync() {
+  const id = String(route.params.id ?? "");
+  if (!id) return;
+
+  const stageFromQuery = typeof route.query.stage === "string" ? route.query.stage : "";
+  if (stageFromQuery) {
+    workflow.syncFromEmailStage(id, stageFromQuery);
+    return;
+  }
+
+  try {
+    const res = await getStaffTaskNotifyState(id);
+    const role = res.data?.role;
+    const stage = role ? STAGE_BY_ROLE[role] : undefined;
+    if (stage) workflow.syncFromEmailStage(id, stage);
+  } catch {
+    // Optional — ignore if unauthenticated or no notify recorded.
+  }
+}
+
+onMounted(() => {
+  void applyEmailStageSync();
+});
+
+watch(
+  () => [route.params.id, route.query.stage],
+  () => {
+    void applyEmailStageSync();
+  },
+);
 
 const categoryLine = computed(() => {
   const a = app.value;

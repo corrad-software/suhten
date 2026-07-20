@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { Shield, ArrowRight, AlertCircle, Eye, EyeOff } from "lucide-vue-next";
 
 import { useLocale } from "@/composables/useLocale";
@@ -10,6 +10,7 @@ import { useUiThemeStore } from "@/stores/uiTheme";
 import { API_BASE_URL } from "@/env";
 
 const router = useRouter();
+const route = useRoute();
 const auth = useAuthStore();
 const site = useSiteStore();
 const uiTheme = useUiThemeStore();
@@ -26,6 +27,14 @@ function resolveUrl(url: string) {
   return `${API_BASE_URL}${url}`;
 }
 
+function resolvePostLoginPath(): string {
+  const raw = route.query.redirect;
+  if (typeof raw === "string" && raw.startsWith("/") && !raw.startsWith("//") && raw.startsWith("/admin")) {
+    return raw;
+  }
+  return "/admin";
+}
+
 onMounted(() => {
   if (!site.initialized) site.load();
 });
@@ -34,7 +43,7 @@ async function submit() {
   error.value = "";
   try {
     await auth.signIn(email.value, password.value);
-    router.push("/admin");
+    router.push(resolvePostLoginPath());
   } catch (e) {
     error.value = e instanceof Error ? e.message : t("login.failed");
   }

@@ -35,4 +35,15 @@ return [
         ],
     ],
 
+    'anthropic' => [
+        'key' => env('ANTHROPIC_API_KEY'),
+        'model' => env('ANTHROPIC_MODEL', 'claude-haiku-4-5'),
+        'chat_model' => env('ANTHROPIC_CHAT_MODEL') ?: env('ANTHROPIC_MODEL', 'claude-sonnet-4-5'),
+        'base_url' => env('ANTHROPIC_BASE_URL', 'https://api.anthropic.com'),
+    ],
+
+    'st' => [
+        'system_url' => env('ST_SYSTEM_URL', env('APP_URL', 'http://localhost').'/admin/st'),
+    ],
+
 ];

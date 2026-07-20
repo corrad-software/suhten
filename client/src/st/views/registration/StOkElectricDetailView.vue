@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { ArrowLeft, FileText } from "lucide-vue-next";
+import { ArrowLeft, FileText, GitBranch } from "lucide-vue-next";
 
 import { useLocale } from "@/composables/useLocale";
 import { useStRegistrationStore } from "../../stores/registration";
@@ -73,6 +73,21 @@ function back() {
           <RegStatusBadge :status="app.status" />
         </div>
         <p class="mt-1 font-mono text-sm text-slate-600">{{ app.refNo }}</p>
+        <p v-if="app.workflowInstanceId" class="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+          <GitBranch class="h-3.5 w-3.5 text-slate-400" />
+          <span>Workflow</span>
+          <router-link
+            v-if="portalBase.startsWith('/admin')"
+            class="font-mono text-[var(--accent-700)] hover:underline"
+            :to="{ path: '/admin/workflows/instances', query: { id: app.workflowInstanceId } }"
+            :title="app.workflowInstanceId"
+          >
+            {{ app.workflowInstanceId.slice(0, 8) }}…
+          </router-link>
+          <span v-else class="font-mono text-slate-600" :title="app.workflowInstanceId">
+            {{ app.workflowInstanceId.slice(0, 8) }}…
+          </span>
+        </p>
       </div>
     </div>
 

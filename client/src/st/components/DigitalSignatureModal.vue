@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
-import { ShieldCheck, X } from "lucide-vue-next";
+import { X } from "lucide-vue-next";
 
+import posDigicertLogo from "../assets/pos-digicert-logo.png";
 import { DEMO_SIGNATURE_PIN } from "../stores/workflow";
 
 const props = defineProps<{ open: boolean }>();
@@ -32,14 +33,17 @@ function confirm() {
 <template>
   <div v-if="open" class="fixed inset-0 z-[90] flex items-center justify-center bg-slate-900/40 px-4 backdrop-blur-sm">
     <div class="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-6 shadow-2xl">
-      <div class="mb-4 flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--accent-50)]">
-            <ShieldCheck class="h-5 w-5 text-[var(--accent-700)]" />
-          </div>
+      <div class="mb-4 flex items-start justify-between gap-3">
+        <div class="min-w-0">
+          <img
+            :src="posDigicertLogo"
+            alt="Pos Digicert"
+            class="mb-3 h-9 w-auto max-w-[220px] object-contain object-left"
+          />
           <h3 class="text-base font-semibold text-slate-900">Tandatangan Digital</h3>
+          <p class="mt-0.5 text-[11px] text-slate-400">Dikuasakan oleh Pos Digicert</p>
         </div>
-        <button class="text-slate-400 hover:text-slate-600" @click="emit('cancel')"><X class="h-5 w-5" /></button>
+        <button class="shrink-0 text-slate-400 hover:text-slate-600" @click="emit('cancel')"><X class="h-5 w-5" /></button>
       </div>
 
       <p class="mb-4 text-sm text-slate-500">
