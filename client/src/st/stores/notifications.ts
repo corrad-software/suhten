@@ -56,5 +56,19 @@ export const useStNotificationsStore = defineStore("st-notifications", () => {
     }
   }
 
-  return { notifications, forCurrentPersona, unreadCount, setAll, push, markRead, markAllRead };
+  /**
+   * Retire action-required notifications once their task is done, so the Inbox
+   * reflects only outstanding work (D11: Inbox = current tasks).
+   * Marks matching notifications read rather than deleting them, keeping history.
+   */
+  function resolve(applicationId: string, types: NotificationType[], personaId?: string) {
+    for (const n of notifications.value) {
+      if (n.applicationId !== applicationId) continue;
+      if (!types.includes(n.type)) continue;
+      if (personaId && n.personaId !== personaId) continue;
+      n.read = true;
+    }
+  }
+
+  return { notifications, forCurrentPersona, unreadCount, setAll, push, markRead, markAllRead, resolve };
 });

@@ -75,6 +75,8 @@ export interface ActionPayload {
   bank?: string;
   pin?: string;
   documents?: AppDocument[];
+  /** Real gateway transaction details (ToyyibPay), when not a simulated payment. */
+  payment?: { fpxRef?: string; receiptNo?: string; provider?: string };
 }
 
 export const useStWorkflowStore = defineStore("st-workflow", () => {
@@ -190,6 +192,15 @@ export const useStWorkflowStore = defineStore("st-workflow", () => {
     useStNotificationsStore().push(personaId, type, title, body, applicationId, new Date(now.value).toISOString());
   }
 
+  /**
+   * Retire the action-required notification once the task behind it is done, so
+   * the Inbox only surfaces outstanding work. Without this, e.g. a majikan keeps
+   * seeing "Pengesahan lantikan diperlukan" for an application already confirmed.
+   */
+  function resolveNotifications(applicationId: string, types: NotificationType[], personaId?: string) {
+    useStNotificationsStore().resolve(applicationId, types, personaId);
+  }
+
   function assignTo(app: Application, role: PersonaRole | null, personaId: string | null = null) {
     app.assignedRole = role;
     app.assigneePersonaId = personaId;
@@ -242,6 +253,8 @@ export const useStWorkflowStore = defineStore("st-workflow", () => {
         }
         setStatus("awaiting_processing_payment");
         addAudit(app, actorId, "Mengesahkan lantikan", { fromStatus: from, toStatus: app.status });
+        // The confirmation task is done — retire the majikan/OK's request notice.
+        resolveNotifications(app.id, ["appointment_request"]);
         notify(app.applicantPersonaId, "payment_due", "Lantikan disahkan",
           `Sila bayar yuran pemprosesan bagi ${app.refNo}.`, app.id);
         break;
@@ -250,6 +263,7 @@ export const useStWorkflowStore = defineStore("st-workflow", () => {
         if (from !== "awaiting_employer_confirm") break;
         setStatus("rejected");
         addAudit(app, actorId, "Menolak lantikan", { fromStatus: from, toStatus: app.status, note: payload.note });
+        resolveNotifications(app.id, ["appointment_request"]);
         notify(app.applicantPersonaId, "rejected", "Lantikan ditolak", `Lantikan bagi ${app.refNo} telah ditolak.`, app.id);
         break;
       }
@@ -257,10 +271,12 @@ export const useStWorkflowStore = defineStore("st-workflow", () => {
         if (from !== "awaiting_processing_payment") break;
         app.payments.push({
           id: nextId("pay"), kind: "processing", amount: feeFor(app, "processing"), currency: "MYR",
-          status: "paid", fpxRef: nextId("FPX").toUpperCase(), bank: payload.bank ?? "Maybank2u",
-          paidAt: new Date(now.value).toISOString(), receiptNo: nextId("RCP").toUpperCase(),
+          status: "paid", fpxRef: payload.payment?.fpxRef ?? nextId("FPX").toUpperCase(),
+          bank: payload.bank ?? payload.payment?.provider ?? "Maybank2u",
+          paidAt: new Date(now.value).toISOString(), receiptNo: payload.payment?.receiptNo ?? nextId("RCP").toUpperCase(),
         });
         addAudit(app, actorId, "Membayar yuran pemprosesan");
+        resolveNotifications(app.id, ["payment_due"], app.applicantPersonaId);
         setStatus("sos_review");
         assignTo(app, "sos", null);
         addAudit(app, actorId, "Permohonan memasuki giliran SOS", { toStatus: app.status });
@@ -279,11 +295,15 @@ export const useStWorkflowStore = defineStore("st-workflow", () => {
         setStatus("query_applicant");
         assignTo(app, null);
         addAudit(app, actorId, "Membangkitkan pertanyaan", { fromStatus: from, toStatus: app.status, note: payload.note });
+        // Application leaves the officer's queue — retire their task notice.
+        resolveNotifications(app.id, ["task_assigned"]);
         notify(app.applicantPersonaId, "query_raised", "Pertanyaan daripada pegawai",
           `Permohonan ${app.refNo} memerlukan tindakan anda.`, app.id);
         break;
       }
       case "forward": {
+        // Retire the current officer's task notice before raising the next one.
+        resolveNotifications(app.id, ["task_assigned"]);
         if (from === "sos_review") {
           setStatus("technical_review");
           assignTo(app, "technical", null);
@@ -304,6 +324,8 @@ export const useStWorkflowStore = defineStore("st-workflow", () => {
         setStatus("rejected");
         assignTo(app, null);
         addAudit(app, actorId, "Menolak permohonan", { fromStatus: from, toStatus: app.status, note: payload.note });
+        // Terminal — nothing outstanding for anyone on this application.
+        resolveNotifications(app.id, ["task_assigned", "appointment_request", "payment_due", "query_raised"]);
         notify(app.applicantPersonaId, "rejected", "Permohonan ditolak",
           `Permohonan ${app.refNo} telah ditolak.`, app.id);
         break;
@@ -313,6 +335,8 @@ export const useStWorkflowStore = defineStore("st-workflow", () => {
         setStatus("sos_review");
         assignTo(app, "sos", null);
         addAudit(app, actorId, "Menghantar semula maklumat", { fromStatus: from, toStatus: app.status, note: payload.note });
+        // Applicant answered the query — retire their query notice.
+        resolveNotifications(app.id, ["query_raised"], app.applicantPersonaId);
         notify("p-faridah", "task_assigned", "Pertanyaan dijawab",
           `Permohonan ${app.refNo} telah dikemas kini oleh pemohon.`, app.id);
         break;
@@ -323,6 +347,8 @@ export const useStWorkflowStore = defineStore("st-workflow", () => {
         setStatus("awaiting_registration_payment");
         assignTo(app, null);
         addAudit(app, actorId, "Meluluskan & menandatangani secara digital", { fromStatus: from, toStatus: app.status });
+        // Approval done — retire the approver's task notice.
+        resolveNotifications(app.id, ["task_assigned"]);
         notify(app.applicantPersonaId, "approved", "Permohonan diluluskan",
           `Permohonan ${app.refNo} diluluskan. Sila bayar yuran pendaftaran.`, app.id);
         break;
@@ -331,10 +357,12 @@ export const useStWorkflowStore = defineStore("st-workflow", () => {
         if (from !== "awaiting_registration_payment") break;
         app.payments.push({
           id: nextId("pay"), kind: "registration", amount: feeFor(app, "registration"), currency: "MYR",
-          status: "paid", fpxRef: nextId("FPX").toUpperCase(), bank: payload.bank ?? "Maybank2u",
-          paidAt: new Date(now.value).toISOString(), receiptNo: nextId("RCP").toUpperCase(),
+          status: "paid", fpxRef: payload.payment?.fpxRef ?? nextId("FPX").toUpperCase(),
+          bank: payload.bank ?? payload.payment?.provider ?? "Maybank2u",
+          paidAt: new Date(now.value).toISOString(), receiptNo: payload.payment?.receiptNo ?? nextId("RCP").toUpperCase(),
         });
         addAudit(app, actorId, "Membayar yuran pendaftaran");
+        resolveNotifications(app.id, ["payment_due", "approved"], app.applicantPersonaId);
         issueCertificate(app);
         setStatus("certificate_issued");
         addAudit(app, "system", "Sijil digital dikeluarkan", { actorRole: "system", actorName: "Sistem", toStatus: app.status });
@@ -347,6 +375,8 @@ export const useStWorkflowStore = defineStore("st-workflow", () => {
         setStatus("withdrawn");
         assignTo(app, null);
         addAudit(app, actorId, "Menarik balik permohonan", { fromStatus: from, toStatus: app.status });
+        // Terminal — retire every outstanding action notice for this application.
+        resolveNotifications(app.id, ["task_assigned", "appointment_request", "payment_due", "query_raised"]);
         break;
       }
     }
