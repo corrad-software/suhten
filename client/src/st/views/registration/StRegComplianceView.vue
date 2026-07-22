@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { ShieldAlert } from "lucide-vue-next";
 
 import { useLocale } from "@/composables/useLocale";
 import type { StMessageKey } from "@/i18n/st-messages";
@@ -10,6 +9,7 @@ import { useRegistrationModule } from "../../composables/useRegistrationModule";
 import type { SmartTableColumn } from "../../composables/useSmartTable";
 import ComplianceBadge from "../../components/ComplianceBadge.vue";
 import SmartTable from "../../components/SmartTable.vue";
+import StPageHero from "../../components/StPageHero.vue";
 
 const { ts, locale } = useLocale();
 const regStore = useStRegistrationStore();
@@ -66,37 +66,30 @@ const columns = computed<SmartTableColumn<ComplianceRow>[]>(() => [
 
 <template>
   <div v-if="code && def" class="space-y-8">
-    <div class="flex items-start gap-3">
-      <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--accent-50)]">
-        <ShieldAlert class="h-5 w-5 text-[var(--accent-700)]" />
+    <StPageHero :title="ts('st.reg.compliance')" :subtitle="`${title} · ${ts('st.reg.complianceSubtitle')}`">
+      <div class="mt-2 flex flex-wrap items-center gap-2">
+        <span class="rounded-md bg-slate-100 dark:bg-slate-700 px-2 py-0.5 font-mono text-xs text-slate-600 dark:text-slate-400">{{ code }}</span>
       </div>
-      <div>
-        <div class="flex flex-wrap items-center gap-2">
-          <h1 class="text-xl font-semibold text-slate-900">{{ ts("st.reg.compliance") }}</h1>
-          <span class="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs text-slate-600">{{ code }}</span>
-        </div>
-        <p class="text-sm text-slate-500">{{ title }} · {{ ts("st.reg.complianceSubtitle") }}</p>
-      </div>
-    </div>
+    </StPageHero>
 
-    <p class="text-xs text-slate-400">{{ ts("st.common.mockNote") }}</p>
+    <p class="text-xs text-slate-400 dark:text-slate-500">{{ ts("st.common.mockNote") }}</p>
 
-    <div class="grid grid-cols-2 gap-y-4 sm:grid-cols-4 sm:divide-x sm:divide-slate-200">
+    <div class="grid grid-cols-2 gap-y-4 sm:grid-cols-4 sm:divide-x sm:divide-slate-200 dark:sm:divide-slate-700">
       <button type="button" class="px-0 text-left transition-opacity hover:opacity-70 sm:px-5 sm:first:pl-0" @click="filter = 'active'">
-        <p class="text-2xl font-bold text-emerald-600">{{ counts.active }}</p>
-        <p class="text-xs text-slate-500">{{ ts("st.reg.complianceActive") }}</p>
+        <p class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{{ counts.active }}</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400">{{ ts("st.reg.complianceActive") }}</p>
       </button>
       <button type="button" class="px-0 text-left transition-opacity hover:opacity-70 sm:px-5" @click="filter = 'expiring_soon'">
-        <p class="text-2xl font-bold text-amber-600">{{ counts.expiring_soon }}</p>
-        <p class="text-xs text-slate-500">{{ ts("st.reg.complianceExpiring") }}</p>
+        <p class="text-2xl font-bold text-amber-600 dark:text-amber-400">{{ counts.expiring_soon }}</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400">{{ ts("st.reg.complianceExpiring") }}</p>
       </button>
       <button type="button" class="px-0 text-left transition-opacity hover:opacity-70 sm:px-5" @click="filter = 'expired'">
-        <p class="text-2xl font-bold text-rose-600">{{ counts.expired }}</p>
-        <p class="text-xs text-slate-500">{{ ts("st.reg.complianceExpired") }}</p>
+        <p class="text-2xl font-bold text-rose-600 dark:text-rose-400">{{ counts.expired }}</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400">{{ ts("st.reg.complianceExpired") }}</p>
       </button>
       <button type="button" class="px-0 text-left transition-opacity hover:opacity-70 sm:px-5" @click="filter = 'suspended'">
-        <p class="text-2xl font-bold text-slate-700">{{ counts.suspended }}</p>
-        <p class="text-xs text-slate-500">{{ ts("st.reg.complianceSuspended") }}</p>
+        <p class="text-2xl font-bold text-slate-700 dark:text-slate-300">{{ counts.suspended }}</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400">{{ ts("st.reg.complianceSuspended") }}</p>
       </button>
     </div>
 
@@ -107,7 +100,7 @@ const columns = computed<SmartTableColumn<ComplianceRow>[]>(() => [
         type="button"
         :class="[
           'rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
-          filter === f.key ? 'bg-[var(--accent-600)] text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50',
+          filter === f.key ? 'bg-[var(--accent-600)] text-white' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 ring-1 ring-slate-200 dark:ring-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60',
         ]"
         @click="filter = f.key"
       >
@@ -115,16 +108,16 @@ const columns = computed<SmartTableColumn<ComplianceRow>[]>(() => [
       </button>
     </div>
 
-    <div class="border-t border-slate-200 pt-6">
-      <h2 class="mb-2 text-sm font-semibold text-slate-900">{{ ts("st.reg.complianceTitle") }}</h2>
+    <div class="border-t border-slate-200 dark:border-slate-700 pt-6">
+      <h2 class="mb-2 text-sm font-semibold text-slate-900 dark:text-slate-100">{{ ts("st.reg.complianceTitle") }}</h2>
       <SmartTable :rows="rows" :columns="columns" :row-key="(row) => row.id" :empty-text="ts('st.common.noResults')">
         <template #cell-certificate="{ row }">
-          <span class="font-mono text-xs text-slate-700">{{ row.certificateNo }}</span>
+          <span class="font-mono text-xs text-slate-700 dark:text-slate-300">{{ row.certificateNo }}</span>
         </template>
         <template #cell-applicant="{ row }">
-          <p class="font-medium text-slate-800">{{ row.holderName }}</p>
-          <p class="text-xs text-slate-400">{{ row.identityNo }}</p>
-          <p v-if="row.employerName && row.employerName !== '—'" class="text-xs text-slate-500">
+          <p class="font-medium text-slate-800 dark:text-slate-200">{{ row.holderName }}</p>
+          <p class="text-xs text-slate-400 dark:text-slate-500">{{ row.identityNo }}</p>
+          <p v-if="row.employerName && row.employerName !== '—'" class="text-xs text-slate-500 dark:text-slate-400">
             {{ ts("st.common.employer") }}: {{ row.employerName }}
           </p>
         </template>

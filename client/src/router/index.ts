@@ -60,6 +60,7 @@ import StPublicServicesView from "@/st/views/public/StPublicServicesView.vue";
 import StPublicStatusView from "@/st/views/public/StPublicStatusView.vue";
 import StServiceLandingView from "@/st/views/StServiceLandingView.vue";
 import StEmployerProfileView from "@/st/views/StEmployerProfileView.vue";
+import StProfileView from "@/st/views/StProfileView.vue";
 import StComingSoonView from "@/st/views/StComingSoonView.vue";
 import StRegApplicationsView from "@/st/views/registration/StRegApplicationsView.vue";
 import StRegReviewView from "@/st/views/registration/StRegReviewView.vue";
@@ -570,6 +571,7 @@ const router = createRouter({
         { path: "", redirect: () => useStSessionStore().homeRoute() },
         { path: "perkhidmatan-saya", name: "st-service-landing", component: StServiceLandingView, meta: { title: "Perkhidmatan ST" } },
         { path: "majikan/profil", name: "st-employer-profile", component: StEmployerProfileView, meta: { title: "Maklumat Majikan — ST" } },
+        { path: "profil", name: "st-profile", component: StProfileView, meta: { title: "Profil Saya — ST" } },
         { path: "dashboard", name: "st-dashboard", component: StDashboardView, meta: { title: "Papan Pemuka — ST" } },
         { path: "inbox", name: "st-inbox", component: StInboxView, meta: { title: "Peti Tugasan — ST" } },
         // Opaque email deep-link — token decrypts server-side (staff → /st/inbox for FIFO)

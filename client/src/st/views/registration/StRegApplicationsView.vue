@@ -14,6 +14,7 @@ import { appTypeLabel, useRegistrationModule } from "../../composables/useRegist
 import type { SmartTableColumn } from "../../composables/useSmartTable";
 import RegStatusBadge from "../../components/RegStatusBadge.vue";
 import SmartTable from "../../components/SmartTable.vue";
+import StPageHero from "../../components/StPageHero.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -144,47 +145,40 @@ const columns = computed<SmartTableColumn<RegAppRow>[]>(() => [
 
 <template>
   <div v-if="code && def" class="space-y-8">
-    <div class="flex flex-wrap items-start justify-between gap-4">
-      <div class="flex items-start gap-3">
-        <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--accent-50)]">
-          <component :is="def.icon" class="h-5 w-5 text-[var(--accent-700)]" />
-        </div>
-        <div>
-          <div class="flex flex-wrap items-center gap-2">
-            <h1 class="text-xl font-semibold text-slate-900">{{ title }}</h1>
-            <span class="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs text-slate-600">{{ code }}</span>
-          </div>
-          <p class="mt-0.5 text-sm text-slate-500">{{ subtitle }}</p>
-          <p class="mt-1 text-xs text-slate-400">{{ actRef }}</p>
-        </div>
+    <StPageHero :title="title" :subtitle="subtitle">
+      <template #action>
+        <button
+          type="button"
+          class="flex items-center gap-2 rounded-md bg-[var(--accent-600)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--accent-700)]"
+          @click="startNewApplication"
+        >
+          <FilePlus2 class="h-4 w-4" /> {{ ts("st.reg.newApplication") }}
+        </button>
+      </template>
+      <div class="mt-2 flex flex-wrap items-center gap-2">
+        <span class="rounded-md bg-slate-100 dark:bg-slate-700 px-2 py-0.5 font-mono text-xs text-slate-600 dark:text-slate-400">{{ code }}</span>
+        <span class="text-xs text-slate-400 dark:text-slate-500">{{ actRef }}</span>
       </div>
-      <button
-        type="button"
-        class="flex items-center gap-2 rounded-md bg-[var(--accent-600)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--accent-700)]"
-        @click="startNewApplication"
-      >
-        <FilePlus2 class="h-4 w-4" /> {{ ts("st.reg.newApplication") }}
-      </button>
-    </div>
+    </StPageHero>
 
-    <p class="text-xs text-slate-400">{{ ts("st.common.mockNote") }}</p>
+    <p class="text-xs text-slate-400 dark:text-slate-500">{{ ts("st.common.mockNote") }}</p>
 
-    <div class="grid grid-cols-2 gap-y-4 sm:grid-cols-4 sm:divide-x sm:divide-slate-200">
+    <div class="grid grid-cols-2 gap-y-4 sm:grid-cols-4 sm:divide-x sm:divide-slate-200 dark:sm:divide-slate-700">
       <div class="px-0 sm:px-5 sm:first:pl-0">
-        <p class="text-2xl font-bold text-slate-900">{{ stats.total }}</p>
-        <p class="text-xs text-slate-500">{{ ts("st.reg.statTotal") }}</p>
+        <p class="text-2xl font-bold text-slate-900 dark:text-slate-100">{{ stats.total }}</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400">{{ ts("st.reg.statTotal") }}</p>
       </div>
       <div class="px-0 sm:px-5">
-        <p class="text-2xl font-bold text-amber-600">{{ stats.inProgress }}</p>
-        <p class="text-xs text-slate-500">{{ ts("st.reg.statInProgress") }}</p>
+        <p class="text-2xl font-bold text-amber-600 dark:text-amber-400">{{ stats.inProgress }}</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400">{{ ts("st.reg.statInProgress") }}</p>
       </div>
       <div class="px-0 sm:px-5">
-        <p class="text-2xl font-bold text-orange-600">{{ stats.query }}</p>
-        <p class="text-xs text-slate-500">{{ ts("st.reg.statQuery") }}</p>
+        <p class="text-2xl font-bold text-orange-600 dark:text-orange-400">{{ stats.query }}</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400">{{ ts("st.reg.statQuery") }}</p>
       </div>
       <div class="px-0 sm:px-5">
-        <p class="text-2xl font-bold text-emerald-600">{{ stats.issued }}</p>
-        <p class="text-xs text-slate-500">{{ ts("st.reg.statIssued") }}</p>
+        <p class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{{ stats.issued }}</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400">{{ ts("st.reg.statIssued") }}</p>
       </div>
     </div>
 
@@ -192,15 +186,15 @@ const columns = computed<SmartTableColumn<RegAppRow>[]>(() => [
       <div class="flex items-start justify-between gap-3 border-b border-[var(--accent-100)] px-4 py-3">
         <div class="flex items-center gap-2">
           <Sparkles class="h-4 w-4 text-[var(--accent-700)]" />
-          <h2 class="text-sm font-semibold text-slate-900">{{ ts("st.reg.guidedTitle") }}</h2>
+          <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ ts("st.reg.guidedTitle") }}</h2>
         </div>
-        <button type="button" class="text-xs text-slate-400 hover:text-slate-600" @click="showGuide = false">✕</button>
+        <button type="button" class="text-xs text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-400" @click="showGuide = false">✕</button>
       </div>
       <div class="grid gap-4 p-4 lg:grid-cols-3">
-        <p class="text-sm leading-relaxed text-slate-600 lg:col-span-1">{{ ts("st.reg.guidedBody") }}</p>
+        <p class="text-sm leading-relaxed text-slate-600 dark:text-slate-400 lg:col-span-1">{{ ts("st.reg.guidedBody") }}</p>
         <div>
-          <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">{{ ts("st.reg.eligibility") }}</p>
-          <ul class="space-y-1.5 text-sm text-slate-700">
+          <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{{ ts("st.reg.eligibility") }}</p>
+          <ul class="space-y-1.5 text-sm text-slate-700 dark:text-slate-300">
             <li v-for="(item, i) in eligibility" :key="i" class="flex gap-2">
               <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--accent-500)]" />
               {{ item }}
@@ -208,8 +202,8 @@ const columns = computed<SmartTableColumn<RegAppRow>[]>(() => [
           </ul>
         </div>
         <div>
-          <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">{{ ts("st.reg.docChecklist") }}</p>
-          <ul class="space-y-1.5 text-sm text-slate-700">
+          <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{{ ts("st.reg.docChecklist") }}</p>
+          <ul class="space-y-1.5 text-sm text-slate-700 dark:text-slate-300">
             <li v-for="(item, i) in docChecklist" :key="i" class="flex gap-2">
               <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-slate-400" />
               {{ item }}
@@ -218,12 +212,12 @@ const columns = computed<SmartTableColumn<RegAppRow>[]>(() => [
         </div>
       </div>
       <div class="border-t border-[var(--accent-100)] px-4 py-3">
-        <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">{{ ts("st.reg.processTypes") }}</p>
+        <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{{ ts("st.reg.processTypes") }}</p>
         <div class="flex flex-wrap gap-1.5">
           <span
             v-for="pt in processTypes"
             :key="pt"
-            class="rounded-md bg-white px-2 py-1 text-xs font-medium text-slate-600 ring-1 ring-slate-200"
+            class="rounded-md bg-white dark:bg-slate-800 px-2 py-1 text-xs font-medium text-slate-600 dark:text-slate-400 ring-1 ring-slate-200 dark:ring-slate-700"
           >
             {{ appTypeLabel(pt, ts) }}
           </span>
@@ -232,19 +226,19 @@ const columns = computed<SmartTableColumn<RegAppRow>[]>(() => [
     </section>
 
     <div class="flex flex-wrap items-center gap-3">
-      <Filter class="h-4 w-4 text-slate-400" />
-      <select v-model="typeFilter" class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700">
+      <Filter class="h-4 w-4 text-slate-400 dark:text-slate-500" />
+      <select v-model="typeFilter" class="rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-300">
         <option value="">{{ ts("st.reg.filterType") }} — {{ ts("st.common.filterAll") }}</option>
         <option v-for="pt in processTypes" :key="pt" :value="pt">{{ appTypeLabel(pt, ts) }}</option>
       </select>
-      <select v-model="statusFilter" class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700">
+      <select v-model="statusFilter" class="rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-300">
         <option value="">{{ ts("st.reg.filterStatus") }} — {{ ts("st.common.filterAll") }}</option>
         <option v-for="s in STATUS_OPTIONS" :key="s" :value="s">{{ ts(`st.status.${s}` as StMessageKey) }}</option>
       </select>
     </div>
 
-    <div class="border-t border-slate-200 pt-6">
-      <h2 class="mb-2 text-sm font-semibold text-slate-900">{{ ts("st.reg.applications") }}</h2>
+    <div class="border-t border-slate-200 dark:border-slate-700 pt-6">
+      <h2 class="mb-2 text-sm font-semibold text-slate-900 dark:text-slate-100">{{ ts("st.reg.applications") }}</h2>
       <SmartTable
         :rows="rows"
         :columns="columns"
@@ -254,14 +248,14 @@ const columns = computed<SmartTableColumn<RegAppRow>[]>(() => [
         @row-click="(row) => openRow(row.id)"
       >
         <template #cell-refNo="{ row }">
-          <span class="font-mono text-xs text-slate-700">{{ row.refNo }}</span>
+          <span class="font-mono text-xs text-slate-700 dark:text-slate-300">{{ row.refNo }}</span>
         </template>
         <template #cell-applicant="{ row }">
-          <p class="font-medium text-slate-800">{{ row.applicantName }}</p>
-          <p class="text-xs text-slate-400">{{ row.identityNo }}</p>
+          <p class="font-medium text-slate-800 dark:text-slate-200">{{ row.applicantName }}</p>
+          <p class="text-xs text-slate-400 dark:text-slate-500">{{ row.identityNo }}</p>
         </template>
         <template #cell-type="{ row }">
-          <span class="rounded bg-slate-100 px-1.5 py-0.5 text-[11px] font-medium text-slate-600">
+          <span class="rounded bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 text-[11px] font-medium text-slate-600 dark:text-slate-400">
             {{ appTypeLabel(row.appType, ts) }}
           </span>
         </template>

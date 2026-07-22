@@ -181,10 +181,10 @@ function newActionTitle(action: NewAction): string | undefined {
 }
 
 function newActionClass(action: NewAction): string {
-  if (action === "open") return "border border-slate-300 text-slate-700 hover:bg-slate-50";
+  if (action === "open") return "border border-slate-300 text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800/60";
   if (action === "take") return "bg-[var(--accent-600)] text-white hover:bg-[var(--accent-700)]";
-  if (action === "claimed") return "cursor-not-allowed bg-amber-50 text-amber-700";
-  return "cursor-not-allowed bg-slate-100 text-slate-400";
+  if (action === "claimed") return "cursor-not-allowed bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400";
+  return "cursor-not-allowed bg-slate-100 text-slate-400 dark:bg-slate-700/40 dark:text-slate-500";
 }
 
 function open(applicationId: string) {
@@ -243,14 +243,14 @@ const columns = computed<SmartTableColumn<InboxItem>[]>(() => {
 <template>
   <div>
     <!-- Tabs + active-load meter -->
-    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3">
+    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-700">
       <div class="flex gap-1">
         <button
           v-for="t in TABS"
           :key="t.key"
           :class="[
             'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
-            tab === t.key ? 'bg-[var(--accent-600)] text-white' : 'text-slate-600 hover:bg-slate-100',
+            tab === t.key ? 'bg-[var(--accent-600)] text-white' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800',
           ]"
           @click="tab = t.key"
         >
@@ -258,7 +258,7 @@ const columns = computed<SmartTableColumn<InboxItem>[]>(() => {
           <span
             :class="[
               'ml-1.5 rounded-full px-1.5 py-0.5 text-[10px] font-semibold',
-              tab === t.key ? 'bg-white/25 text-white' : 'bg-slate-200 text-slate-600',
+              tab === t.key ? 'bg-white/25 text-white' : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300',
             ]"
           >{{ countFor(t.key) }}</span>
         </button>
@@ -267,13 +267,13 @@ const columns = computed<SmartTableColumn<InboxItem>[]>(() => {
       <div class="flex flex-wrap items-center gap-2">
         <!-- Pelulus: filter by JENIS (OK / CE) -->
         <div v-if="showJenisFilter" class="flex items-center gap-1.5">
-          <label class="text-[11px] font-semibold uppercase tracking-wider text-slate-400" for="inbox-jenis-filter">
+          <label class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500" for="inbox-jenis-filter">
             {{ ts("st.common.type") }}
           </label>
           <select
             id="inbox-jenis-filter"
             v-model="jenisFilter"
-            class="rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 shadow-sm focus:border-[var(--accent-500)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]/30"
+            class="rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 shadow-sm focus:border-[var(--accent-500)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]/30 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300"
           >
             <option v-for="opt in JENIS_OPTIONS" :key="opt.key" :value="opt.key">{{ opt.label }}</option>
           </select>
@@ -282,7 +282,7 @@ const columns = computed<SmartTableColumn<InboxItem>[]>(() => {
         <div
           :class="[
             'flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium',
-            atLimit ? 'bg-rose-50 text-rose-700' : 'bg-slate-100 text-slate-600',
+            atLimit ? 'bg-rose-50 text-rose-700 dark:bg-rose-500/15 dark:text-rose-400' : 'bg-slate-100 text-slate-600 dark:bg-slate-700/40 dark:text-slate-300',
           ]"
           :title="ts('st.common.activeTasks')"
         >
@@ -311,13 +311,13 @@ const columns = computed<SmartTableColumn<InboxItem>[]>(() => {
       :empty-text="ts('st.inbox.empty')"
     >
       <template #header-select>
-        <input type="checkbox" :checked="allSelected" class="h-4 w-4 rounded border-slate-300 text-[var(--accent-600)] focus:ring-[var(--accent-ring)]" @change="toggleSelectAll" />
+        <input type="checkbox" :checked="allSelected" class="h-4 w-4 rounded border-slate-300 text-[var(--accent-600)] focus:ring-[var(--accent-ring)] dark:border-slate-600" @change="toggleSelectAll" />
       </template>
       <template #cell-select="{ row }">
         <input
           type="checkbox"
           :checked="selectedIds.includes(row.applicationId)"
-          class="h-4 w-4 rounded border-slate-300 text-[var(--accent-600)] focus:ring-[var(--accent-ring)]"
+          class="h-4 w-4 rounded border-slate-300 text-[var(--accent-600)] focus:ring-[var(--accent-ring)] dark:border-slate-600"
           @change="toggleSelect(row.applicationId)"
         />
       </template>
@@ -326,15 +326,15 @@ const columns = computed<SmartTableColumn<InboxItem>[]>(() => {
           <span
             :class="[
               'flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-semibold',
-              tab === 'new' && row.applicationId === fifoHeadId ? 'bg-[var(--accent-600)] text-white' : 'bg-slate-100 text-slate-500',
+              tab === 'new' && row.applicationId === fifoHeadId ? 'bg-[var(--accent-600)] text-white' : 'bg-slate-100 text-slate-500 dark:bg-slate-700/40 dark:text-slate-400',
             ]"
             :title="ts('st.common.fifo')"
           >{{ fifoRank(row.applicationId) }}</span>
-          <span class="font-mono text-xs text-slate-700">{{ row.refNo }}</span>
+          <span class="font-mono text-xs text-slate-700 dark:text-slate-300">{{ row.refNo }}</span>
         </div>
       </template>
       <template #cell-type="{ row }">
-        <span class="rounded bg-slate-100 px-1.5 py-0.5 text-[11px] font-medium text-slate-600">{{ workflowShort(row.workflowType) }}</span>
+        <span class="rounded bg-slate-100 px-1.5 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-slate-700/40 dark:text-slate-300">{{ workflowShort(row.workflowType) }}</span>
       </template>
       <template #cell-status="{ row }">
         <RegStatusBadge :status="row.status" />
@@ -355,7 +355,7 @@ const columns = computed<SmartTableColumn<InboxItem>[]>(() => {
           </button>
           <button
             v-else-if="tab !== 'new'"
-            class="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50"
+            class="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800/60"
             @click="open(row.applicationId)"
           >
             {{ ts("st.common.open") }}

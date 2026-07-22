@@ -11,6 +11,7 @@ import { useStRegistrationStore } from "../stores/registration";
 import { workflowLabel } from "../status";
 import FpxPaymentScreen from "../components/FpxPaymentScreen.vue";
 import ReceiptCard from "../components/ReceiptCard.vue";
+import StPageHero from "../components/StPageHero.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -70,25 +71,22 @@ async function onPaid(bank: string) {
 </script>
 
 <template>
-  <div v-if="loading" class="flex items-center justify-center gap-2 py-16 text-sm text-slate-500">
+  <div v-if="loading" class="flex items-center justify-center gap-2 py-16 text-sm text-slate-500 dark:text-slate-400">
     <Loader2 class="h-4 w-4 animate-spin" /> Memuatkan…
   </div>
 
   <div v-else-if="app" class="space-y-5">
-    <button class="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800" @click="backToApp">
+    <button class="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100" @click="backToApp">
       <ArrowLeft class="h-4 w-4" /> Kembali ke permohonan
     </button>
 
-    <div class="text-center">
-      <h1 class="text-lg font-semibold text-slate-900">{{ title }}</h1>
-      <p class="text-sm text-slate-500">{{ workflowLabel(app.workflowType) }} · {{ app.refNo }}</p>
-    </div>
+    <StPageHero :title="title" :subtitle="`${workflowLabel(app.workflowType)} · ${app.refNo}`" />
 
     <FpxPaymentScreen v-if="!paid" :amount="amount" :title="title" :reference="app.refNo" @paid="onPaid" />
 
     <template v-else-if="payment">
       <ReceiptCard :payment="payment" :ref-no="app.refNo" :payer-name="app.applicant.fullName" />
-      <div class="rounded-lg bg-emerald-50 px-4 py-3 text-center text-sm text-emerald-700">
+      <div class="rounded-lg bg-emerald-50 px-4 py-3 text-center text-sm text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400">
         {{ kind === "processing"
           ? "Permohonan kini dalam giliran semakan SOS."
           : "Sijil digital anda telah dikeluarkan." }}
@@ -106,5 +104,5 @@ async function onPaid(bank: string) {
     </template>
   </div>
 
-  <div v-else class="py-16 text-center text-slate-500">Permohonan tidak dijumpai. Sila cuba semula dari senarai permohonan.</div>
+  <div v-else class="py-16 text-center text-slate-500 dark:text-slate-400">Permohonan tidak dijumpai. Sila cuba semula dari senarai permohonan.</div>
 </template>

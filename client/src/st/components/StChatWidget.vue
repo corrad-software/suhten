@@ -81,22 +81,22 @@ function send(preset?: string) {
   <div class="fixed bottom-20 right-4 z-[60] md:bottom-6 md:right-6">
     <div
       v-if="open"
-      class="mb-3 flex h-[28rem] max-h-[70vh] w-[calc(100vw-2rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
+      class="mb-3 flex h-[28rem] max-h-[70vh] w-[calc(100vw-2rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-800"
     >
       <!-- Header -->
-      <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+      <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-700">
         <div class="flex items-center gap-2">
           <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--accent-50)] text-[var(--accent-700)]">
             <Sparkles class="h-4 w-4" />
           </div>
           <div>
-            <p class="text-sm font-semibold text-slate-900">Pembantu Digital ST</p>
-            <p class="text-[11px] text-slate-500">Bantuan pendaftaran & perkhidmatan</p>
+            <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Pembantu Digital ST</p>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400">Bantuan pendaftaran & perkhidmatan</p>
           </div>
         </div>
         <button
           type="button"
-          class="rounded-full p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+          class="rounded-full p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-slate-200"
           aria-label="Tutup pembantu"
           @click="open = false"
         >
@@ -105,19 +105,19 @@ function send(preset?: string) {
       </div>
 
       <!-- Messages -->
-      <div ref="scrollEl" class="flex-1 space-y-3 overflow-y-auto bg-slate-50 px-3 py-3">
+      <div ref="scrollEl" class="flex-1 space-y-3 overflow-y-auto bg-slate-50 px-3 py-3 dark:bg-slate-900/40">
         <div v-for="(turn, idx) in messages" :key="idx" class="flex" :class="turn.role === 'user' ? 'justify-end' : 'justify-start'">
           <p
             class="max-w-[85%] whitespace-pre-wrap rounded-2xl px-3 py-2 text-sm"
             :class="turn.role === 'user'
               ? 'rounded-br-sm bg-[var(--accent-600)] text-white'
-              : 'rounded-bl-sm border border-slate-200 bg-white text-slate-700'"
+              : 'rounded-bl-sm border border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300'"
           >
             {{ turn.content }}
           </p>
         </div>
         <div v-if="sending" class="flex justify-start">
-          <p class="rounded-2xl rounded-bl-sm border border-slate-200 bg-white px-3 py-2 text-sm text-slate-400">Menaip…</p>
+          <p class="rounded-2xl rounded-bl-sm border border-slate-200 bg-white px-3 py-2 text-sm text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500">Menaip…</p>
         </div>
 
         <!-- Suggestions (only before the user has asked anything) -->
@@ -125,7 +125,7 @@ function send(preset?: string) {
           <button
             v-for="s in SUGGESTIONS"
             :key="s"
-            class="rounded-full border border-[var(--accent-200)] bg-white px-2.5 py-1 text-[11px] font-medium text-[var(--accent-700)] transition-colors hover:bg-[var(--accent-50)]"
+            class="rounded-full border border-[var(--accent-200)] bg-white px-2.5 py-1 text-[11px] font-medium text-[var(--accent-700)] transition-colors hover:bg-[var(--accent-50)] dark:bg-slate-800"
             @click="send(s)"
           >
             {{ s }}
@@ -134,17 +134,17 @@ function send(preset?: string) {
       </div>
 
       <!-- Input -->
-      <form class="flex items-center gap-2 border-t border-slate-200 bg-white p-2" @submit.prevent="send()">
+      <form class="flex items-center gap-2 border-t border-slate-200 bg-white p-2 dark:border-slate-700 dark:bg-slate-800" @submit.prevent="send()">
         <input
           v-model="input"
           type="text"
           placeholder="Taip soalan anda…"
-          class="min-w-0 flex-1 rounded-full border border-slate-300 px-3 py-2 text-sm focus:border-[var(--accent-500)] focus:outline-hidden focus:ring-1 focus:ring-[var(--accent-ring)]"
+          class="min-w-0 flex-1 rounded-full border border-slate-300 px-3 py-2 text-sm focus:border-[var(--accent-500)] focus:outline-hidden focus:ring-1 focus:ring-[var(--accent-ring)] dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
           :disabled="sending"
         />
         <button
           type="submit"
-          class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--accent-600)] text-white transition hover:bg-[var(--accent-700)] disabled:cursor-not-allowed disabled:bg-slate-300"
+          class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--accent-600)] text-white transition hover:bg-[var(--accent-700)] disabled:cursor-not-allowed disabled:bg-slate-300 dark:disabled:bg-slate-600"
           :disabled="!canSend"
           aria-label="Hantar"
         >

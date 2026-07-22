@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, onMounted } from "vue";
-import { Inbox } from "lucide-vue-next";
 
 import { useLocale } from "@/composables/useLocale";
 import { useStSessionStore } from "../stores/session";
@@ -10,6 +9,7 @@ import { SLA_TARGET_HOURS, SOS_ESCALATE_AFTER_HOURS } from "../mock/charter";
 import { isTechnicalRole, isTpSosRole } from "../staff-roles";
 import TaskInboxTable from "../components/TaskInboxTable.vue";
 import TpSosEscalationPanel from "../components/TpSosEscalationPanel.vue";
+import StPageHero from "../components/StPageHero.vue";
 
 const session = useStSessionStore();
 const workflow = useStWorkflowStore();
@@ -39,24 +39,13 @@ onMounted(() => {
 
 <template>
   <div v-if="role" class="space-y-5">
-    <div class="flex items-center gap-3">
-      <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--accent-50)]">
-        <Inbox class="h-5 w-5 text-[var(--accent-700)]" />
-      </div>
-      <div>
-        <h1 class="text-xl font-semibold text-slate-900">{{ ts("st.inbox.title") }}</h1>
-        <p class="text-sm text-slate-500">
-          {{ ROLE_LABEL[role] }}
-          <span v-if="charterLine"> · {{ charterLine }}</span>
-        </p>
-      </div>
-    </div>
+    <StPageHero :title="ts('st.inbox.title')" :subtitle="charterLine ? `${ROLE_LABEL[role]} · ${charterLine}` : ROLE_LABEL[role]" />
 
     <TpSosEscalationPanel v-if="isTp" />
     <template v-else>
       <TaskInboxTable :role="role" />
 
-      <div class="flex flex-wrap items-center gap-4 rounded-lg bg-white px-4 py-3 text-xs text-slate-500 shadow-sm">
+      <div class="flex flex-wrap items-center gap-4 rounded-lg bg-white px-4 py-3 text-xs text-slate-500 shadow-sm dark:bg-slate-800 dark:text-slate-400">
         <span class="flex items-center gap-1.5">
           <span class="h-2.5 w-2.5 rounded-full bg-emerald-500" />
           {{ ts("st.inbox.slaGreen") }} (&lt; {{ usesPercent ? "70%" : "50%" }})

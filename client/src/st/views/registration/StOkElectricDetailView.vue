@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { ArrowLeft, FileText, GitBranch } from "lucide-vue-next";
+import { ArrowLeft, FileText, GitBranch, History, UserCheck } from "lucide-vue-next";
 
 import { useLocale } from "@/composables/useLocale";
 import { useStRegistrationStore } from "../../stores/registration";
@@ -11,6 +11,7 @@ import {
   VOLTAGE_RESTRICTIONS,
 } from "../../registration/ok-rules";
 import RegStatusBadge from "../../components/RegStatusBadge.vue";
+import StPageHero from "../../components/StPageHero.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -51,30 +52,31 @@ function back() {
 
 <template>
   <div v-if="!app" class="space-y-4">
-    <p class="text-sm text-slate-500">{{ ts("st.common.noResults") }}</p>
+    <p class="text-sm text-slate-500 dark:text-slate-400">{{ ts("st.common.noResults") }}</p>
     <button type="button" class="text-sm font-medium text-[var(--accent-700)]" @click="back">
       ← {{ ts("st.okDetail.backList") }}
     </button>
   </div>
 
   <div v-else class="space-y-5">
-    <div class="flex flex-wrap items-start justify-between gap-3">
-      <div>
-        <button
-          type="button"
-          class="mb-2 flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-800"
-          @click="back"
-        >
-          <ArrowLeft class="h-3.5 w-3.5" /> {{ ts("st.okDetail.backList") }}
-        </button>
-        <div class="flex flex-wrap items-center gap-2">
-          <h1 class="text-xl font-semibold text-slate-900">{{ ts("st.okDetail.title") }}</h1>
-          <span class="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs text-slate-600">RG-KE</span>
+    <div>
+      <button
+        type="button"
+        class="mb-2 flex items-center gap-1 text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
+        @click="back"
+      >
+        <ArrowLeft class="h-3.5 w-3.5" /> {{ ts("st.okDetail.backList") }}
+      </button>
+      <StPageHero :title="ts('st.okDetail.title')">
+        <template #action>
           <RegStatusBadge :status="app.status" />
+        </template>
+        <div class="mt-2 flex flex-wrap items-center gap-2">
+          <span class="rounded-md bg-slate-100 dark:bg-slate-700 px-2 py-0.5 font-mono text-xs text-slate-600 dark:text-slate-400">RG-KE</span>
         </div>
-        <p class="mt-1 font-mono text-sm text-slate-600">{{ app.refNo }}</p>
-        <p v-if="app.workflowInstanceId" class="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">
-          <GitBranch class="h-3.5 w-3.5 text-slate-400" />
+        <p class="mt-1 font-mono text-sm text-slate-600 dark:text-slate-400">{{ app.refNo }}</p>
+        <p v-if="app.workflowInstanceId" class="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+          <GitBranch class="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
           <span>Workflow</span>
           <router-link
             v-if="portalBase.startsWith('/admin')"
@@ -84,102 +86,102 @@ function back() {
           >
             {{ app.workflowInstanceId.slice(0, 8) }}…
           </router-link>
-          <span v-else class="font-mono text-slate-600" :title="app.workflowInstanceId">
+          <span v-else class="font-mono text-slate-600 dark:text-slate-400" :title="app.workflowInstanceId">
             {{ app.workflowInstanceId.slice(0, 8) }}…
           </span>
         </p>
-      </div>
+      </StPageHero>
     </div>
 
-    <p class="text-xs text-slate-400">{{ ts("st.common.mockNote") }}</p>
+    <p class="text-xs text-slate-400 dark:text-slate-500">{{ ts("st.common.mockNote") }}</p>
 
-    <div class="grid gap-6 lg:grid-cols-3 lg:divide-x lg:divide-slate-200">
+    <div class="grid gap-6 lg:grid-cols-3 lg:divide-x lg:divide-slate-200 dark:lg:divide-slate-700">
       <section class="lg:col-span-2 lg:pr-6">
-        <h2 class="mb-3 text-sm font-semibold text-slate-900">{{ app.applicantName }}</h2>
+        <h2 class="mb-3 flex items-center gap-2 border-b border-slate-200 pb-2 text-sm font-semibold text-slate-900 dark:border-slate-700 dark:text-slate-100"><UserCheck class="h-4 w-4 text-slate-400 dark:text-slate-500" /> {{ app.applicantName }}</h2>
         <dl class="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
           <div>
-            <dt class="text-xs text-slate-400">{{ ts("st.common.identity") }}</dt>
-            <dd class="font-mono text-slate-800">{{ app.identityNo }}</dd>
+            <dt class="text-xs text-slate-400 dark:text-slate-500">{{ ts("st.common.identity") }}</dt>
+            <dd class="font-mono text-slate-800 dark:text-slate-200">{{ app.identityNo }}</dd>
           </div>
           <div>
-            <dt class="text-xs text-slate-400">{{ ts("st.common.type") }}</dt>
-            <dd class="text-slate-800">{{ appTypeLabel(app.appType, ts) }}</dd>
+            <dt class="text-xs text-slate-400 dark:text-slate-500">{{ ts("st.common.type") }}</dt>
+            <dd class="text-slate-800 dark:text-slate-200">{{ appTypeLabel(app.appType, ts) }}</dd>
           </div>
           <div>
-            <dt class="text-xs text-slate-400">{{ ts("st.common.category") }}</dt>
-            <dd class="text-slate-800">{{ app.categoryOrClass }}</dd>
+            <dt class="text-xs text-slate-400 dark:text-slate-500">{{ ts("st.common.category") }}</dt>
+            <dd class="text-slate-800 dark:text-slate-200">{{ app.categoryOrClass }}</dd>
           </div>
           <div>
-            <dt class="text-xs text-slate-400">{{ ts("st.common.employer") }}</dt>
-            <dd class="text-slate-800">{{ app.employerName ?? "—" }}</dd>
+            <dt class="text-xs text-slate-400 dark:text-slate-500">{{ ts("st.common.employer") }}</dt>
+            <dd class="text-slate-800 dark:text-slate-200">{{ app.employerName ?? "—" }}</dd>
           </div>
           <div v-if="app.detail?.certificate">
-            <dt class="text-xs text-slate-400">{{ ts("st.okApply.certNo") }}</dt>
-            <dd class="font-mono text-slate-800">{{ app.detail.certificate.certificateNo }}</dd>
+            <dt class="text-xs text-slate-400 dark:text-slate-500">{{ ts("st.okApply.certNo") }}</dt>
+            <dd class="font-mono text-slate-800 dark:text-slate-200">{{ app.detail.certificate.certificateNo }}</dd>
           </div>
           <div v-if="app.detail?.periodYears">
-            <dt class="text-xs text-slate-400">{{ ts("st.okApply.period") }}</dt>
-            <dd class="text-slate-800">{{ ts("st.okApply.periodYear", { n: app.detail.periodYears }) }}</dd>
+            <dt class="text-xs text-slate-400 dark:text-slate-500">{{ ts("st.okApply.period") }}</dt>
+            <dd class="text-slate-800 dark:text-slate-200">{{ ts("st.okApply.periodYear", { n: app.detail.periodYears }) }}</dd>
           </div>
           <div v-if="app.detail?.certificate">
-            <dt class="text-xs text-slate-400">{{ ts("st.okApply.voltage") }}</dt>
-            <dd class="text-slate-800">{{ voltageLabel(app.detail.certificate.voltageRestriction) }}</dd>
+            <dt class="text-xs text-slate-400 dark:text-slate-500">{{ ts("st.okApply.voltage") }}</dt>
+            <dd class="text-slate-800 dark:text-slate-200">{{ voltageLabel(app.detail.certificate.voltageRestriction) }}</dd>
           </div>
           <div v-if="app.detail?.certificate">
-            <dt class="text-xs text-slate-400">{{ ts("st.okApply.place") }}</dt>
-            <dd class="text-slate-800">{{ placeLabel(app.detail.certificate.placeRestriction) }}</dd>
+            <dt class="text-xs text-slate-400 dark:text-slate-500">{{ ts("st.okApply.place") }}</dt>
+            <dd class="text-slate-800 dark:text-slate-200">{{ placeLabel(app.detail.certificate.placeRestriction) }}</dd>
           </div>
           <div v-if="app.detail?.gender">
-            <dt class="text-xs text-slate-400">{{ ts("st.okApply.gender") }}</dt>
-            <dd class="text-slate-800">
+            <dt class="text-xs text-slate-400 dark:text-slate-500">{{ ts("st.okApply.gender") }}</dt>
+            <dd class="text-slate-800 dark:text-slate-200">
               {{ app.detail.gender === "male" ? ts("st.okApply.genderMale") : ts("st.okApply.genderFemale") }}
             </dd>
           </div>
           <div v-if="app.cdpPoints != null">
-            <dt class="text-xs text-slate-400">{{ ts("st.common.cdp") }}</dt>
-            <dd class="text-slate-800">{{ app.cdpPoints }}</dd>
+            <dt class="text-xs text-slate-400 dark:text-slate-500">{{ ts("st.common.cdp") }}</dt>
+            <dd class="text-slate-800 dark:text-slate-200">{{ app.cdpPoints }}</dd>
           </div>
           <div>
-            <dt class="text-xs text-slate-400">{{ ts("st.common.submitted") }}</dt>
-            <dd class="text-slate-800">{{ fmt(app.submittedAt) }}</dd>
+            <dt class="text-xs text-slate-400 dark:text-slate-500">{{ ts("st.common.submitted") }}</dt>
+            <dd class="text-slate-800 dark:text-slate-200">{{ fmt(app.submittedAt) }}</dd>
           </div>
           <div v-if="app.assignedOfficer">
-            <dt class="text-xs text-slate-400">{{ ts("st.common.officer") }}</dt>
-            <dd class="text-slate-800">{{ app.assignedOfficer }}</dd>
+            <dt class="text-xs text-slate-400 dark:text-slate-500">{{ ts("st.common.officer") }}</dt>
+            <dd class="text-slate-800 dark:text-slate-200">{{ app.assignedOfficer }}</dd>
           </div>
         </dl>
-        <p v-if="app.note" class="mt-3 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800">{{ app.note }}</p>
+        <p v-if="app.note" class="mt-3 rounded-md bg-amber-50 dark:bg-amber-500/15 px-3 py-2 text-xs text-amber-800 dark:text-amber-400">{{ app.note }}</p>
       </section>
 
       <section class="lg:pl-6">
-        <h2 class="mb-3 text-sm font-semibold text-slate-900">{{ ts("st.okDetail.timeline") }}</h2>
+        <h2 class="mb-3 flex items-center gap-2 border-b border-slate-200 pb-2 text-sm font-semibold text-slate-900 dark:border-slate-700 dark:text-slate-100"><History class="h-4 w-4 text-slate-400 dark:text-slate-500" /> {{ ts("st.okDetail.timeline") }}</h2>
         <ol class="space-y-3">
           <li
             v-for="(ev, i) in app.detail?.timeline ?? [{ at: app.submittedAt, label: app.status, actor: 'Sistem' }]"
             :key="i"
-            class="relative border-l-2 border-slate-200 pl-3"
+            class="relative border-l-2 border-slate-200 dark:border-slate-700 pl-3"
           >
-            <p class="text-sm font-medium text-slate-800">{{ ev.label }}</p>
-            <p class="text-xs text-slate-500">{{ ev.actor }} · {{ fmt(ev.at) }}</p>
+            <p class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ ev.label }}</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">{{ ev.actor }} · {{ fmt(ev.at) }}</p>
           </li>
         </ol>
       </section>
     </div>
 
-    <section class="border-t border-slate-200 pt-6">
-      <h2 class="mb-2 text-sm font-semibold text-slate-900">{{ ts("st.okDetail.documents") }}</h2>
+    <section class="border-t border-slate-200 dark:border-slate-700 pt-6">
+      <h2 class="mb-3 flex items-center gap-2 border-b border-slate-200 pb-2 text-sm font-semibold text-slate-900 dark:border-slate-700 dark:text-slate-100"><FileText class="h-4 w-4 text-slate-400 dark:text-slate-500" /> {{ ts("st.okDetail.documents") }}</h2>
       <ul v-if="app.detail?.documents?.length">
         <li
           v-for="(doc, i) in app.detail.documents"
           :key="i"
-          class="flex items-center gap-2 border-b border-slate-100 py-2 text-sm last:border-0"
+          class="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 py-2 text-sm last:border-0"
         >
-          <FileText class="h-4 w-4 text-slate-400" />
-          <span class="font-medium text-slate-700">{{ doc.label }}</span>
-          <span class="text-xs text-slate-400">{{ doc.fileName }}</span>
+          <FileText class="h-4 w-4 text-slate-400 dark:text-slate-500" />
+          <span class="font-medium text-slate-700 dark:text-slate-300">{{ doc.label }}</span>
+          <span class="text-xs text-slate-400 dark:text-slate-500">{{ doc.fileName }}</span>
         </li>
       </ul>
-      <p v-else class="text-sm text-slate-400">—</p>
+      <p v-else class="text-sm text-slate-400 dark:text-slate-500">—</p>
     </section>
   </div>
 </template>

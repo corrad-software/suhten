@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { ArrowLeft, Award, BadgeCheck, Building2, FileText, Receipt, ShieldCheck, UserCheck, Wrench } from "lucide-vue-next";
+import { ArrowLeft, Award, BadgeCheck, Building2, FileText, History, Receipt, ShieldCheck, UserCheck, Wrench } from "lucide-vue-next";
 
 import { getStaffTaskNotifyState } from "@/api/st-registration";
 import { useLocale } from "@/composables/useLocale";
@@ -14,6 +14,7 @@ import { workflowLabel } from "../status";
 import StatusBadge from "../components/StatusBadge.vue";
 import SlaIndicator from "../components/SlaIndicator.vue";
 import WorkflowStepper from "../components/WorkflowStepper.vue";
+import StPageHero from "../components/StPageHero.vue";
 import AuditTrailTimeline from "../components/AuditTrailTimeline.vue";
 import ApplicationActionBar from "../components/ApplicationActionBar.vue";
 
@@ -250,141 +251,137 @@ const portalBase = computed(() => (route.path.startsWith("/admin/st") ? "/admin/
 <template>
   <div v-if="app" class="space-y-10">
     <button
-      class="flex items-center gap-1.5 rounded-md border border-black px-3 py-1.5 text-sm font-medium text-black transition-colors hover:bg-black/5"
+      class="flex items-center gap-1.5 rounded-md border border-black px-3 py-1.5 text-sm font-medium text-black transition-colors hover:bg-black/5 dark:border-slate-500 dark:text-slate-200 dark:hover:bg-white/5"
       @click="router.back()"
     >
       <ArrowLeft class="h-4 w-4" /> Kembali
     </button>
 
     <!-- Header -->
-    <div class="border-b border-slate-200 pb-4">
-      <div class="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p class="font-mono text-xs text-slate-500">{{ app.refNo }}</p>
-          <h1 class="text-lg font-semibold text-slate-900">
-            {{ isCe ? ts("st.ceDetail.title") : workflowLabel(app.workflowType) }}
-          </h1>
-          <p class="text-sm text-slate-600">{{ categoryLine }} · {{ app.registrationPeriodYears }} tahun</p>
-        </div>
+    <StPageHero
+      :eyebrow="app.refNo"
+      :title="isCe ? ts('st.ceDetail.title') : workflowLabel(app.workflowType)"
+      :subtitle="`${categoryLine} · ${app.registrationPeriodYears} tahun`"
+    >
+      <template #action>
         <div class="flex flex-col items-end gap-2">
           <StatusBadge :status="app.status" />
           <SlaIndicator v-if="app.slaTargetHours > 0" :stage-entered-at="app.stageEnteredAt" :target-hours="app.slaTargetHours" :role="app.assignedRole" />
         </div>
-      </div>
-
+      </template>
       <div class="mt-5 overflow-x-auto pb-1">
         <WorkflowStepper :status="app.status" />
       </div>
-    </div>
+    </StPageHero>
 
     <!-- Action bar -->
-    <div class="rounded-xl border border-rose-200 bg-rose-50 p-4">
+    <div class="rounded-xl border border-rose-200 bg-rose-50 p-4 dark:border-rose-800 dark:bg-rose-500/10">
       <div class="flex flex-wrap items-center justify-end gap-3">
-        <p class="text-xs font-semibold uppercase tracking-wider text-rose-700">Tindakan</p>
+        <p class="text-xs font-semibold uppercase tracking-wider text-rose-700 dark:text-rose-400">Tindakan</p>
         <ApplicationActionBar :application="app" />
       </div>
-      <p class="mt-2 text-right text-xs text-slate-500" v-if="app.status === 'certificate_issued'">Permohonan selesai. Sijil digital telah dikeluarkan.</p>
+      <p class="mt-2 text-right text-xs text-slate-500 dark:text-slate-400" v-if="app.status === 'certificate_issued'">Permohonan selesai. Sijil digital telah dikeluarkan.</p>
     </div>
 
     <!-- CE: contractor company detail (same fields as modul Permohonan) -->
     <template v-if="isCe">
       <div class="grid gap-5 lg:grid-cols-2">
-        <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
-            <Building2 class="h-4 w-4 text-slate-400" />
+        <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+          <h2 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+            <Building2 class="h-4 w-4 text-slate-400 dark:text-slate-500" />
             {{ ts("st.ceApply.stepA") }} / {{ ts("st.ceApply.stepB") }}
           </h2>
           <dl class="grid gap-2 text-sm sm:grid-cols-2">
-            <div><dt class="text-xs text-slate-400">{{ ts("st.ceApply.kind") }}</dt><dd>{{ kindLabel(ce.contractorKind) }}</dd></div>
-            <div><dt class="text-xs text-slate-400">{{ ts("st.ceApply.class") }}</dt><dd>{{ ce.contractorClass ?? app.contractorClass ?? "—" }}</dd></div>
-            <div><dt class="text-xs text-slate-400">{{ ts("st.ceApply.voltage") }}</dt><dd>{{ ce.voltage || "—" }}</dd></div>
-            <div><dt class="text-xs text-slate-400">{{ ts("st.ceApply.period") }}</dt><dd>{{ periodYears }}</dd></div>
+            <div><dt class="text-xs text-slate-400 dark:text-slate-500">{{ ts("st.ceApply.kind") }}</dt><dd>{{ kindLabel(ce.contractorKind) }}</dd></div>
+            <div><dt class="text-xs text-slate-400 dark:text-slate-500">{{ ts("st.ceApply.class") }}</dt><dd>{{ ce.contractorClass ?? app.contractorClass ?? "—" }}</dd></div>
+            <div><dt class="text-xs text-slate-400 dark:text-slate-500">{{ ts("st.ceApply.voltage") }}</dt><dd>{{ ce.voltage || "—" }}</dd></div>
+            <div><dt class="text-xs text-slate-400 dark:text-slate-500">{{ ts("st.ceApply.period") }}</dt><dd>{{ periodYears }}</dd></div>
             <div class="sm:col-span-2">
-              <dt class="text-xs text-slate-400">{{ ts("st.ceApply.companyName") }}</dt>
+              <dt class="text-xs text-slate-400 dark:text-slate-500">{{ ts("st.ceApply.companyName") }}</dt>
               <dd class="font-medium">{{ ce.companyName || app.employer?.name || "—" }}</dd>
             </div>
             <div>
-              <dt class="text-xs text-slate-400">{{ ts("st.ceApply.companyReg") }}</dt>
+              <dt class="text-xs text-slate-400 dark:text-slate-500">{{ ts("st.ceApply.companyReg") }}</dt>
               <dd class="font-mono text-xs">{{ ce.companyRegNo || app.employer?.registrationNo || "—" }}</dd>
             </div>
             <div>
-              <dt class="text-xs text-slate-400">{{ ts("st.ceApply.companyPhone") }}</dt>
+              <dt class="text-xs text-slate-400 dark:text-slate-500">{{ ts("st.ceApply.companyPhone") }}</dt>
               <dd>{{ ce.companyPhone || app.employer?.phone || "—" }}</dd>
             </div>
             <div>
-              <dt class="text-xs text-slate-400">{{ ts("st.ceApply.companyFax") }}</dt>
+              <dt class="text-xs text-slate-400 dark:text-slate-500">{{ ts("st.ceApply.companyFax") }}</dt>
               <dd>{{ ce.companyFax || "—" }}</dd>
             </div>
             <div class="sm:col-span-2">
-              <dt class="text-xs text-slate-400">{{ ts("st.ceApply.companyAddress") }}</dt>
+              <dt class="text-xs text-slate-400 dark:text-slate-500">{{ ts("st.ceApply.companyAddress") }}</dt>
               <dd>{{ companyAddressLine }}</dd>
             </div>
             <div>
-              <dt class="text-xs text-slate-400">{{ ts("st.ceApply.repName") }}</dt>
+              <dt class="text-xs text-slate-400 dark:text-slate-500">{{ ts("st.ceApply.repName") }}</dt>
               <dd>{{ ce.representativeName || app.applicant.fullName }}</dd>
             </div>
             <div>
-              <dt class="text-xs text-slate-400">{{ ts("st.ceApply.repIc") }}</dt>
+              <dt class="text-xs text-slate-400 dark:text-slate-500">{{ ts("st.ceApply.repIc") }}</dt>
               <dd class="font-mono text-xs">{{ ce.representativeIc || app.applicant.icNumber || "—" }}</dd>
             </div>
           </dl>
-          <div v-if="app.identityCheck" class="mt-3 flex items-center gap-2 rounded-md bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
+          <div v-if="app.identityCheck" class="mt-3 flex items-center gap-2 rounded-md bg-emerald-50 px-3 py-2 text-xs text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400">
             <ShieldCheck class="h-4 w-4" />
             Identiti disahkan (JPN — {{ app.identityCheck.jpnStatus === "alive" ? "masih hidup" : app.identityCheck.jpnStatus }}) · {{ fmt(app.identityCheck.checkedAt) }}
           </div>
         </section>
 
-        <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 class="mb-3 text-sm font-semibold text-slate-700">Jejak proses</h2>
+        <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+          <h2 class="mb-3 text-sm font-semibold text-slate-700 dark:text-slate-300">Jejak proses</h2>
           <ol class="space-y-3">
-            <li v-for="ev in app.auditTrail" :key="ev.id" class="border-l-2 border-slate-200 pl-3">
-              <p class="text-sm font-medium text-slate-800">{{ ev.action }}</p>
-              <p class="text-xs text-slate-500">{{ ev.actorName }} · {{ fmt(ev.at) }}</p>
+            <li v-for="ev in app.auditTrail" :key="ev.id" class="border-l-2 border-slate-200 pl-3 dark:border-slate-700">
+              <p class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ ev.action }}</p>
+              <p class="text-xs text-slate-500 dark:text-slate-400">{{ ev.actorName }} · {{ fmt(ev.at) }}</p>
             </li>
-            <li v-if="!app.auditTrail.length" class="text-sm text-slate-400">—</li>
+            <li v-if="!app.auditTrail.length" class="text-sm text-slate-400 dark:text-slate-500">—</li>
           </ol>
         </section>
       </div>
 
-      <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h2 class="mb-3 text-sm font-semibold text-slate-700">{{ ts("st.ceApply.directors") }}</h2>
-        <ul class="divide-y divide-slate-50 text-sm">
+      <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+        <h2 class="mb-3 text-sm font-semibold text-slate-700 dark:text-slate-300">{{ ts("st.ceApply.directors") }}</h2>
+        <ul class="divide-y divide-slate-50 text-sm dark:divide-slate-800">
           <li v-for="(d, i) in directors" :key="i" class="py-2">
             <span class="font-medium">{{ d.name }}</span>
-            <span class="ml-2 font-mono text-xs text-slate-500">{{ d.icNumber }}</span>
-            <span v-if="d.sharePercent != null" class="ml-2 text-xs text-slate-400">{{ d.sharePercent }}%</span>
-            <p v-if="d.address" class="text-xs text-slate-500">{{ d.address }}</p>
+            <span class="ml-2 font-mono text-xs text-slate-500 dark:text-slate-400">{{ d.icNumber }}</span>
+            <span v-if="d.sharePercent != null" class="ml-2 text-xs text-slate-400 dark:text-slate-500">{{ d.sharePercent }}%</span>
+            <p v-if="d.address" class="text-xs text-slate-500 dark:text-slate-400">{{ d.address }}</p>
           </li>
-          <li v-if="!directors.length" class="py-2 text-slate-400">—</li>
+          <li v-if="!directors.length" class="py-2 text-slate-400 dark:text-slate-500">—</li>
         </ul>
       </section>
 
       <div class="grid gap-5 lg:grid-cols-2">
-        <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
-            <UserCheck class="h-4 w-4 text-slate-400" />
+        <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+          <h2 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+            <UserCheck class="h-4 w-4 text-slate-400 dark:text-slate-500" />
             {{ ts("st.ceApply.stepC") }}
           </h2>
           <ul class="space-y-2 text-sm">
-            <li v-for="(o, i) in oks" :key="'ok' + i" class="rounded-md border border-slate-100 px-3 py-2">
-              <p class="font-medium">{{ o.name }} <span class="text-xs text-slate-500">({{ o.wirerType }})</span></p>
-              <p class="font-mono text-xs text-slate-500">{{ o.mykad }} · {{ o.certificateNo }} · {{ o.periodYears }}y</p>
+            <li v-for="(o, i) in oks" :key="'ok' + i" class="rounded-md border border-slate-100 px-3 py-2 dark:border-slate-800">
+              <p class="font-medium">{{ o.name }} <span class="text-xs text-slate-500 dark:text-slate-400">({{ o.wirerType }})</span></p>
+              <p class="font-mono text-xs text-slate-500 dark:text-slate-400">{{ o.mykad }} · {{ o.certificateNo }} · {{ o.periodYears }}y</p>
             </li>
-            <li v-if="!oks.length" class="text-slate-400">—</li>
+            <li v-if="!oks.length" class="text-slate-400 dark:text-slate-500">—</li>
           </ul>
         </section>
 
-        <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
-            <Wrench class="h-4 w-4 text-slate-400" />
+        <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+          <h2 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+            <Wrench class="h-4 w-4 text-slate-400 dark:text-slate-500" />
             {{ ts("st.ceApply.equipment") }}
           </h2>
           <ul class="space-y-2 text-sm">
-            <li v-for="(eq, i) in equipment" :key="i" class="rounded-md border border-slate-100 px-3 py-2">
+            <li v-for="(eq, i) in equipment" :key="i" class="rounded-md border border-slate-100 px-3 py-2 dark:border-slate-800">
               <p class="font-medium">{{ eq.equipmentType }} · {{ eq.brand }}</p>
-              <p class="text-xs text-slate-500">{{ eq.model }} · S/N {{ eq.serialNo }}</p>
+              <p class="text-xs text-slate-500 dark:text-slate-400">{{ eq.model }} · S/N {{ eq.serialNo }}</p>
             </li>
-            <li v-if="!equipment.length" class="text-slate-400">—</li>
+            <li v-if="!equipment.length" class="text-slate-400 dark:text-slate-500">—</li>
           </ul>
         </section>
       </div>
@@ -392,78 +389,93 @@ const portalBase = computed(() => (route.path.startsWith("/admin/st") ? "/admin/
 
     <!-- OK: person + competency + employer -->
     <template v-else>
-      <div class="grid gap-5 md:grid-cols-2">
-        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700"><UserCheck class="h-4 w-4 text-slate-400" /> Maklumat Pemohon</h2>
-          <dl class="space-y-1.5 text-sm">
-            <div class="flex justify-between gap-4"><dt class="text-slate-500">Nama</dt><dd class="text-right font-medium text-slate-800">{{ app.applicant.fullName }}</dd></div>
-            <div class="flex justify-between gap-4"><dt class="text-slate-500">No. KP</dt><dd class="font-mono text-slate-800">{{ app.applicant.icNumber }}</dd></div>
-            <div class="flex justify-between gap-4"><dt class="text-slate-500">Umur</dt><dd class="text-slate-800">{{ app.applicant.age }} tahun</dd></div>
-            <div class="flex justify-between gap-4"><dt class="text-slate-500">Telefon</dt><dd class="text-slate-800">{{ app.applicant.phone || "—" }}</dd></div>
-            <div class="flex justify-between gap-4"><dt class="text-slate-500">E-mel</dt><dd class="text-right text-slate-800">{{ app.applicant.email || "—" }}</dd></div>
+      <div class="grid gap-8 md:grid-cols-2">
+        <div>
+          <h2 class="mb-3 flex items-center gap-2 border-b border-slate-200 pb-2 text-sm font-semibold text-slate-900 dark:border-slate-700 dark:text-slate-100"><UserCheck class="h-4 w-4 text-slate-400 dark:text-slate-500" /> Maklumat Pemohon</h2>
+          <dl class="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
+            <div class="sm:col-span-2">
+              <dt class="mb-0.5 text-xs text-slate-400 dark:text-slate-500">Nama</dt>
+              <dd class="font-medium text-slate-800 dark:text-slate-200">{{ app.applicant.fullName }}</dd>
+            </div>
+            <div>
+              <dt class="mb-0.5 text-xs text-slate-400 dark:text-slate-500">No. KP</dt>
+              <dd class="font-mono text-slate-800 dark:text-slate-200">{{ app.applicant.icNumber }}</dd>
+            </div>
+            <div>
+              <dt class="mb-0.5 text-xs text-slate-400 dark:text-slate-500">Umur</dt>
+              <dd class="text-slate-800 dark:text-slate-200">{{ app.applicant.age }} tahun</dd>
+            </div>
+            <div>
+              <dt class="mb-0.5 text-xs text-slate-400 dark:text-slate-500">Telefon</dt>
+              <dd class="text-slate-800 dark:text-slate-200">{{ app.applicant.phone || "—" }}</dd>
+            </div>
+            <div class="min-w-0">
+              <dt class="mb-0.5 text-xs text-slate-400 dark:text-slate-500">E-mel</dt>
+              <dd class="truncate text-slate-800 dark:text-slate-200">{{ app.applicant.email || "—" }}</dd>
+            </div>
           </dl>
 
-          <div v-if="app.identityCheck" class="mt-3 flex items-center gap-2 rounded-md bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
-            <ShieldCheck class="h-4 w-4" />
+          <div v-if="app.identityCheck" class="mt-4 flex items-center gap-2 rounded-md bg-emerald-50 px-3 py-2 text-xs text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400">
+            <ShieldCheck class="h-4 w-4 shrink-0" />
             Identiti disahkan (JPN — {{ app.identityCheck.jpnStatus === 'alive' ? 'masih hidup' : app.identityCheck.jpnStatus }}) · {{ fmt(app.identityCheck.checkedAt) }}
           </div>
         </div>
 
-        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
-            <Award class="h-4 w-4 text-slate-400" /> Maklumat Kekompetenan
+        <div>
+          <h2 class="mb-3 flex items-center gap-2 border-b border-slate-200 pb-2 text-sm font-semibold text-slate-900 dark:border-slate-700 dark:text-slate-100">
+            <Award class="h-4 w-4 text-slate-400 dark:text-slate-500" /> Maklumat Kekompetenan
           </h2>
-          <dl class="space-y-1.5 text-sm">
-            <div class="flex justify-between gap-4">
-              <dt class="text-slate-500">{{ ts("st.common.category") }}</dt>
-              <dd class="text-right font-medium text-slate-800">{{ categoryLine || okCompetency?.category || "—" }}</dd>
+          <dl class="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
+            <div class="sm:col-span-2">
+              <dt class="mb-0.5 text-xs text-slate-400 dark:text-slate-500">{{ ts("st.common.category") }}</dt>
+              <dd class="font-medium text-slate-800 dark:text-slate-200">{{ categoryLine || okCompetency?.category || "—" }}</dd>
             </div>
-            <div class="flex justify-between gap-4">
-              <dt class="text-slate-500">{{ ts("st.okApply.certNo") }}</dt>
-              <dd class="font-mono text-xs text-slate-800">{{ okCompetency?.certificateNo || "—" }}</dd>
+            <div>
+              <dt class="mb-0.5 text-xs text-slate-400 dark:text-slate-500">{{ ts("st.okApply.certNo") }}</dt>
+              <dd class="font-mono text-xs text-slate-800 dark:text-slate-200">{{ okCompetency?.certificateNo || "—" }}</dd>
             </div>
-            <div class="flex justify-between gap-4">
-              <dt class="text-slate-500">{{ ts("st.okApply.period") }}</dt>
-              <dd class="text-slate-800">{{ ts("st.okApply.periodYear", { n: app.registrationPeriodYears }) }}</dd>
+            <div>
+              <dt class="mb-0.5 text-xs text-slate-400 dark:text-slate-500">{{ ts("st.okApply.period") }}</dt>
+              <dd class="text-slate-800 dark:text-slate-200">{{ ts("st.okApply.periodYear", { n: app.registrationPeriodYears }) }}</dd>
             </div>
-            <div class="flex justify-between gap-4">
-              <dt class="text-slate-500">{{ ts("st.okApply.voltage") }}</dt>
-              <dd class="text-right text-slate-800">{{ voltageLabel(okCompetency?.voltageRestriction) }}</dd>
+            <div>
+              <dt class="mb-0.5 text-xs text-slate-400 dark:text-slate-500">{{ ts("st.okApply.voltage") }}</dt>
+              <dd class="text-slate-800 dark:text-slate-200">{{ voltageLabel(okCompetency?.voltageRestriction) }}</dd>
             </div>
-            <div class="flex justify-between gap-4">
-              <dt class="text-slate-500">{{ ts("st.okApply.place") }}</dt>
-              <dd class="text-right text-slate-800">{{ placeLabel(okCompetency?.placeRestriction) }}</dd>
+            <div>
+              <dt class="mb-0.5 text-xs text-slate-400 dark:text-slate-500">{{ ts("st.okApply.place") }}</dt>
+              <dd class="text-slate-800 dark:text-slate-200">{{ placeLabel(okCompetency?.placeRestriction) }}</dd>
             </div>
-            <div v-if="okCompetency" class="flex justify-between gap-4">
-              <dt class="text-slate-500">Status perakuan</dt>
-              <dd class="text-slate-800">
-                <span v-if="okCompetency.suspended" class="text-rose-600">Digantung</span>
-                <span v-else-if="okCompetency.active === false" class="text-amber-600">Tidak aktif</span>
-                <span v-else class="text-emerald-700">Aktif</span>
+            <div v-if="okCompetency" class="sm:col-span-2">
+              <dt class="mb-0.5 text-xs text-slate-400 dark:text-slate-500">Status perakuan</dt>
+              <dd>
+                <span v-if="okCompetency.suspended" class="text-rose-600 dark:text-rose-400">Digantung</span>
+                <span v-else-if="okCompetency.active === false" class="text-amber-600 dark:text-amber-400">Tidak aktif</span>
+                <span v-else class="text-emerald-700 dark:text-emerald-400">Aktif</span>
               </dd>
             </div>
           </dl>
         </div>
       </div>
 
-      <div v-if="app.employer" class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h2 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700"><Building2 class="h-4 w-4 text-slate-400" /> Majikan</h2>
-        <dl class="grid gap-x-6 gap-y-1.5 text-sm sm:grid-cols-2">
-          <div class="flex justify-between gap-4 sm:block">
-            <dt class="text-slate-500">Nama</dt>
-            <dd class="font-medium text-slate-800">{{ app.employer.name }}</dd>
+      <div v-if="app.employer">
+        <h2 class="mb-3 flex items-center gap-2 border-b border-slate-200 pb-2 text-sm font-semibold text-slate-900 dark:border-slate-700 dark:text-slate-100"><Building2 class="h-4 w-4 text-slate-400 dark:text-slate-500" /> Majikan</h2>
+        <dl class="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
+          <div>
+            <dt class="mb-0.5 text-xs text-slate-400 dark:text-slate-500">Nama</dt>
+            <dd class="font-medium text-slate-800 dark:text-slate-200">{{ app.employer.name }}</dd>
           </div>
-          <div class="flex justify-between gap-4 sm:block">
-            <dt class="text-slate-500">No. Pendaftaran</dt>
-            <dd class="font-mono text-xs text-slate-800">{{ app.employer.registrationNo }}</dd>
+          <div>
+            <dt class="mb-0.5 text-xs text-slate-400 dark:text-slate-500">No. Pendaftaran</dt>
+            <dd class="font-mono text-xs text-slate-800 dark:text-slate-200">{{ app.employer.registrationNo }}</dd>
           </div>
-          <div class="flex justify-between gap-4 sm:block">
-            <dt class="text-slate-500">Pegawai Dihubungi</dt>
-            <dd class="text-slate-800">{{ app.employer.contactPerson }}</dd>
+          <div>
+            <dt class="mb-0.5 text-xs text-slate-400 dark:text-slate-500">Pegawai Dihubungi</dt>
+            <dd class="text-slate-800 dark:text-slate-200">{{ app.employer.contactPerson }}</dd>
           </div>
           <div v-if="app.employer.address" class="sm:col-span-2">
-            <dt class="text-slate-500">Alamat</dt>
-            <dd class="text-slate-800">{{ app.employer.address }}</dd>
+            <dt class="mb-0.5 text-xs text-slate-400 dark:text-slate-500">Alamat</dt>
+            <dd class="text-slate-800 dark:text-slate-200">{{ app.employer.address }}</dd>
           </div>
         </dl>
       </div>
@@ -471,23 +483,23 @@ const portalBase = computed(() => (route.path.startsWith("/admin/st") ? "/admin/
 
     <!-- Documents -->
     <div>
-      <h2 class="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-900"><FileText class="h-4 w-4 text-slate-400" /> Dokumen Sokongan</h2>
-      <p v-if="app.documents.length === 0" class="text-sm text-slate-400">Tiada dokumen dimuat naik.</p>
+      <h2 class="mb-3 flex items-center gap-2 border-b border-slate-200 pb-2 text-sm font-semibold text-slate-900 dark:border-slate-700 dark:text-slate-100"><FileText class="h-4 w-4 text-slate-400 dark:text-slate-500" /> Dokumen Sokongan</h2>
+      <p v-if="app.documents.length === 0" class="text-sm text-slate-400 dark:text-slate-500">Tiada dokumen dimuat naik.</p>
       <ul v-else>
-        <li v-for="d in app.documents" :key="d.id" class="flex items-center justify-between border-b border-slate-100 py-2 text-sm last:border-0">
-          <span class="text-slate-700">{{ d.label }}</span>
-          <span class="font-mono text-xs text-slate-500">{{ d.fileName }} · {{ d.sizeKb }} KB</span>
+        <li v-for="d in app.documents" :key="d.id" class="flex items-center justify-between border-b border-slate-100 py-2 text-sm last:border-0 dark:border-slate-800">
+          <span class="text-slate-700 dark:text-slate-300">{{ d.label }}</span>
+          <span class="font-mono text-xs text-slate-500 dark:text-slate-400">{{ d.fileName }} · {{ d.sizeKb }} KB</span>
         </li>
       </ul>
     </div>
 
     <!-- Payments -->
     <div v-if="app.payments.length">
-      <h2 class="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-900"><Receipt class="h-4 w-4 text-slate-400" /> Pembayaran</h2>
+      <h2 class="mb-3 flex items-center gap-2 border-b border-slate-200 pb-2 text-sm font-semibold text-slate-900 dark:border-slate-700 dark:text-slate-100"><Receipt class="h-4 w-4 text-slate-400 dark:text-slate-500" /> Pembayaran</h2>
       <ul>
-        <li v-for="p in app.payments" :key="p.id" class="flex items-center justify-between border-b border-slate-100 py-2 text-sm last:border-0">
-          <span class="text-slate-700">{{ p.kind === 'processing' ? 'Yuran Pemprosesan' : 'Yuran Pendaftaran' }} <span class="text-xs text-slate-400">· {{ p.receiptNo }}</span></span>
-          <span class="font-medium text-slate-800">RM {{ p.amount.toFixed(2) }}</span>
+        <li v-for="p in app.payments" :key="p.id" class="flex items-center justify-between border-b border-slate-100 py-2 text-sm last:border-0 dark:border-slate-800">
+          <span class="text-slate-700 dark:text-slate-300">{{ p.kind === 'processing' ? 'Yuran Pemprosesan' : 'Yuran Pendaftaran' }} <span class="text-xs text-slate-400 dark:text-slate-500">· {{ p.receiptNo }}</span></span>
+          <span class="font-medium text-slate-800 dark:text-slate-200">RM {{ p.amount.toFixed(2) }}</span>
         </li>
       </ul>
     </div>
@@ -496,29 +508,29 @@ const portalBase = computed(() => (route.path.startsWith("/admin/st") ? "/admin/
     <div v-if="app.status === 'certificate_issued' || app.payments.length" class="grid gap-3 sm:grid-cols-2">
       <button
         v-if="app.payments.length"
-        class="flex w-full items-center justify-between rounded-xl border border-emerald-200 bg-gradient-to-r from-emerald-50 to-white p-4 text-left shadow-sm hover:from-emerald-100"
+        class="flex w-full items-center justify-between rounded-xl border border-emerald-200 bg-gradient-to-r from-emerald-50 to-white p-4 text-left shadow-sm hover:from-emerald-100 dark:border-emerald-800 dark:from-emerald-500/10 dark:to-slate-800 dark:hover:from-emerald-500/20"
         @click="router.push(`${portalBase}/applications/${app.id}/receipt`)"
       >
         <span class="flex items-center gap-3">
-          <Receipt class="h-6 w-6 text-emerald-600" />
+          <Receipt class="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
           <span>
-            <span class="block text-sm font-semibold text-slate-800">Resit Pembayaran</span>
-            <span class="block text-xs text-slate-500">{{ app.payments.length }} resit · muat turun / cetak</span>
+            <span class="block text-sm font-semibold text-slate-800 dark:text-slate-200">Resit Pembayaran</span>
+            <span class="block text-xs text-slate-500 dark:text-slate-400">{{ app.payments.length }} resit · muat turun / cetak</span>
           </span>
         </span>
-        <span class="text-sm font-medium text-emerald-700">Buka →</span>
+        <span class="text-sm font-medium text-emerald-700 dark:text-emerald-400">Buka →</span>
       </button>
 
       <button
         v-if="app.status === 'certificate_issued'"
-        class="flex w-full items-center justify-between rounded-xl border border-[var(--accent-200)] bg-gradient-to-r from-[var(--accent-50)] to-white p-4 text-left shadow-sm hover:from-[var(--accent-100)]"
+        class="flex w-full items-center justify-between rounded-xl border border-[var(--accent-200)] bg-gradient-to-r from-[var(--accent-50)] to-white p-4 text-left shadow-sm hover:from-[var(--accent-100)] dark:to-slate-800"
         @click="router.push(`${portalBase}/applications/${app.id}/certificate`)"
       >
         <span class="flex items-center gap-3">
           <BadgeCheck class="h-6 w-6 text-[var(--accent-600)]" />
           <span>
-            <span class="block text-sm font-semibold text-slate-800">Sijil Digital Tersedia</span>
-            <span class="block text-xs text-slate-500">Lihat sijil dengan kod QR & trustmark</span>
+            <span class="block text-sm font-semibold text-slate-800 dark:text-slate-200">Sijil Digital Tersedia</span>
+            <span class="block text-xs text-slate-500 dark:text-slate-400">Lihat sijil dengan kod QR & trustmark</span>
           </span>
         </span>
         <span class="text-sm font-medium text-[var(--accent-700)]">Buka →</span>
@@ -527,13 +539,13 @@ const portalBase = computed(() => (route.path.startsWith("/admin/st") ? "/admin/
 
     <!-- Audit trail -->
     <div>
-      <h2 class="mb-4 text-sm font-semibold text-slate-900">Jejak Audit</h2>
+      <h2 class="mb-3 flex items-center gap-2 border-b border-slate-200 pb-2 text-sm font-semibold text-slate-900 dark:border-slate-700 dark:text-slate-100"><History class="h-4 w-4 text-slate-400 dark:text-slate-500" /> Jejak Audit</h2>
       <AuditTrailTimeline :entries="app.auditTrail" />
     </div>
   </div>
 
   <div v-else class="mx-auto max-w-md py-16 text-center">
-    <p class="text-slate-500">Permohonan tidak dijumpai.</p>
+    <p class="text-slate-500 dark:text-slate-400">Permohonan tidak dijumpai.</p>
     <button class="mt-3 text-sm font-medium text-[var(--accent-700)] hover:underline" @click="router.push(`${portalBase}/dashboard`)">Kembali ke papan pemuka</button>
   </div>
 </template>

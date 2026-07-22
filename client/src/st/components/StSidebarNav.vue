@@ -32,13 +32,13 @@ function isNodeActive(node: { to: string; children?: StaffMenuNode[] | PortalMen
 function itemClass(active: boolean) {
   return active
     ? "border border-[var(--accent-200)] bg-[var(--accent-50)] font-medium text-[var(--accent-700)]"
-    : "border border-transparent text-slate-700 hover:bg-[var(--accent-50)]";
+    : "border border-transparent text-slate-700 hover:bg-[var(--accent-50)] dark:text-slate-300";
 }
 
 function childClass(active: boolean) {
   return active
     ? "bg-[var(--accent-50)] font-medium text-[var(--accent-700)]"
-    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900";
+    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-100";
 }
 
 function toggleMenu(id: string) {
@@ -66,7 +66,7 @@ watch(() => props.menu, syncOpenMenus, { deep: true });
 <template>
   <nav class="p-3">
     <template v-for="group in menu" :key="group.id">
-      <p v-if="group.label" class="mb-1 mt-3 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+      <p v-if="group.label" class="mb-1 mt-3 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
         {{ ml(group.id, group.label) }}
       </p>
 
@@ -81,10 +81,10 @@ watch(() => props.menu, syncOpenMenus, { deep: true });
           <span class="flex-1">{{ ml(item.id, item.label) }}</span>
           <span
             v-if="item.phase === 2"
-            class="rounded bg-amber-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-amber-700"
+            class="rounded bg-amber-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-amber-700 dark:bg-amber-500/15 dark:text-amber-400"
           >F2</span>
           <ChevronDown
-            class="h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform duration-200"
+            class="h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform duration-200 dark:text-slate-500"
             :class="{ '-rotate-90': !openMenus[item.id] }"
           />
         </button>
@@ -100,7 +100,7 @@ watch(() => props.menu, syncOpenMenus, { deep: true });
 
         <div
           v-if="item.children && item.children.length > 0 && openMenus[item.id]"
-          class="ml-5 mt-1 space-y-0.5 border-l-2 border-slate-200 pl-3"
+          class="ml-5 mt-1 space-y-0.5 border-l-2 border-slate-200 pl-3 dark:border-slate-700"
         >
           <template v-for="child in item.children" :key="child.id">
             <button
@@ -111,7 +111,7 @@ watch(() => props.menu, syncOpenMenus, { deep: true });
             >
               <span class="flex-1">{{ ml(child.id, child.label) }}</span>
               <ChevronDown
-                class="h-3 w-3 shrink-0 text-slate-400 transition-transform duration-200"
+                class="h-3 w-3 shrink-0 text-slate-400 transition-transform duration-200 dark:text-slate-500"
                 :class="{ '-rotate-90': !openMenus[child.id] }"
               />
             </button>
@@ -126,7 +126,7 @@ watch(() => props.menu, syncOpenMenus, { deep: true });
 
             <div
               v-if="child.children && child.children.length > 0 && openMenus[child.id]"
-              class="ml-3 mt-0.5 space-y-0.5 border-l border-slate-200 pl-2.5"
+              class="ml-3 mt-0.5 space-y-0.5 border-l border-slate-200 pl-2.5 dark:border-slate-700"
             >
               <router-link
                 v-for="grandchild in child.children"

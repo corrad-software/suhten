@@ -44,20 +44,20 @@ const crumbs = computed<StBreadcrumbEntry[]>(() => {
 </script>
 
 <template>
-  <nav class="flex items-center gap-1.5 text-xs text-slate-500" aria-label="Breadcrumb">
-    <router-link :to="homeTo" class="flex items-center text-slate-400 transition-colors hover:text-slate-700">
+  <nav class="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400" aria-label="Breadcrumb">
+    <router-link :to="homeTo" class="flex items-center text-slate-400 transition-colors hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-200">
       <House class="h-3.5 w-3.5" />
     </router-link>
     <template v-for="(crumb, i) in crumbs" :key="i">
-      <ChevronRight class="h-3 w-3 shrink-0 text-slate-300" />
+      <ChevronRight class="h-3 w-3 shrink-0 text-slate-300 dark:text-slate-600" />
       <router-link
         v-if="crumb.to && i < crumbs.length - 1"
         :to="crumb.to"
-        class="truncate transition-colors hover:text-slate-700"
+        class="truncate transition-colors hover:text-slate-700 dark:hover:text-slate-200"
       >
         {{ crumb.label }}
       </router-link>
-      <span v-else :class="i === crumbs.length - 1 ? 'font-medium text-slate-700' : 'truncate'">{{ crumb.label }}</span>
+      <span v-else :class="i === crumbs.length - 1 ? 'font-medium text-slate-700 dark:text-slate-200' : 'truncate'">{{ crumb.label }}</span>
     </template>
   </nav>
 </template>

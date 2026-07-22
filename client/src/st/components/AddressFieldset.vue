@@ -30,13 +30,13 @@ const postcodeInvalid = computed(
 );
 
 const INPUT =
-  "w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-[var(--accent-500)] focus:outline-hidden focus:ring-2 focus:ring-[var(--accent-ring)]/30";
+  "w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-[var(--accent-500)] focus:outline-hidden focus:ring-2 focus:ring-[var(--accent-ring)]/30 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100";
 </script>
 
 <template>
   <div class="grid gap-3 sm:grid-cols-2">
     <label class="sm:col-span-2">
-      <span class="mb-1 block text-sm font-medium text-slate-700">
+      <span class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
         {{ bm ? 'Alamat Baris 1' : 'Address Line 1' }} <span class="text-rose-500">*</span>
       </span>
       <input
@@ -48,9 +48,9 @@ const INPUT =
     </label>
 
     <label class="sm:col-span-2">
-      <span class="mb-1 block text-sm font-medium text-slate-700">
+      <span class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
         {{ bm ? 'Alamat Baris 2' : 'Address Line 2' }}
-        <span class="text-xs font-normal text-slate-400">({{ bm ? 'pilihan' : 'optional' }})</span>
+        <span class="text-xs font-normal text-slate-400 dark:text-slate-500">({{ bm ? 'pilihan' : 'optional' }})</span>
       </span>
       <input
         :value="modelValue.line2"
@@ -61,7 +61,7 @@ const INPUT =
     </label>
 
     <label>
-      <span class="mb-1 block text-sm font-medium text-slate-700">
+      <span class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
         {{ bm ? 'Daerah' : 'District' }} <span class="text-rose-500">*</span>
       </span>
       <input
@@ -73,7 +73,7 @@ const INPUT =
     </label>
 
     <label>
-      <span class="mb-1 block text-sm font-medium text-slate-700">
+      <span class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
         {{ bm ? 'Poskod' : 'Postcode' }} <span class="text-rose-500">*</span>
       </span>
       <input
@@ -90,7 +90,7 @@ const INPUT =
     </label>
 
     <label class="sm:col-span-2">
-      <span class="mb-1 block text-sm font-medium text-slate-700">
+      <span class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
         {{ bm ? 'Negeri' : 'State' }} <span class="text-rose-500">*</span>
       </span>
       <select :value="modelValue.state" :class="INPUT" @change="set('state', ($event.target as HTMLSelectElement).value)">

@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { BarChart3 } from "lucide-vue-next";
 
 import { useLocale } from "@/composables/useLocale";
 import type { StMessageKey } from "@/i18n/st-messages";
 import { useStRegistrationStore } from "../../stores/registration";
 import { appTypeLabel, useRegistrationModule } from "../../composables/useRegistrationModule";
 import { slaLevel } from "../../sla";
+import StPageHero from "../../components/StPageHero.vue";
 
 const { ts } = useLocale();
 const regStore = useStRegistrationStore();
@@ -58,48 +58,41 @@ const volume = computed(() => apps.value.length);
 
 <template>
   <div v-if="code && def" class="space-y-8">
-    <div class="flex items-start gap-3">
-      <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--accent-50)]">
-        <BarChart3 class="h-5 w-5 text-[var(--accent-700)]" />
+    <StPageHero :title="ts('st.reg.reports')" :subtitle="`${title} · ${ts('st.reg.reportsSubtitle')}`">
+      <div class="mt-2 flex flex-wrap items-center gap-2">
+        <span class="rounded-md bg-slate-100 dark:bg-slate-700 px-2 py-0.5 font-mono text-xs text-slate-600 dark:text-slate-400">{{ code }}</span>
       </div>
-      <div>
-        <div class="flex flex-wrap items-center gap-2">
-          <h1 class="text-xl font-semibold text-slate-900">{{ ts("st.reg.reports") }}</h1>
-          <span class="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs text-slate-600">{{ code }}</span>
-        </div>
-        <p class="text-sm text-slate-500">{{ title }} · {{ ts("st.reg.reportsSubtitle") }}</p>
-      </div>
-    </div>
+    </StPageHero>
 
-    <p class="text-xs text-slate-400">{{ ts("st.common.mockNote") }}</p>
+    <p class="text-xs text-slate-400 dark:text-slate-500">{{ ts("st.common.mockNote") }}</p>
 
-    <div class="grid gap-6 lg:grid-cols-3 lg:divide-x lg:divide-slate-200">
+    <div class="grid gap-6 lg:grid-cols-3 lg:divide-x lg:divide-slate-200 dark:lg:divide-slate-700">
       <div>
-        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">{{ ts("st.reg.reportVolume") }}</p>
-        <p class="mt-2 text-4xl font-bold text-slate-900">{{ volume }}</p>
-        <p class="mt-4 text-xs font-semibold uppercase tracking-wider text-slate-400">{{ ts("st.reg.reportSla") }}</p>
-        <div class="mt-2 flex h-3 overflow-hidden rounded-full bg-slate-100">
+        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{{ ts("st.reg.reportVolume") }}</p>
+        <p class="mt-2 text-4xl font-bold text-slate-900 dark:text-slate-100">{{ volume }}</p>
+        <p class="mt-4 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{{ ts("st.reg.reportSla") }}</p>
+        <div class="mt-2 flex h-3 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
           <div class="bg-emerald-500 transition-all" :style="{ width: `${(sla.green / sla.total) * 100}%` }" />
           <div class="bg-amber-400 transition-all" :style="{ width: `${(sla.yellow / sla.total) * 100}%` }" />
           <div class="bg-rose-500 transition-all" :style="{ width: `${(sla.red / sla.total) * 100}%` }" />
         </div>
-        <div class="mt-2 flex flex-wrap gap-3 text-xs text-slate-600">
+        <div class="mt-2 flex flex-wrap gap-3 text-xs text-slate-600 dark:text-slate-400">
           <span>{{ ts("st.inbox.slaGreen") }} {{ sla.green }}</span>
           <span>{{ ts("st.inbox.slaYellow") }} {{ sla.yellow }}</span>
           <span>{{ ts("st.inbox.slaRed") }} {{ sla.red }}</span>
         </div>
-        <p class="mt-3 text-sm text-slate-500">{{ sla.greenPct }}% {{ ts("st.inbox.slaGreen").toLowerCase() }}</p>
+        <p class="mt-3 text-sm text-slate-500 dark:text-slate-400">{{ sla.greenPct }}% {{ ts("st.inbox.slaGreen").toLowerCase() }}</p>
       </div>
 
       <div class="lg:pl-6">
-        <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">{{ ts("st.reg.reportByType") }}</p>
+        <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{{ ts("st.reg.reportByType") }}</p>
         <ul class="space-y-2.5">
           <li v-for="row in byType" :key="row.type">
             <div class="mb-1 flex justify-between text-xs">
-              <span class="text-slate-700">{{ appTypeLabel(row.type, ts) }}</span>
-              <span class="font-semibold text-slate-900">{{ row.count }}</span>
+              <span class="text-slate-700 dark:text-slate-300">{{ appTypeLabel(row.type, ts) }}</span>
+              <span class="font-semibold text-slate-900 dark:text-slate-100">{{ row.count }}</span>
             </div>
-            <div class="h-1.5 overflow-hidden rounded-full bg-slate-100">
+            <div class="h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
               <div class="h-full rounded-full bg-[var(--accent-500)] transition-all" :style="{ width: `${row.pct}%` }" />
             </div>
           </li>
@@ -107,14 +100,14 @@ const volume = computed(() => apps.value.length);
       </div>
 
       <div class="lg:pl-6">
-        <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">{{ ts("st.reg.reportByStatus") }}</p>
+        <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{{ ts("st.reg.reportByStatus") }}</p>
         <ul class="space-y-2.5">
           <li v-for="row in byStatus" :key="row.status">
             <div class="mb-1 flex justify-between text-xs">
-              <span class="text-slate-700">{{ ts(`st.status.${row.status}` as StMessageKey) }}</span>
-              <span class="font-semibold text-slate-900">{{ row.count }}</span>
+              <span class="text-slate-700 dark:text-slate-300">{{ ts(`st.status.${row.status}` as StMessageKey) }}</span>
+              <span class="font-semibold text-slate-900 dark:text-slate-100">{{ row.count }}</span>
             </div>
-            <div class="h-1.5 overflow-hidden rounded-full bg-slate-100">
+            <div class="h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
               <div class="h-full rounded-full bg-indigo-400 transition-all" :style="{ width: `${row.pct}%` }" />
             </div>
           </li>

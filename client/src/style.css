@@ -106,8 +106,24 @@
     --st-brand-gradient-reverse: linear-gradient(49.64deg, #ed1c24 20%, #3a42a9 40%);
   }
 
+  /* ST portal accent — dark-mode overrides (soft tints darken, text lightens for contrast). */
+  .dark [data-theme-color='st'] {
+    --accent-50: #16213f;
+    --accent-100: #1c2c52;
+    --accent-200: #24386a;
+    --accent-500: #5b8def;
+    --accent-600: #3b82f6;
+    --accent-700: #93c5fd;
+    --accent-ring: #5b8def;
+    color-scheme: dark;
+  }
+
   body {
     @apply bg-slate-50 text-slate-950;
+  }
+
+  .dark body {
+    @apply bg-slate-900 text-slate-100;
   }
 }
 

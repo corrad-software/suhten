@@ -22,7 +22,7 @@ function state(i: number): "done" | "active" | "pending" {
 
 <template>
   <div>
-    <div v-if="terminalBad" class="rounded-md border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+    <div v-if="terminalBad" class="rounded-md border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 dark:border-rose-800 dark:bg-rose-500/15 dark:text-rose-400">
       Permohonan {{ status === "rejected" ? "telah ditolak" : "telah ditarik balik" }}.
     </div>
 
@@ -40,19 +40,19 @@ function state(i: number): "done" | "active" | "pending" {
                 'flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-semibold',
                 state(i) === 'done' ? 'bg-emerald-500 text-white'
                   : state(i) === 'active' ? 'bg-[var(--accent-600)] text-white ring-4 ring-[var(--accent-100)]'
-                  : 'bg-slate-200 text-slate-500',
+                  : 'bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400',
               ]"
             >
               <Check v-if="state(i) === 'done'" class="h-4 w-4" />
               <template v-else>{{ i + 1 }}</template>
             </span>
-            <span :class="['mt-1.5 text-[10.5px] leading-tight', state(i) === 'pending' ? 'text-slate-400' : 'text-slate-700 font-medium']">
+            <span :class="['mt-1.5 text-[10.5px] leading-tight', state(i) === 'pending' ? 'text-slate-400 dark:text-slate-500' : 'text-slate-700 font-medium dark:text-slate-300']">
               {{ step.label }}
             </span>
           </div>
           <span
             v-if="i < WORKFLOW_STEPS.length - 1"
-            :class="['mx-1 h-0.5 flex-1 rounded -translate-y-2', i < currentIndex ? 'bg-emerald-500' : 'bg-slate-200']"
+            :class="['mx-1 h-0.5 flex-1 rounded -translate-y-2', i < currentIndex ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-700']"
           />
         </li>
       </ol>
@@ -63,26 +63,26 @@ function state(i: number): "done" | "active" | "pending" {
           <span
             v-if="i < WORKFLOW_STEPS.length - 1"
             class="absolute left-3.5 top-7 h-full w-px"
-            :class="i < currentIndex ? 'bg-emerald-300' : 'bg-slate-200'"
+            :class="i < currentIndex ? 'bg-emerald-300 dark:bg-emerald-700' : 'bg-slate-200 dark:bg-slate-700'"
           />
           <span
             class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold"
             :class="[
               state(i) === 'done' ? 'bg-emerald-500 text-white'
-                : state(i) === 'active' ? 'border-2 border-[var(--accent-600)] bg-white text-[var(--accent-700)]'
-                : 'border-2 border-slate-200 bg-white text-slate-400',
+                : state(i) === 'active' ? 'border-2 border-[var(--accent-600)] bg-white text-[var(--accent-700)] dark:bg-slate-800'
+                : 'border-2 border-slate-200 bg-white text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500',
             ]"
           >
             <Check v-if="state(i) === 'done'" class="h-3.5 w-3.5" />
             <span v-else>{{ i + 1 }}</span>
           </span>
           <div class="pt-0.5">
-            <p class="text-sm font-medium" :class="state(i) === 'pending' ? 'text-slate-400' : 'text-slate-900'">
+            <p class="text-sm font-medium" :class="state(i) === 'pending' ? 'text-slate-400 dark:text-slate-500' : 'text-slate-900 dark:text-slate-100'">
               {{ step.label }}
             </p>
             <p
               class="mt-0.5 text-xs"
-              :class="state(i) === 'active' ? 'font-medium text-[var(--accent-700)]' : state(i) === 'done' ? 'text-emerald-600' : 'text-slate-300'"
+              :class="state(i) === 'active' ? 'font-medium text-[var(--accent-700)]' : state(i) === 'done' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-300 dark:text-slate-600'"
             >
               {{ state(i) === "active" ? "Sedang berlangsung" : state(i) === "done" ? "Selesai" : "Menunggu" }}
             </p>

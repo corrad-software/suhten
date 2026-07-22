@@ -195,7 +195,7 @@ function variantClass(v: ActionBtn["variant"]) {
   }
   if (v === "primary") return "bg-[var(--accent-600)] text-white hover:bg-[var(--accent-700)]";
   if (v === "danger") return "border border-[#e73239] text-[#e73239] hover:bg-[#e73239]/10";
-  return "border border-slate-300 text-slate-700 hover:bg-slate-50";
+  return "border border-slate-300 text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800";
 }
 
 async function run(btn: ActionBtn) {
@@ -298,7 +298,7 @@ async function doTransition(action: ActionKey, payload: { note?: string } = {}) 
   <p
     v-else-if="idleHint"
     class="rounded-md px-3 py-2 text-right text-sm"
-    :class="onDark ? 'bg-white/10 text-white/90' : 'border border-amber-200 bg-amber-50 text-amber-900'"
+    :class="onDark ? 'bg-white/10 text-white/90' : 'border border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-500/15 dark:text-amber-400'"
   >
     {{ idleHint }}
   </p>
@@ -307,12 +307,12 @@ async function doTransition(action: ActionKey, payload: { note?: string } = {}) 
 
   <!-- Employer confirmation: attach EPF/SOCSO -->
   <div v-if="confirmOpen" class="fixed inset-0 z-[90] flex items-center justify-center bg-slate-900/40 px-4 backdrop-blur-sm">
-    <div class="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-2xl">
-      <h3 class="mb-1 text-base font-semibold text-slate-900">Sahkan Lantikan Pekerja</h3>
-      <p class="mb-4 text-sm text-slate-500">Sahkan bahawa pemohon adalah pekerja anda dan lampirkan penyata caruman KWSP & PERKESO.</p>
+    <div class="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-700 dark:bg-slate-800">
+      <h3 class="mb-1 text-base font-semibold text-slate-900 dark:text-slate-100">Sahkan Lantikan Pekerja</h3>
+      <p class="mb-4 text-sm text-slate-500 dark:text-slate-400">Sahkan bahawa pemohon adalah pekerja anda dan lampirkan penyata caruman KWSP & PERKESO.</p>
       <DocumentUploadField v-model="confirmDocs" :labels="CONFIRM_DOC_LABELS" />
       <div class="mt-5 flex gap-2">
-        <button class="flex-1 rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50" @click="confirmOpen = false">Batal</button>
+        <button class="flex-1 rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800" @click="confirmOpen = false">Batal</button>
         <button class="flex-1 rounded-md bg-[var(--accent-600)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--accent-700)]" @click="submitConfirm">Sahkan Lantikan</button>
       </div>
     </div>
@@ -320,16 +320,16 @@ async function doTransition(action: ActionKey, payload: { note?: string } = {}) 
 
   <!-- Note prompt -->
   <div v-if="notePrompt" class="fixed inset-0 z-[90] flex items-center justify-center bg-slate-900/40 px-4 backdrop-blur-sm">
-    <div class="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-2xl">
-      <h3 class="mb-3 text-base font-semibold text-slate-900">{{ notePrompt.label }}</h3>
+    <div class="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-700 dark:bg-slate-800">
+      <h3 class="mb-3 text-base font-semibold text-slate-900 dark:text-slate-100">{{ notePrompt.label }}</h3>
       <textarea
         v-model="noteText"
         rows="3"
         placeholder="Catatan / sebab (pilihan)..."
-        class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-[var(--accent-500)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]/30"
+        class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-[var(--accent-500)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]/30 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
       />
       <div class="mt-4 flex gap-2">
-        <button class="flex-1 rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50" @click="notePrompt = null">Batal</button>
+        <button class="flex-1 rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800" @click="notePrompt = null">Batal</button>
         <button class="flex-1 rounded-md bg-[var(--accent-600)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--accent-700)]" @click="submitNote">Teruskan</button>
       </div>
     </div>

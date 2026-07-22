@@ -8,6 +8,7 @@ import { withCeCertificateFields } from "../certificate-ce";
 import { withOkCertificateFields } from "../certificate-ok";
 import { useStWorkflowStore } from "../stores/workflow";
 import CertificateCard from "../components/CertificateCard.vue";
+import StPageHero from "../components/StPageHero.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -75,24 +76,27 @@ function goBack() {
 
 <template>
   <div v-if="app" class="space-y-5 print:space-y-3">
-    <div class="flex items-center justify-between print:hidden">
-      <button class="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800" @click="goBack">
-        <ArrowLeft class="h-4 w-4" /> Kembali ke permohonan
-      </button>
-      <button
-        v-if="hasCert"
-        class="flex items-center gap-1.5 rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50"
-        @click="printPage"
-      >
-        <Printer class="h-4 w-4" /> Cetak
-      </button>
-    </div>
+    <button class="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 print:hidden dark:text-slate-400 dark:hover:text-slate-100" @click="goBack">
+      <ArrowLeft class="h-4 w-4" /> Kembali ke permohonan
+    </button>
+
+    <StPageHero title="Sijil Digital" :subtitle="app.refNo" class="print:hidden">
+      <template #action>
+        <button
+          v-if="hasCert"
+          class="flex items-center gap-1.5 rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-400 dark:hover:bg-slate-800/60"
+          @click="printPage"
+        >
+          <Printer class="h-4 w-4" /> Cetak
+        </button>
+      </template>
+    </StPageHero>
 
     <template v-if="hasCert && displayCert">
       <CertificateCard :application="app" :certificate="displayCert" />
 
       <div v-if="okCerts.length" class="space-y-3 print:break-before-page">
-        <h2 class="text-sm font-semibold text-slate-700 print:hidden">Sijil Orang Kompeten Dilantik</h2>
+        <h2 class="text-sm font-semibold text-slate-700 print:hidden dark:text-slate-300">Sijil Orang Kompeten Dilantik</h2>
         <CertificateCard
           v-for="okCert in okCerts"
           :key="okCert.serialNo"
@@ -102,10 +106,10 @@ function goBack() {
         />
       </div>
     </template>
-    <div v-else class="py-16 text-center text-sm text-slate-500">
+    <div v-else class="py-16 text-center text-sm text-slate-500 dark:text-slate-400">
       Sijil belum dikeluarkan untuk permohonan ini.
     </div>
   </div>
 
-  <div v-else class="py-16 text-center text-slate-500">Permohonan tidak dijumpai.</div>
+  <div v-else class="py-16 text-center text-slate-500 dark:text-slate-400">Permohonan tidak dijumpai.</div>
 </template>
