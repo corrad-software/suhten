@@ -10,11 +10,14 @@ import {
   appsForModule,
   entitiesForModule,
   type WorkspaceApplication,
+  type WorkspaceEntity,
 } from "../../mock/workspace";
 import { slaLevel } from "../../sla";
+import type { SmartTableColumn } from "../../composables/useSmartTable";
 import RegStatusBadge from "../../components/RegStatusBadge.vue";
 import ComplianceBadge from "../../components/ComplianceBadge.vue";
 import SlaIndicator from "../../components/SlaIndicator.vue";
+import SmartTable from "../../components/SmartTable.vue";
 
 const { code, def, screen, title, actRef, processTypes, screenTitle, ts, locale } = useServiceModule();
 const statusFilter = ref<ApplicationStatus | "">("");
@@ -113,10 +116,34 @@ const STATUS_OPTIONS: ApplicationStatus[] = [
   "awaiting_processing_payment",
   "certificate_issued",
 ];
+
+const applicationColumns = computed<SmartTableColumn<WorkspaceApplication>[]>(() => [
+  { key: "refNo", label: ts("st.common.refNo"), value: (row) => row.refNo },
+  { key: "applicant", label: ts("st.common.applicant"), value: (row) => row.applicantName },
+  { key: "type", label: ts("st.common.type"), value: (row) => processLabel(row) },
+  { key: "date", label: ts("st.common.date"), value: (row) => fmt(row.submittedAt) },
+  { key: "status", label: ts("st.common.status"), value: (row) => ts(`st.status.${row.status}` as StMessageKey) },
+]);
+
+const reviewColumns = computed<SmartTableColumn<WorkspaceApplication>[]>(() => [
+  { key: "refNo", label: ts("st.common.refNo"), value: (row) => row.refNo },
+  { key: "applicant", label: ts("st.common.applicant"), value: (row) => row.applicantName },
+  { key: "status", label: ts("st.common.status"), value: (row) => ts(`st.status.${row.status}` as StMessageKey) },
+  { key: "sla", label: "SLA", value: () => "", filterable: false },
+  { key: "officer", label: ts("st.common.officer"), value: (row) => row.officer || "—" },
+]);
+
+const complianceColumns = computed<SmartTableColumn<WorkspaceEntity>[]>(() => [
+  { key: "certificate", label: ts("st.common.certificate"), value: (row) => row.certificateNo },
+  { key: "applicant", label: ts("st.common.applicant"), value: (row) => row.name },
+  { key: "category", label: ts("st.common.category"), value: (row) => row.categoryOrClass },
+  { key: "expires", label: ts("st.common.expires"), value: (row) => fmt(row.expiresAt) },
+  { key: "status", label: ts("st.common.status"), value: (row) => ts(`st.compliance.${row.compliance}` as StMessageKey) },
+]);
 </script>
 
 <template>
-  <div v-if="code && def" class="space-y-5">
+  <div v-if="code && def" class="space-y-8">
     <div class="flex flex-wrap items-start justify-between gap-4">
       <div class="flex items-start gap-3">
         <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--accent-50)]">
@@ -178,26 +205,26 @@ const STATUS_OPTIONS: ApplicationStatus[] = [
         </div>
       </div>
 
-      <div class="grid gap-3 sm:grid-cols-4">
-        <div class="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+      <div class="grid grid-cols-2 gap-y-4 sm:grid-cols-4 sm:divide-x sm:divide-slate-200">
+        <div class="px-0 sm:px-5 sm:first:pl-0">
           <p class="text-2xl font-bold text-slate-900">{{ stats.total }}</p>
           <p class="text-xs text-slate-500">{{ ts("st.reg.statTotal") }}</p>
         </div>
-        <div class="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+        <div class="px-0 sm:px-5">
           <p class="text-2xl font-bold text-sky-700">{{ stats.inProgress }}</p>
           <p class="text-xs text-slate-500">{{ ts("st.reg.statInProgress") }}</p>
         </div>
-        <div class="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+        <div class="px-0 sm:px-5">
           <p class="text-2xl font-bold text-amber-700">{{ stats.query }}</p>
           <p class="text-xs text-slate-500">{{ ts("st.reg.statQuery") }}</p>
         </div>
-        <div class="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+        <div class="px-0 sm:px-5">
           <p class="text-2xl font-bold text-emerald-700">{{ stats.issued }}</p>
           <p class="text-xs text-slate-500">{{ ts("st.reg.statIssued") }}</p>
         </div>
       </div>
 
-      <div class="flex flex-wrap items-center gap-2">
+      <div class="flex flex-wrap items-center gap-2 border-t border-slate-200 pt-6">
         <Filter class="h-4 w-4 text-slate-400" />
         <select v-model="statusFilter" class="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm">
           <option value="">{{ ts("st.common.filterAll") }}</option>
@@ -205,34 +232,23 @@ const STATUS_OPTIONS: ApplicationStatus[] = [
         </select>
       </div>
 
-      <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <table class="min-w-full text-left text-sm">
-          <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
-            <tr>
-              <th class="px-4 py-3">{{ ts("st.common.refNo") }}</th>
-              <th class="px-4 py-3">{{ ts("st.common.applicant") }}</th>
-              <th class="px-4 py-3">{{ ts("st.common.type") }}</th>
-              <th class="px-4 py-3">{{ ts("st.common.date") }}</th>
-              <th class="px-4 py-3">{{ ts("st.common.status") }}</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100">
-            <tr v-for="row in filteredApps" :key="row.id" class="hover:bg-slate-50/80">
-              <td class="px-4 py-3 font-mono text-xs text-slate-700">{{ row.refNo }}</td>
-              <td class="px-4 py-3">
-                <p class="font-medium text-slate-800">{{ row.applicantName }}</p>
-                <p class="text-xs text-slate-400">{{ row.identityNo }} · {{ row.location || "—" }}</p>
-              </td>
-              <td class="px-4 py-3 text-slate-600">{{ processLabel(row) }}</td>
-              <td class="px-4 py-3 text-slate-600">{{ fmt(row.submittedAt) }}</td>
-              <td class="px-4 py-3"><RegStatusBadge :status="row.status" /></td>
-            </tr>
-            <tr v-if="filteredApps.length === 0">
-              <td colspan="5" class="px-4 py-10 text-center text-sm text-slate-400">{{ ts("st.reg.emptyApps") }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <SmartTable
+        :rows="filteredApps"
+        :columns="applicationColumns"
+        :row-key="(row) => row.id"
+        :empty-text="ts('st.reg.emptyApps')"
+      >
+        <template #cell-refNo="{ row }">
+          <span class="font-mono text-xs text-slate-700">{{ row.refNo }}</span>
+        </template>
+        <template #cell-applicant="{ row }">
+          <p class="font-medium text-slate-800">{{ row.applicantName }}</p>
+          <p class="text-xs text-slate-400">{{ row.identityNo }} · {{ row.location || "—" }}</p>
+        </template>
+        <template #cell-status="{ row }">
+          <RegStatusBadge :status="row.status" />
+        </template>
+      </SmartTable>
     </template>
 
     <!-- Review -->
@@ -242,36 +258,29 @@ const STATUS_OPTIONS: ApplicationStatus[] = [
         <span class="rounded-md bg-amber-50 px-2.5 py-1 text-amber-800">{{ ts("st.inbox.slaYellow") }} {{ sla.yellow }}</span>
         <span class="rounded-md bg-rose-50 px-2.5 py-1 text-rose-800">{{ ts("st.inbox.slaRed") }} {{ sla.red }}</span>
       </div>
-      <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <table class="min-w-full text-left text-sm">
-          <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
-            <tr>
-              <th class="px-4 py-3">{{ ts("st.common.refNo") }}</th>
-              <th class="px-4 py-3">{{ ts("st.common.applicant") }}</th>
-              <th class="px-4 py-3">{{ ts("st.common.status") }}</th>
-              <th class="px-4 py-3">SLA</th>
-              <th class="px-4 py-3">{{ ts("st.common.officer") }}</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100">
-            <tr v-for="row in filteredApps" :key="row.id" class="hover:bg-slate-50/80">
-              <td class="px-4 py-3 font-mono text-xs">{{ row.refNo }}</td>
-              <td class="px-4 py-3">
-                <p class="font-medium">{{ row.applicantName }}</p>
-                <p class="text-xs text-slate-400">{{ fmtDt(row.stageEnteredAt) }}</p>
-              </td>
-              <td class="px-4 py-3"><RegStatusBadge :status="row.status" /></td>
-              <td class="px-4 py-3">
-                <SlaIndicator :stage-entered-at="row.stageEnteredAt" :target-hours="row.slaTargetHours" />
-              </td>
-              <td class="px-4 py-3 text-slate-600">{{ row.officer || "—" }}</td>
-            </tr>
-            <tr v-if="filteredApps.length === 0">
-              <td colspan="5" class="px-4 py-10 text-center text-sm text-slate-400">{{ ts("st.reg.reviewEmpty") }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <SmartTable
+        :rows="filteredApps"
+        :columns="reviewColumns"
+        :row-key="(row) => row.id"
+        :empty-text="ts('st.reg.reviewEmpty')"
+      >
+        <template #cell-refNo="{ row }">
+          <span class="font-mono text-xs">{{ row.refNo }}</span>
+        </template>
+        <template #cell-applicant="{ row }">
+          <p class="font-medium">{{ row.applicantName }}</p>
+          <p class="text-xs text-slate-400">{{ fmtDt(row.stageEnteredAt) }}</p>
+        </template>
+        <template #cell-status="{ row }">
+          <RegStatusBadge :status="row.status" />
+        </template>
+        <template #cell-sla="{ row }">
+          <SlaIndicator :stage-entered-at="row.stageEnteredAt" :target-hours="row.slaTargetHours" />
+        </template>
+        <template #cell-officer="{ row }">
+          <span class="text-slate-600">{{ row.officer || "—" }}</span>
+        </template>
+      </SmartTable>
     </template>
 
     <!-- Compliance -->
@@ -294,40 +303,31 @@ const STATUS_OPTIONS: ApplicationStatus[] = [
           <p class="text-xs text-slate-600">{{ ts("st.reg.complianceSuspended") }}</p>
         </div>
       </div>
-      <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <table class="min-w-full text-left text-sm">
-          <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
-            <tr>
-              <th class="px-4 py-3">{{ ts("st.common.certificate") }}</th>
-              <th class="px-4 py-3">{{ ts("st.common.applicant") }}</th>
-              <th class="px-4 py-3">{{ ts("st.common.category") }}</th>
-              <th class="px-4 py-3">{{ ts("st.common.expires") }}</th>
-              <th class="px-4 py-3">{{ ts("st.common.status") }}</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100">
-            <tr v-for="row in entities" :key="row.id" class="hover:bg-slate-50/80">
-              <td class="px-4 py-3 font-mono text-xs">{{ row.certificateNo }}</td>
-              <td class="px-4 py-3">
-                <p class="font-medium">{{ row.name }}</p>
-                <p class="text-xs text-slate-400">{{ row.identityNo }}</p>
-              </td>
-              <td class="px-4 py-3 text-slate-600">{{ row.categoryOrClass }}</td>
-              <td class="px-4 py-3 text-slate-600">{{ fmt(row.expiresAt) }}</td>
-              <td class="px-4 py-3"><ComplianceBadge :status="row.compliance" /></td>
-            </tr>
-            <tr v-if="entities.length === 0">
-              <td colspan="5" class="px-4 py-10 text-center text-sm text-slate-400">{{ ts("st.common.noResults") }}</td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="border-t border-slate-200 pt-6">
+        <SmartTable
+          :rows="entities"
+          :columns="complianceColumns"
+          :row-key="(row) => row.id"
+          :empty-text="ts('st.common.noResults')"
+        >
+          <template #cell-certificate="{ row }">
+            <span class="font-mono text-xs">{{ row.certificateNo }}</span>
+          </template>
+          <template #cell-applicant="{ row }">
+            <p class="font-medium">{{ row.name }}</p>
+            <p class="text-xs text-slate-400">{{ row.identityNo }}</p>
+          </template>
+          <template #cell-status="{ row }">
+            <ComplianceBadge :status="row.compliance" />
+          </template>
+        </SmartTable>
       </div>
     </template>
 
     <!-- Reports -->
     <template v-else>
-      <div class="grid gap-4 lg:grid-cols-3">
-        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="grid gap-6 lg:grid-cols-3 lg:divide-x lg:divide-slate-200">
+        <div>
           <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">{{ ts("st.reg.reportVolume") }}</p>
           <p class="mt-2 text-4xl font-bold text-slate-900">{{ stats.total }}</p>
           <p class="mt-4 text-xs font-semibold uppercase tracking-wider text-slate-400">{{ ts("st.reg.reportSla") }}</p>
@@ -338,7 +338,7 @@ const STATUS_OPTIONS: ApplicationStatus[] = [
           </div>
           <p class="mt-3 text-sm text-slate-500">{{ sla.greenPct }}% {{ ts("st.inbox.slaGreen").toLowerCase() }}</p>
         </div>
-        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm lg:col-span-2">
+        <div class="lg:col-span-2 lg:pl-6">
           <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">{{ ts("st.reg.reportByStatus") }}</p>
           <ul class="space-y-2.5">
             <li v-for="row in byStatus" :key="row.status">

@@ -78,18 +78,21 @@ function fmt(iso?: string): string {
 </script>
 
 <template>
-  <div v-if="app" class="space-y-5">
-    <button class="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800" @click="router.back()">
+  <div v-if="app" class="space-y-10">
+    <button
+      class="flex items-center gap-1.5 rounded-md border border-black px-3 py-1.5 text-sm font-medium text-black transition-colors hover:bg-black/5"
+      @click="router.back()"
+    >
       <ArrowLeft class="h-4 w-4" /> Kembali
     </button>
 
     <!-- Header -->
-    <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div class="border-b border-slate-200 pb-4">
       <div class="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p class="font-mono text-xs text-slate-500">{{ app.refNo }}</p>
           <h1 class="text-lg font-semibold text-slate-900">{{ workflowLabel(app.workflowType) }}</h1>
-          <p class="text-sm text-slate-600">{{ categoryLine }} · {{ app.registrationPeriodYears }} tahun</p>
+          <p class="text-sm text-slate-500">{{ categoryLine }} · {{ app.registrationPeriodYears }} tahun</p>
         </div>
         <div class="flex flex-col items-end gap-2">
           <StatusBadge :status="app.status" />
@@ -103,16 +106,18 @@ function fmt(iso?: string): string {
     </div>
 
     <!-- Action bar -->
-    <div class="rounded-xl border border-[var(--accent-200)] bg-[var(--accent-50)] p-4">
-      <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--accent-700)]">Tindakan</p>
-      <ApplicationActionBar :application="app" />
-      <p class="mt-1 text-xs text-slate-500" v-if="app.status === 'certificate_issued'">Permohonan selesai. Sijil digital telah dikeluarkan.</p>
+    <div class="rounded-xl border border-rose-200 bg-rose-50 p-4">
+      <div class="flex flex-wrap items-center justify-end gap-3">
+        <p class="text-xs font-semibold uppercase tracking-wider text-rose-700">Tindakan</p>
+        <ApplicationActionBar :application="app" />
+      </div>
+      <p class="mt-2 text-right text-xs text-slate-500" v-if="app.status === 'certificate_issued'">Permohonan selesai. Sijil digital telah dikeluarkan.</p>
     </div>
 
-    <div class="grid gap-5 md:grid-cols-2">
+    <div class="grid gap-6 md:grid-cols-2 md:divide-x md:divide-slate-200">
       <!-- Applicant -->
-      <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h2 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700"><UserCheck class="h-4 w-4 text-slate-400" /> Maklumat Pemohon</h2>
+      <div class="md:pr-6">
+        <h2 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-900"><UserCheck class="h-4 w-4 text-slate-400" /> Maklumat Pemohon</h2>
         <dl class="space-y-1.5 text-sm">
           <div class="flex justify-between"><dt class="text-slate-500">Nama</dt><dd class="font-medium text-slate-800">{{ app.applicant.fullName }}</dd></div>
           <div class="flex justify-between"><dt class="text-slate-500">No. KP</dt><dd class="font-mono text-slate-800">{{ app.applicant.icNumber }}</dd></div>
@@ -128,8 +133,8 @@ function fmt(iso?: string): string {
       </div>
 
       <!-- Employer / confirmer -->
-      <div v-if="app.employer" class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h2 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700"><Building2 class="h-4 w-4 text-slate-400" /> {{ app.workflowType === 'OK' ? 'Majikan' : 'Syarikat / Orang Kompeten' }}</h2>
+      <div v-if="app.employer" class="md:pl-6">
+        <h2 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-900"><Building2 class="h-4 w-4 text-slate-400" /> {{ app.workflowType === 'OK' ? 'Majikan' : 'Syarikat / Orang Kompeten' }}</h2>
         <dl class="space-y-1.5 text-sm">
           <div class="flex justify-between"><dt class="text-slate-500">Nama</dt><dd class="font-medium text-slate-800">{{ app.employer.name }}</dd></div>
           <div class="flex justify-between"><dt class="text-slate-500">No. Pendaftaran</dt><dd class="font-mono text-xs text-slate-800">{{ app.employer.registrationNo }}</dd></div>
@@ -139,11 +144,11 @@ function fmt(iso?: string): string {
     </div>
 
     <!-- Documents -->
-    <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700"><FileText class="h-4 w-4 text-slate-400" /> Dokumen Sokongan</h2>
+    <div>
+      <h2 class="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-900"><FileText class="h-4 w-4 text-slate-400" /> Dokumen Sokongan</h2>
       <p v-if="app.documents.length === 0" class="text-sm text-slate-400">Tiada dokumen dimuat naik.</p>
-      <ul v-else class="space-y-1.5">
-        <li v-for="d in app.documents" :key="d.id" class="flex items-center justify-between rounded-md border border-slate-100 px-3 py-2 text-sm">
+      <ul v-else>
+        <li v-for="d in app.documents" :key="d.id" class="flex items-center justify-between border-b border-slate-100 py-2 text-sm last:border-0">
           <span class="text-slate-700">{{ d.label }}</span>
           <span class="font-mono text-xs text-slate-500">{{ d.fileName }} · {{ d.sizeKb }} KB</span>
         </li>
@@ -151,10 +156,10 @@ function fmt(iso?: string): string {
     </div>
 
     <!-- Payments -->
-    <div v-if="app.payments.length" class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700"><Receipt class="h-4 w-4 text-slate-400" /> Pembayaran</h2>
-      <ul class="space-y-1.5">
-        <li v-for="p in app.payments" :key="p.id" class="flex items-center justify-between rounded-md border border-slate-100 px-3 py-2 text-sm">
+    <div v-if="app.payments.length">
+      <h2 class="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-900"><Receipt class="h-4 w-4 text-slate-400" /> Pembayaran</h2>
+      <ul>
+        <li v-for="p in app.payments" :key="p.id" class="flex items-center justify-between border-b border-slate-100 py-2 text-sm last:border-0">
           <span class="text-slate-700">{{ p.kind === 'processing' ? 'Yuran Pemprosesan' : 'Yuran Pendaftaran' }} <span class="text-xs text-slate-400">· {{ p.receiptNo }}</span></span>
           <span class="font-medium text-slate-800">RM {{ p.amount.toFixed(2) }}</span>
         </li>
@@ -165,7 +170,7 @@ function fmt(iso?: string): string {
     <div v-if="app.status === 'certificate_issued' || app.payments.length" class="grid gap-3 sm:grid-cols-2">
       <button
         v-if="app.payments.length"
-        class="flex w-full items-center justify-between rounded-xl border border-emerald-200 bg-gradient-to-r from-emerald-50 to-white p-4 text-left shadow-sm hover:from-emerald-100"
+        class="flex w-full items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-left hover:bg-emerald-100"
         @click="router.push(`/st/applications/${app.id}/receipt`)"
       >
         <span class="flex items-center gap-3">
@@ -180,7 +185,7 @@ function fmt(iso?: string): string {
 
       <button
         v-if="app.status === 'certificate_issued'"
-        class="flex w-full items-center justify-between rounded-xl border border-[var(--accent-200)] bg-gradient-to-r from-[var(--accent-50)] to-white p-4 text-left shadow-sm hover:from-[var(--accent-100)]"
+        class="flex w-full items-center justify-between rounded-xl border border-[var(--accent-200)] bg-[var(--accent-50)] p-4 text-left hover:bg-[var(--accent-100)]"
         @click="router.push(`/st/applications/${app.id}/certificate`)"
       >
         <span class="flex items-center gap-3">
@@ -195,8 +200,8 @@ function fmt(iso?: string): string {
     </div>
 
     <!-- Audit trail -->
-    <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 class="mb-4 text-sm font-semibold text-slate-700">Jejak Audit</h2>
+    <div>
+      <h2 class="mb-4 text-sm font-semibold text-slate-900">Jejak Audit</h2>
       <AuditTrailTimeline :entries="app.auditTrail" />
     </div>
   </div>

@@ -72,7 +72,7 @@ function open(applyPath: string, available: boolean) {
       </button>
     </div>
 
-    <div class="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-500 shadow-sm">
+    <div class="border-t border-slate-200 pt-4 text-sm text-slate-500">
       {{ locale === 'bm'
         ? 'Permohonan anda yang sedia ada boleh dilihat di menu “Permohonan Saya”.'
         : 'Your existing applications are available under “My Applications”.' }}

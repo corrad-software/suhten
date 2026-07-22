@@ -142,6 +142,10 @@ function registrationRoutes(prefix: "st" | "admin-st"): RouteRecordRaw[] {
         title: "Butiran Permohonan OK Elektrik — ST",
         moduleCode: "RG-KE",
         phase: 1,
+        breadcrumb: [
+          { label: "OK Elektrik", to: `${base}/registration/ok-electric/applications` },
+          { label: "Butiran Permohonan" },
+        ],
       },
     },
     {
@@ -164,6 +168,10 @@ function registrationRoutes(prefix: "st" | "admin-st"): RouteRecordRaw[] {
         title: "Butiran Permohonan Kontraktor Elektrik — ST",
         moduleCode: "RG-CE",
         phase: 1,
+        breadcrumb: [
+          { label: "Kontraktor Elektrik", to: `${base}/registration/contractor-electric/applications` },
+          { label: "Butiran Permohonan" },
+        ],
       },
     },
   );
@@ -348,7 +356,16 @@ const stAdminRoutes: RouteRecordRaw = {
     { path: "dashboard", name: "admin-st-dashboard", component: StDashboardView, meta: { requiresAuth: true, title: "Papan Pemuka — ST" } },
     { path: "inbox", name: "admin-st-inbox", component: StInboxView, meta: { requiresAuth: true, title: "Peti Tugasan — ST" } },
     { path: "applications", name: "admin-st-applications", component: StApplicationListView, meta: { requiresAuth: true, title: "Permohonan — ST" } },
-    { path: "applications/:id", name: "admin-st-application-detail", component: StApplicationDetailView, meta: { requiresAuth: true, title: "Butiran Permohonan — ST" } },
+    {
+      path: "applications/:id",
+      name: "admin-st-application-detail",
+      component: StApplicationDetailView,
+      meta: {
+        requiresAuth: true,
+        title: "Butiran Permohonan — ST",
+        breadcrumb: [{ label: "Permohonan", to: "/admin/st/applications" }, { label: "Butiran Permohonan" }],
+      },
+    },
     { path: "notifications", name: "admin-st-notifications", component: StNotificationsView, meta: { requiresAuth: true, title: "Notifikasi — ST" } },
     { path: "search", name: "admin-st-search", component: StSearchView, meta: { requiresAuth: true, title: "Carian & Semakan Status — ST" } },
     { path: "aina", name: "admin-st-aina", component: AinaUserChatView, meta: { requiresAuth: true, title: "AINA — User" } },
@@ -549,10 +566,54 @@ const router = createRouter({
         { path: "inbox", name: "st-inbox", component: StInboxView, meta: { title: "Peti Tugasan — ST" } },
         { path: "applications", name: "st-applications", component: StApplicationListView, meta: { title: "Permohonan — ST" } },
         { path: "applications/new", name: "st-application-new", component: ApplicationFormView, meta: { title: "Permohonan Baharu — ST" } },
-        { path: "applications/:id", name: "st-application-detail", component: StApplicationDetailView, meta: { title: "Butiran Permohonan — ST" } },
-        { path: "applications/:id/pay/:kind", name: "st-payment", component: FpxPaymentView, meta: { title: "Pembayaran — ST" } },
-        { path: "applications/:id/certificate", name: "st-certificate", component: CertificateView, meta: { title: "Sijil Digital — ST" } },
-        { path: "applications/:id/receipt", name: "st-receipt", component: ReceiptView, meta: { title: "Resit Bayaran — ST" } },
+        {
+          path: "applications/:id",
+          name: "st-application-detail",
+          component: StApplicationDetailView,
+          meta: {
+            title: "Butiran Permohonan — ST",
+            breadcrumb: [{ label: "Permohonan Saya", to: "/st/applications" }, { label: "Butiran Permohonan" }],
+          },
+        },
+        {
+          path: "applications/:id/pay/:kind",
+          name: "st-payment",
+          component: FpxPaymentView,
+          meta: {
+            title: "Pembayaran — ST",
+            breadcrumb: [
+              { label: "Permohonan Saya", to: "/st/applications" },
+              { label: "Butiran Permohonan", to: "/st/applications/:id" },
+              { label: "Pembayaran" },
+            ],
+          },
+        },
+        {
+          path: "applications/:id/certificate",
+          name: "st-certificate",
+          component: CertificateView,
+          meta: {
+            title: "Sijil Digital — ST",
+            breadcrumb: [
+              { label: "Permohonan Saya", to: "/st/applications" },
+              { label: "Butiran Permohonan", to: "/st/applications/:id" },
+              { label: "Sijil Digital" },
+            ],
+          },
+        },
+        {
+          path: "applications/:id/receipt",
+          name: "st-receipt",
+          component: ReceiptView,
+          meta: {
+            title: "Resit Bayaran — ST",
+            breadcrumb: [
+              { label: "Permohonan Saya", to: "/st/applications" },
+              { label: "Butiran Permohonan", to: "/st/applications/:id" },
+              { label: "Resit Bayaran" },
+            ],
+          },
+        },
         { path: "notifications", name: "st-notifications", component: StNotificationsView, meta: { title: "Notifikasi — ST" } },
         { path: "search", name: "st-search", component: StSearchView, meta: { title: "Carian & Semakan Status — ST" } },
         { path: "aina", name: "st-aina", component: AinaUserChatView, meta: { title: "AINA — User" } },

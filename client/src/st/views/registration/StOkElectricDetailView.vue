@@ -93,9 +93,9 @@ function back() {
 
     <p class="text-xs text-slate-400">{{ ts("st.common.mockNote") }}</p>
 
-    <div class="grid gap-4 lg:grid-cols-3">
-      <section class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm lg:col-span-2">
-        <h2 class="mb-3 text-sm font-semibold text-slate-800">{{ app.applicantName }}</h2>
+    <div class="grid gap-6 lg:grid-cols-3 lg:divide-x lg:divide-slate-200">
+      <section class="lg:col-span-2 lg:pr-6">
+        <h2 class="mb-3 text-sm font-semibold text-slate-900">{{ app.applicantName }}</h2>
         <dl class="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
           <div>
             <dt class="text-xs text-slate-400">{{ ts("st.common.identity") }}</dt>
@@ -151,8 +151,8 @@ function back() {
         <p v-if="app.note" class="mt-3 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800">{{ app.note }}</p>
       </section>
 
-      <section class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-        <h2 class="mb-3 text-sm font-semibold text-slate-800">{{ ts("st.okDetail.timeline") }}</h2>
+      <section class="lg:pl-6">
+        <h2 class="mb-3 text-sm font-semibold text-slate-900">{{ ts("st.okDetail.timeline") }}</h2>
         <ol class="space-y-3">
           <li
             v-for="(ev, i) in app.detail?.timeline ?? [{ at: app.submittedAt, label: app.status, actor: 'Sistem' }]"
@@ -166,13 +166,13 @@ function back() {
       </section>
     </div>
 
-    <section class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-      <h2 class="mb-3 text-sm font-semibold text-slate-800">{{ ts("st.okDetail.documents") }}</h2>
-      <ul v-if="app.detail?.documents?.length" class="space-y-2">
+    <section class="border-t border-slate-200 pt-6">
+      <h2 class="mb-2 text-sm font-semibold text-slate-900">{{ ts("st.okDetail.documents") }}</h2>
+      <ul v-if="app.detail?.documents?.length">
         <li
           v-for="(doc, i) in app.detail.documents"
           :key="i"
-          class="flex items-center gap-2 rounded-md border border-slate-100 px-3 py-2 text-sm"
+          class="flex items-center gap-2 border-b border-slate-100 py-2 text-sm last:border-0"
         >
           <FileText class="h-4 w-4 text-slate-400" />
           <span class="font-medium text-slate-700">{{ doc.label }}</span>

@@ -35,7 +35,7 @@ function fmtDate(iso?: string): string {
 
 <template>
   <div v-if="cert" class="overflow-hidden rounded-xl border border-[var(--accent-200)] bg-white shadow-sm">
-    <div class="flex items-center justify-between bg-gradient-to-r from-[var(--accent-700)] to-[var(--accent-500)] px-6 py-4 text-white">
+    <div class="flex items-center justify-between bg-[var(--accent-700)] px-6 py-4 text-white">
       <div class="flex items-center gap-3">
         <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20">
           <Zap class="h-5 w-5" />

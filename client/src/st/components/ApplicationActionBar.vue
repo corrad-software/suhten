@@ -22,7 +22,7 @@ interface ActionBtn {
   to?: string; // route navigation instead of a transition
 }
 
-const props = defineProps<{ application: Application }>();
+const props = defineProps<{ application: Application; onDark?: boolean }>();
 
 const route = useRoute();
 const router = useRouter();
@@ -74,7 +74,7 @@ const actions = computed<ActionBtn[]>(() => {
     if (status === "certificate_issued")
       list.push({ key: "submit", label: "Lihat Sijil", variant: "primary", to: `${portalBase.value}/applications/${props.application.id}/certificate` });
     if (["awaiting_employer_confirm", "awaiting_processing_payment", "query_applicant", "awaiting_registration_payment"].includes(status))
-      list.push({ key: "withdraw", label: "Tarik Balik", variant: "outline" });
+      list.push({ key: "withdraw", label: "Tarik Balik", variant: "danger" });
     return list;
   }
 
@@ -118,8 +118,13 @@ const idleHint = computed(() => {
 });
 
 function variantClass(v: ActionBtn["variant"]) {
+  if (props.onDark) {
+    if (v === "primary") return "bg-[var(--accent-600)] text-white hover:bg-[var(--accent-700)]";
+    if (v === "danger") return "bg-white/20 text-white hover:bg-white/30";
+    return "border border-white/40 text-white hover:bg-white/10";
+  }
   if (v === "primary") return "bg-[var(--accent-600)] text-white hover:bg-[var(--accent-700)]";
-  if (v === "danger") return "border border-rose-300 text-rose-600 hover:bg-rose-50";
+  if (v === "danger") return "border border-[#e73239] text-[#e73239] hover:bg-[#e73239]/10";
   return "border border-slate-300 text-slate-700 hover:bg-slate-50";
 }
 
@@ -196,7 +201,7 @@ function doTransition(action: ActionKey, payload: { note?: string } = {}) {
 </script>
 
 <template>
-  <div v-if="actions.length" class="flex flex-wrap gap-2">
+  <div v-if="actions.length" class="flex flex-wrap justify-end gap-2">
     <button
       v-for="btn in actions"
       :key="btn.key + btn.label"
@@ -206,7 +211,11 @@ function doTransition(action: ActionKey, payload: { note?: string } = {}) {
       {{ btn.label }}
     </button>
   </div>
-  <p v-else-if="idleHint" class="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+  <p
+    v-else-if="idleHint"
+    class="rounded-md px-3 py-2 text-right text-sm"
+    :class="onDark ? 'bg-white/10 text-white/90' : 'border border-amber-200 bg-amber-50 text-amber-900'"
+  >
     {{ idleHint }}
   </p>
 

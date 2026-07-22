@@ -84,19 +84,19 @@ function send(preset?: string) {
       class="mb-3 flex h-[28rem] max-h-[70vh] w-[calc(100vw-2rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
     >
       <!-- Header -->
-      <div class="flex items-center justify-between st-brand-gradient px-4 py-3 text-white">
+      <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
         <div class="flex items-center gap-2">
-          <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-white/15">
+          <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--accent-50)] text-[var(--accent-700)]">
             <Sparkles class="h-4 w-4" />
           </div>
           <div>
-            <p class="text-sm font-semibold">Pembantu Digital ST</p>
-            <p class="text-[11px] text-white/80">Bantuan pendaftaran & perkhidmatan</p>
+            <p class="text-sm font-semibold text-slate-900">Pembantu Digital ST</p>
+            <p class="text-[11px] text-slate-500">Bantuan pendaftaran & perkhidmatan</p>
           </div>
         </div>
         <button
           type="button"
-          class="rounded-full p-1 text-white/80 transition hover:bg-white/10 hover:text-white"
+          class="rounded-full p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
           aria-label="Tutup pembantu"
           @click="open = false"
         >
@@ -156,7 +156,7 @@ function send(preset?: string) {
     <!-- Floating action button -->
     <button
       type="button"
-      class="flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg transition-transform hover:scale-105 st-brand-gradient"
+      class="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--accent-600)] text-white shadow-lg transition-colors hover:bg-[var(--accent-700)]"
       :aria-label="open ? 'Tutup pembantu' : 'Buka pembantu'"
       @click="toggle"
     >

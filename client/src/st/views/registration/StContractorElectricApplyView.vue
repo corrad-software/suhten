@@ -431,7 +431,7 @@ async function submit() {
       </li>
     </ol>
 
-    <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+    <div class="border-t border-slate-200 pt-6">
       <!-- A: Jenis & Kelas -->
       <div v-if="step === 0" class="space-y-4">
         <div class="grid gap-4 sm:grid-cols-2">

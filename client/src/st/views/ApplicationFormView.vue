@@ -25,6 +25,7 @@ import { employerById, searchEmployers, EMPLOYER_CATEGORY_LABEL } from "../mock/
 import { okById, searchOks } from "../mock/competent-persons";
 import { workflowLabel } from "../status";
 import DocumentUploadField from "../components/DocumentUploadField.vue";
+import StPageHero from "../components/StPageHero.vue";
 
 // Lead-confirmer priority: a higher-graded wirer accepts the appointment on behalf.
 const WIRER_RANK: Record<WirerType, number> = { PW4: 6, PW5: 5, PW6: 4, PW3: 3, PW2: 2, PW1: 1 };
@@ -227,10 +228,7 @@ function submit() {
 
 <template>
   <div class="space-y-5">
-    <div>
-      <h1 class="text-xl font-semibold text-slate-900">{{ workflowLabel(workflowType) }}</h1>
-      <p class="text-sm text-slate-500">Lengkapkan borang permohonan baharu</p>
-    </div>
+    <StPageHero :title="workflowLabel(workflowType)" subtitle="Lengkapkan borang permohonan baharu" />
 
     <!-- step indicator -->
     <ol class="flex items-center gap-1 text-xs">
@@ -249,7 +247,7 @@ function submit() {
       </li>
     </ol>
 
-    <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div class="border-t border-slate-200 pt-6">
       <!-- STEP 0: applicant / company -->
       <div v-if="step === 0" class="space-y-4">
         <div class="grid gap-4 sm:grid-cols-2">

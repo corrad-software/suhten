@@ -15,6 +15,7 @@ import { ROLE_LABEL, ROLE_TIER_LABEL } from "../mock/personas";
 import StSidebarNav from "./StSidebarNav.vue";
 import NotificationsBell from "./NotificationsBell.vue";
 import StChatWidget from "./StChatWidget.vue";
+import StBreadcrumb from "./StBreadcrumb.vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -113,7 +114,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div data-theme-color="st" class="min-h-screen bg-[#f4f7fb]">
+  <div data-theme-color="st" class="min-h-screen bg-white">
     <header class="sticky top-0 z-40 border-b border-slate-200 bg-white">
       <div class="flex h-12 items-center justify-between px-4">
       <div class="flex items-center gap-2.5">
@@ -197,7 +198,7 @@ onBeforeUnmount(() => {
         <NotificationsBell />
 
         <div class="ml-1 flex items-center gap-2 border-l border-slate-200 pl-3">
-          <div class="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-[var(--accent-600)] to-[var(--accent-500)] text-[10px] font-semibold text-white">
+          <div class="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--accent-50)] text-[10px] font-semibold text-[var(--accent-700)]">
             {{ initials }}
           </div>
           <div class="hidden leading-tight sm:block">
@@ -219,18 +220,18 @@ onBeforeUnmount(() => {
       </div>
 
       <!-- External users: desktop horizontal nav bar (Portal Pemohon style) -->
-      <div v-if="useBottomNav" class="hidden border-t border-[var(--accent-700)] bg-[var(--accent-600)] md:block">
-        <div class="mx-auto flex h-11 w-full max-w-6xl items-center justify-between px-4">
-          <span class="text-sm font-semibold text-white">{{ portalSubtitle }}</span>
-          <nav class="flex items-center gap-1">
+      <div v-if="useBottomNav" class="hidden bg-[var(--accent-600)] md:block">
+        <div class="mx-auto flex h-11 w-full max-w-6xl items-stretch justify-between px-4">
+          <span class="flex items-center text-xs font-medium uppercase tracking-wider text-white/60">{{ portalSubtitle }}</span>
+          <nav class="flex items-stretch gap-1">
             <router-link
               v-for="item in bottomNavItems"
               :key="item.to"
               :to="item.to"
-              class="flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors"
+              class="flex items-center gap-1.5 border-b-2 px-3 text-sm font-medium transition-colors"
               :class="isActive(item.to)
                 ? 'border-white text-white'
-                : 'border-transparent text-white/70 hover:bg-white/10 hover:text-white'"
+                : 'border-transparent text-white/70 hover:text-white'"
             >
               <component :is="item.icon" class="h-4 w-4" />
               {{ item.label }}
@@ -264,6 +265,7 @@ onBeforeUnmount(() => {
           ? 'mx-auto w-full min-w-0 max-w-6xl px-4 pb-24 pt-5 md:pb-8 md:pt-6'
           : 'w-full min-w-0 flex-1 p-4 md:p-6'"
       >
+        <StBreadcrumb class="mb-4" />
         <router-view />
       </main>
     </div>
@@ -271,7 +273,7 @@ onBeforeUnmount(() => {
     <!-- External users: mobile bottom navigation bar (Portal Pemohon style) -->
     <nav
       v-if="useBottomNav"
-      class="fixed inset-x-4 z-40 flex items-stretch overflow-hidden rounded-full bg-[var(--accent-600)] shadow-lg shadow-[var(--accent-700)]/30 md:hidden"
+      class="fixed inset-x-4 z-40 flex items-stretch overflow-hidden rounded-full bg-[var(--accent-600)] shadow-lg shadow-slate-900/20 md:hidden"
       style="bottom: max(1rem, env(safe-area-inset-bottom))"
     >
       <router-link

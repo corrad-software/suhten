@@ -14,7 +14,7 @@ function homeRouteForRole(role: PersonaRole): string {
     case "applicant":
       return "/st/perkhidmatan-saya";
     case "employer":
-      return "/st/applications";
+      return "/st/dashboard";
     case "admin":
       return "/st/dashboard";
     case "committee":
