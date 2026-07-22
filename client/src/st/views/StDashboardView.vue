@@ -61,25 +61,54 @@ function shareOf(count: number, total: number): string {
 // ── applicant ───────────────────────────────────────────────────────────────
 const myApps = computed(() => workflow.myApplications);
 const REVIEW = ["awaiting_employer_confirm", "sos_review", "technical_review", "pending_approval"];
-const ACTION = ["awaiting_processing_payment", "awaiting_registration_payment", "query_applicant"];
+const ACTION = ["awaiting_final_submit", "awaiting_processing_payment", "awaiting_registration_payment", "query_applicant"];
 const inReview = computed(() => myApps.value.filter((a) => REVIEW.includes(a.status)).length);
 const actionNeeded = computed(() => myApps.value.filter((a) => ACTION.includes(a.status)).length);
 const myCerts = computed(() => myApps.value.filter((a) => a.status === "certificate_issued").length);
+// CE NA-03: OK persona accepting contractor appointment.
+const okConfirmations = computed(() =>
+  session.currentPersonaId ? workflow.confirmationsFor(session.currentPersonaId) : [],
+);
 
 const applicantStats = computed<StatCard[]>(() => [
   { icon: FileText, value: myApps.value.length, label: "Jumlah Permohonan", caption: "Sejak permohonan pertama", tone: "blue" },
   { icon: Clock, value: inReview.value, label: "Sedang Diproses", caption: shareOf(inReview.value, myApps.value.length), tone: "amber" },
-  { icon: AlertCircle, value: actionNeeded.value, label: "Perlu Tindakan Anda", caption: actionNeeded.value ? "Menunggu tindakan anda" : "Tiada tindakan diperlukan", tone: "rose" },
+  {
+    icon: AlertCircle,
+    value: actionNeeded.value + okConfirmations.value.length,
+    label: "Perlu Tindakan Anda",
+    caption:
+      actionNeeded.value + okConfirmations.value.length
+        ? "Termasuk penerimaan pelantikan CE"
+        : "Tiada tindakan diperlukan",
+    tone: "rose",
+  },
   { icon: BadgeCheck, value: myCerts.value, label: "Sijil Dikeluarkan", caption: shareOf(myCerts.value, myApps.value.length), tone: "emerald" },
 ]);
 
 // ── employer / confirmer ─────────────────────────────────────────────────────
 const confirmations = computed(() => (session.currentPersonaId ? workflow.confirmationsFor(session.currentPersonaId) : []));
+/** Majikan-owned contractor (RG-CE) applications. */
+const myCeApps = computed(() => myApps.value.filter((a) => a.workflowType === "CE"));
+/** CE apps waiting for majikan NA-04 / NA-05 after OK acceptance. */
+const ceActionNeeded = computed(() =>
+  myCeApps.value.filter((a) =>
+    ["awaiting_final_submit", "awaiting_processing_payment", "query_applicant", "awaiting_registration_payment"].includes(
+      a.status,
+    ),
+  ),
+);
 const employerStats = computed<StatCard[]>(() => [
   { icon: ShieldCheck, value: confirmations.value.length, label: "Menunggu Pengesahan", caption: "Perlu disahkan dalam 14 hari", tone: "amber" },
-  { icon: UserCog, value: confirmations.value.filter((a) => a.workflowType === "OK").length, label: "Orang Kompeten", caption: shareOf(confirmations.value.filter((a) => a.workflowType === "OK").length, confirmations.value.length), tone: "blue" },
-  { icon: Building2, value: confirmations.value.filter((a) => a.workflowType === "CE").length, label: "Kontraktor", caption: shareOf(confirmations.value.filter((a) => a.workflowType === "CE").length, confirmations.value.length), tone: "accent" },
-  { icon: Timer, value: "14 hari", label: "Tempoh Pengesahan", caption: "Tempoh maksimum pengesahan", tone: "emerald" },
+  {
+    icon: AlertCircle,
+    value: ceActionNeeded.value.length,
+    label: "Perlu Tindakan Majikan",
+    caption: ceActionNeeded.value.length ? "Hantar permohonan / bayar fi" : "Tiada tindakan diperlukan",
+    tone: "rose",
+  },
+  { icon: Building2, value: myCeApps.value.length, label: "Permohonan Kontraktor", caption: shareOf(myCeApps.value.length, myApps.value.length || myCeApps.value.length), tone: "accent" },
+  { icon: UserCog, value: confirmations.value.filter((a) => a.workflowType === "OK").length, label: "Lantikan OK", caption: shareOf(confirmations.value.filter((a) => a.workflowType === "OK").length, confirmations.value.length), tone: "blue" },
 ]);
 
 // ── back-office ──────────────────────────────────────────────────────────────
@@ -133,10 +162,12 @@ function open(id: string) {
 
       <!-- Tindakan Pantas -->
       <div>
+      <!-- Tindakan Pantas — Pemohon: Orang Kompeten only -->
+      <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
         <h2 class="text-sm font-semibold text-slate-900">Tindakan Pantas</h2>
         <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
           <router-link
-            to="/st/applications/new"
+            to="/st/registration/ok-electric/applications/new"
             class="flex items-center justify-between rounded-lg border border-[var(--accent-200)] bg-[var(--accent-50)] p-4 transition-colors hover:bg-[var(--accent-100)]"
           >
             <div class="flex items-center gap-3">
@@ -146,12 +177,12 @@ function open(id: string) {
             <ArrowRight class="h-4 w-4 text-[var(--accent-600)]" />
           </router-link>
           <router-link
-            to="/st/applications/new?type=CE"
+            to="/st/applications"
             class="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-4 transition-colors hover:bg-slate-100"
           >
             <div class="flex items-center gap-3">
-              <FilePlus2 class="h-5 w-5 text-slate-600" />
-              <span class="text-sm font-medium text-slate-900">Permohonan Kontraktor Elektrik</span>
+              <FileText class="h-5 w-5 text-slate-600" />
+              <span class="text-sm font-medium text-slate-900">Permohonan Saya</span>
             </div>
             <ArrowRight class="h-4 w-4 text-slate-500" />
           </router-link>
@@ -161,6 +192,31 @@ function open(id: string) {
       <div>
         <div class="flex items-center justify-between border-b border-slate-200 pb-2">
           <h2 class="text-sm font-semibold text-slate-900">Permohonan Terkini</h2>
+      <div
+        v-if="okConfirmations.length"
+        class="rounded-xl border border-amber-200 bg-amber-50/40 shadow-sm"
+      >
+        <div class="border-b border-amber-100 px-4 py-3">
+          <h2 class="text-sm font-semibold text-amber-900">Penerimaan Pelantikan (PFD-RG-CE-NA-03)</h2>
+          <p class="mt-0.5 text-xs text-amber-800/80">Sahkan atau tolak pelantikan sebagai OK bagi permohonan kontraktor.</p>
+        </div>
+        <button
+          v-for="a in okConfirmations"
+          :key="a.id"
+          class="flex w-full items-center justify-between gap-3 border-b border-amber-100/80 px-4 py-3 text-left last:border-0 hover:bg-amber-50"
+          @click="open(a.id)"
+        >
+          <div class="min-w-0">
+            <p class="font-mono text-xs text-slate-500">{{ a.refNo }}</p>
+            <p class="text-sm font-medium text-slate-800">{{ a.employer?.name ?? a.applicant.fullName }} · {{ workflowShort(a.workflowType) }}</p>
+          </div>
+          <StatusBadge :status="a.status" />
+        </button>
+      </div>
+
+      <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+          <h2 class="text-sm font-semibold text-slate-700">Permohonan Terkini</h2>
           <button class="text-xs font-medium text-[var(--accent-700)] hover:underline" @click="router.push('/st/applications')">Lihat semua</button>
         </div>
         <p v-if="myApps.length === 0" class="py-8 text-center text-sm text-slate-400">Belum ada permohonan. Mulakan satu di atas.</p>
@@ -218,7 +274,7 @@ function open(id: string) {
       </div>
     </template>
 
-    <!-- EMPLOYER / CONFIRMER -->
+    <!-- EMPLOYER / MAJIKAN — Kontraktor Elektrik + pengesahan lantikan OK -->
     <template v-else-if="role === 'employer'">
       <div class="grid grid-cols-2 gap-y-5 sm:grid-cols-4 sm:divide-x sm:divide-slate-200">
         <div v-for="(s, i) in employerStats" :key="i" class="px-0 sm:px-5 sm:first:pl-0">
@@ -234,6 +290,61 @@ function open(id: string) {
       <div>
         <div class="border-b border-slate-200 pb-2">
           <h2 class="text-sm font-semibold text-slate-900">Pengesahan Lantikan Diperlukan</h2>
+      <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 class="text-sm font-semibold text-slate-900">Tindakan Pantas</h2>
+        <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <router-link
+            to="/st/registration/contractor-electric/applications/new"
+            class="flex items-center justify-between rounded-lg border border-[var(--accent-200)] bg-[var(--accent-50)] p-4 transition-colors hover:bg-[var(--accent-100)]"
+          >
+            <div class="flex items-center gap-3">
+              <FilePlus2 class="h-5 w-5 text-[var(--accent-700)]" />
+              <span class="text-sm font-medium text-[var(--accent-700)]">Permohonan Kontraktor Elektrik</span>
+            </div>
+            <ArrowRight class="h-4 w-4 text-[var(--accent-600)]" />
+          </router-link>
+          <router-link
+            to="/st/registration/contractor-electric/applications"
+            class="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-4 transition-colors hover:bg-slate-100"
+          >
+            <div class="flex items-center gap-3">
+              <Building2 class="h-5 w-5 text-slate-600" />
+              <span class="text-sm font-medium text-slate-900">Permohonan Kontraktor</span>
+            </div>
+            <ArrowRight class="h-4 w-4 text-slate-500" />
+          </router-link>
+        </div>
+      </div>
+
+      <div
+        v-if="ceActionNeeded.length"
+        class="rounded-xl border border-amber-200 bg-amber-50/40 shadow-sm"
+      >
+        <div class="border-b border-amber-100 px-4 py-3">
+          <h2 class="text-sm font-semibold text-amber-900">Hantar Permohonan / Bayaran (PFD-RG-CE-NA-04 / NA-05)</h2>
+          <p class="mt-0.5 text-xs text-amber-800/80">OK telah menerima pelantikan — sila hantar permohonan dan bayar fi proses.</p>
+        </div>
+        <button
+          v-for="a in ceActionNeeded"
+          :key="a.id"
+          class="flex w-full items-center justify-between gap-3 border-b border-amber-100/80 px-4 py-3 text-left last:border-0 hover:bg-amber-50"
+          @click="open(a.id)"
+        >
+          <div class="min-w-0">
+            <p class="font-mono text-xs text-slate-500">{{ a.refNo }}</p>
+            <p class="text-sm font-medium text-slate-800">
+              {{ a.employer?.name ?? a.applicant.fullName }} ·
+              {{ a.status === "awaiting_final_submit" ? "Hantar Permohonan" : workflowShort(a.workflowType) }}
+            </p>
+          </div>
+          <StatusBadge :status="a.status" />
+        </button>
+      </div>
+
+      <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+          <h2 class="text-sm font-semibold text-slate-700">Pengesahan Lantikan Diperlukan</h2>
+          <button class="text-xs font-medium text-[var(--accent-700)] hover:underline" @click="router.push('/st/applications')">Lihat semua</button>
         </div>
         <p v-if="confirmations.length === 0" class="py-8 text-center text-sm text-slate-400">Tiada lantikan menunggu pengesahan.</p>
         <button

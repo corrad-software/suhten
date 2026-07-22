@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { ArrowLeft, FileText } from "lucide-vue-next";
+import { ArrowLeft, FileText, BadgeCheck, CreditCard, Send, Loader2 } from "lucide-vue-next";
 
 import { useLocale } from "@/composables/useLocale";
+import { useToast } from "@/composables/useToast";
 import { useStRegistrationStore } from "../../stores/registration";
+import { useStWorkflowStore } from "../../stores/workflow";
 import { contractorKindMeta, type ContractorKind } from "../../registration/ce-rules";
 import { appTypeLabel } from "../../composables/useRegistrationModule";
 import RegStatusBadge from "../../components/RegStatusBadge.vue";
@@ -12,11 +14,19 @@ import RegStatusBadge from "../../components/RegStatusBadge.vue";
 const route = useRoute();
 const router = useRouter();
 const { ts, locale } = useLocale();
+const toast = useToast();
 const regStore = useStRegistrationStore();
+const workflow = useStWorkflowStore();
 
 const app = computed(() => regStore.byId(String(route.params.id ?? "")));
 const ce = computed(() => (app.value?.detail?.ce ?? {}) as Record<string, unknown>);
 const portalBase = computed(() => (route.path.startsWith("/admin/st") ? "/admin/st" : "/st"));
+const submitting = ref(false);
+
+onMounted(() => {
+  void workflow.syncFromApi();
+  void regStore.fetchFromApi();
+});
 
 function fmt(iso?: string): string {
   if (!iso) return "—";
@@ -39,11 +49,62 @@ function back() {
   router.push(`${portalBase.value}/registration/contractor-electric/applications`);
 }
 
+function viewCertificate() {
+  if (!app.value) return;
+  router.push(`${portalBase.value}/applications/${app.value.id}/certificate`);
+}
+
+function goPay(kind: "processing" | "registration") {
+  if (!app.value) return;
+  router.push(`${portalBase.value}/applications/${app.value.id}/pay/${kind}`);
+}
+
+async function ensureWorkflowApp(): Promise<boolean> {
+  if (!app.value) return false;
+  if (workflow.byId(app.value.id)) return true;
+  await workflow.syncFromApi();
+  return Boolean(workflow.byId(app.value.id));
+}
+
+async function submitFinal() {
+  if (!app.value || submitting.value) return;
+  submitting.value = true;
+  try {
+    const ok = await ensureWorkflowApp();
+    if (!ok) {
+      toast.error("Gagal", "Permohonan tidak dijumpai untuk penghantaran. Sila muat semula halaman.");
+      return;
+    }
+    await workflow.transition(app.value.id, "submit_final");
+    // Keep registration list/detail status in sync immediately.
+    const twin = regStore.byId(app.value.id);
+    if (twin) {
+      twin.status = "awaiting_processing_payment";
+      twin.stageEnteredAt = new Date().toISOString();
+    }
+    toast.success("Berjaya", "Permohonan telah dihantar. Sila buat bayaran fi proses.");
+  } catch (e) {
+    toast.error("Gagal", e instanceof Error ? e.message : "Penghantaran gagal.");
+  } finally {
+    submitting.value = false;
+  }
+}
+
 const directors = computed(() => (Array.isArray(ce.value.directors) ? ce.value.directors : []) as Array<Record<string, unknown>>);
 const oks = computed(() => (Array.isArray(ce.value.appointedOks) ? ce.value.appointedOks : []) as Array<Record<string, unknown>>);
 const skilled = computed(() => (Array.isArray(ce.value.skilledPersons) ? ce.value.skilledPersons : []) as Array<Record<string, unknown>>);
 const engineers = computed(() => (Array.isArray(ce.value.professionalEngineers) ? ce.value.professionalEngineers : []) as Array<Record<string, unknown>>);
 const equipment = computed(() => (Array.isArray(ce.value.equipment) ? ce.value.equipment : []) as Array<Record<string, unknown>>);
+
+const companyAddressLine = computed(() => {
+  const street = typeof ce.value.companyAddress === "string" ? ce.value.companyAddress.trim() : "";
+  const postcode = typeof ce.value.postcode === "string" ? ce.value.postcode.trim() : "";
+  const city = typeof ce.value.city === "string" ? ce.value.city.trim() : "";
+  const state = typeof ce.value.state === "string" ? ce.value.state.trim() : "";
+  const locality = [postcode, city].filter(Boolean).join(" ");
+  const parts = [street, [locality, state].filter(Boolean).join(", ")].filter(Boolean);
+  return parts.length ? parts.join(" · ") : "—";
+});
 </script>
 
 <template>
@@ -65,6 +126,68 @@ const equipment = computed(() => (Array.isArray(ce.value.equipment) ? ce.value.e
       <p class="mt-1 font-mono text-sm text-slate-600">{{ app.refNo }}</p>
     </div>
 
+    <div
+      v-if="app.status === 'awaiting_final_submit'"
+      class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50/80 px-4 py-3"
+    >
+      <p class="text-sm text-amber-950">{{ ts("st.ceDetail.submitFinalHint") }}</p>
+      <button
+        type="button"
+        class="inline-flex items-center gap-1.5 rounded-md bg-[var(--accent-600)] px-3 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-700)] disabled:opacity-60"
+        :disabled="submitting"
+        @click="submitFinal"
+      >
+        <Loader2 v-if="submitting" class="h-4 w-4 animate-spin" />
+        <Send v-else class="h-4 w-4" />
+        {{ ts("st.ceDetail.submitFinal") }}
+      </button>
+    </div>
+
+    <div
+      v-else-if="app.status === 'awaiting_processing_payment'"
+      class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50/80 px-4 py-3"
+    >
+      <p class="text-sm text-amber-950">{{ ts("st.ceDetail.payProcessingHint") }}</p>
+      <button
+        type="button"
+        class="inline-flex items-center gap-1.5 rounded-md bg-[var(--accent-600)] px-3 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-700)]"
+        @click="goPay('processing')"
+      >
+        <CreditCard class="h-4 w-4" />
+        {{ ts("st.ceDetail.payProcessing") }}
+      </button>
+    </div>
+
+    <div
+      v-else-if="app.status === 'awaiting_registration_payment'"
+      class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50/80 px-4 py-3"
+    >
+      <p class="text-sm text-amber-950">{{ ts("st.ceDetail.payRegistrationHint") }}</p>
+      <button
+        type="button"
+        class="inline-flex items-center gap-1.5 rounded-md bg-[var(--accent-600)] px-3 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-700)]"
+        @click="goPay('registration')"
+      >
+        <CreditCard class="h-4 w-4" />
+        {{ ts("st.ceDetail.payRegistration") }}
+      </button>
+    </div>
+
+    <div
+      v-else-if="app.status === 'certificate_issued'"
+      class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50/80 px-4 py-3"
+    >
+      <p class="text-sm text-emerald-900">{{ ts("st.ceDetail.certIssuedHint") }}</p>
+      <button
+        type="button"
+        class="inline-flex items-center gap-1.5 rounded-md bg-[var(--accent-600)] px-3 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-700)]"
+        @click="viewCertificate"
+      >
+        <BadgeCheck class="h-4 w-4" />
+        {{ ts("st.ceDetail.viewCert") }}
+      </button>
+    </div>
+
     <p class="text-xs text-slate-400">{{ ts("st.common.mockNote") }}</p>
 
     <div class="grid gap-6 lg:grid-cols-2 lg:divide-x lg:divide-slate-200">
@@ -78,11 +201,14 @@ const equipment = computed(() => (Array.isArray(ce.value.equipment) ? ce.value.e
           <div class="sm:col-span-2"><dt class="text-xs text-slate-400">{{ ts("st.ceApply.companyName") }}</dt><dd class="font-medium">{{ ce.companyName ?? app.applicantName }}</dd></div>
           <div><dt class="text-xs text-slate-400">{{ ts("st.ceApply.companyReg") }}</dt><dd class="font-mono text-xs">{{ ce.companyRegNo ?? app.identityNo }}</dd></div>
           <div><dt class="text-xs text-slate-400">{{ ts("st.common.type") }}</dt><dd>{{ appTypeLabel(app.appType, ts) }}</dd></div>
-          <div class="sm:col-span-2"><dt class="text-xs text-slate-400">{{ ts("st.ceApply.companyAddress") }}</dt><dd>{{ ce.companyAddress }} · {{ ce.postcode }} {{ ce.city }}, {{ ce.state }}</dd></div>
-          <div><dt class="text-xs text-slate-400">{{ ts("st.ceApply.companyPhone") }}</dt><dd>{{ ce.companyPhone }}</dd></div>
+          <div class="sm:col-span-2">
+            <dt class="text-xs text-slate-400">{{ ts("st.ceApply.companyAddress") }}</dt>
+            <dd>{{ companyAddressLine }}</dd>
+          </div>
+          <div><dt class="text-xs text-slate-400">{{ ts("st.ceApply.companyPhone") }}</dt><dd>{{ ce.companyPhone || "—" }}</dd></div>
           <div><dt class="text-xs text-slate-400">{{ ts("st.ceApply.companyFax") }}</dt><dd>{{ ce.companyFax || "—" }}</dd></div>
-          <div><dt class="text-xs text-slate-400">{{ ts("st.ceApply.repName") }}</dt><dd>{{ ce.representativeName }}</dd></div>
-          <div><dt class="text-xs text-slate-400">{{ ts("st.ceApply.repIc") }}</dt><dd class="font-mono text-xs">{{ ce.representativeIc }}</dd></div>
+          <div><dt class="text-xs text-slate-400">{{ ts("st.ceApply.repName") }}</dt><dd>{{ ce.representativeName || "—" }}</dd></div>
+          <div><dt class="text-xs text-slate-400">{{ ts("st.ceApply.repIc") }}</dt><dd class="font-mono text-xs">{{ ce.representativeIc || "—" }}</dd></div>
         </dl>
       </section>
 

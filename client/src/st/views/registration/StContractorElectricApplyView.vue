@@ -11,7 +11,9 @@ import AddressFieldset from "../../components/AddressFieldset.vue";
 import { CONTRACTOR_CLASSES } from "../../mock/competencies";
 import { searchOks, type RegisteredOk } from "../../mock/competent-persons";
 import { useStSessionStore } from "../../stores/session";
+import { useStEmployerStore } from "../../stores/employer";
 import { useStRegistrationStore } from "../../stores/registration";
+import { useStReferenceSettingsStore } from "../../stores/reference-settings";
 import { DEMO_SUBMIT_PIN } from "../../stores/workflow";
 import DocumentUploadField from "../../components/DocumentUploadField.vue";
 import {
@@ -20,7 +22,6 @@ import {
   CONTRACTOR_VOLTAGES,
   EQUIPMENT_BRANDS,
   PERIODS,
-  SUPPORTING_DOCS,
   TEST_EQUIPMENT_TYPES,
   classRequirementsLabel,
   contractorKindMeta,
@@ -34,7 +35,7 @@ import {
   type TestEquipment,
 } from "../../registration/ce-rules";
 
-const DRAFT_KEY = "st.rg-ce.apply.draft.v1";
+const DRAFT_KEY_PREFIX = "st.rg-ce.apply.draft.v1";
 const CDP_BONUS = 20;
 
 const route = useRoute();
@@ -42,8 +43,15 @@ const router = useRouter();
 const toast = useToast();
 const { ts, locale } = useLocale();
 const session = useStSessionStore();
+const employerStore = useStEmployerStore();
 const regStore = useStRegistrationStore();
+const refSettings = useStReferenceSettingsStore();
 const portalBase = computed(() => (route.path.startsWith("/admin/st") ? "/admin/st" : "/st"));
+
+function draftStorageKey(): string {
+  const id = session.currentPersonaId || session.currentPersona?.email || "guest";
+  return `${DRAFT_KEY_PREFIX}.${id}`;
+}
 
 const step = ref(0);
 /** Highest step index the user has reached — enables jumping back/forward among visited tabs. */
@@ -107,7 +115,17 @@ const okValidation = computed(() =>
     : { items: [], valid: appointedOks.value.length > 0 || kindMeta.value.needsSkilledPersons || kindMeta.value.needsProfessionalEngineers },
 );
 
-const DOC_LABELS = computed(() => SUPPORTING_DOCS.map((d) => (locale.value === "bi" ? d.bi : d.bm)));
+const DOC_LABELS = computed(() =>
+  refSettings.documentLabels("RG-CE", locale.value === "bi" ? "bi" : "bm", false),
+);
+const REQUIRED_DOC_LABELS = computed(() =>
+  refSettings.requiredDocumentLabels("RG-CE", locale.value === "bi" ? "bi" : "bm", false),
+);
+
+/** Match uploaded docs to required labels only (workshop is optional). */
+function hasRequiredDocs(): boolean {
+  return REQUIRED_DOC_LABELS.value.every((required) => documents.value.some((d) => d.label === required));
+}
 
 function kindLabel(code: ContractorKind) {
   const k = contractorKindMeta(code);
@@ -119,7 +137,7 @@ function prefill() {
   form.representativeName = p?.name ?? "";
   form.representativeIc = p?.icNumber ?? "800101105432";
   form.representativeEmail = p?.email ?? "";
-  form.companyName = p?.organisation ?? "Elektro Prima Sdn Bhd";
+  form.companyName = p?.organisation ?? "Syarikat Elektrik Maju Sdn Bhd";
   if (directors.value[0] && !directors.value[0].name) {
     directors.value[0].name = form.representativeName;
     directors.value[0].icNumber = form.representativeIc;
@@ -140,11 +158,19 @@ watch(
   { deep: true, immediate: true },
 );
 
-function loadDraft() {
-  const raw = localStorage.getItem(DRAFT_KEY);
-  if (!raw) return;
+function loadDraft(): boolean {
+  const raw = localStorage.getItem(draftStorageKey());
+  if (!raw) return false;
   try {
     const d = JSON.parse(raw) as Record<string, unknown>;
+    if (
+      typeof d.personaId === "string" &&
+      session.currentPersonaId &&
+      d.personaId !== session.currentPersonaId
+    ) {
+      localStorage.removeItem(draftStorageKey());
+      return false;
+    }
     Object.assign(form, d.form ?? {});
     directors.value = (d.directors as DirectorShareholder[]) ?? directors.value;
     appointedOks.value = (d.appointedOks as AppointedOkForm[]) ?? [];
@@ -164,15 +190,17 @@ function loadDraft() {
     } else {
       maxReachedStep.value = step.value;
     }
+    return true;
   } catch {
-    /* ignore */
+    return false;
   }
 }
 
 function persistDraft() {
   localStorage.setItem(
-    DRAFT_KEY,
+    draftStorageKey(),
     JSON.stringify({
+      personaId: session.currentPersonaId ?? undefined,
       form: { ...form },
       directors: directors.value,
       appointedOks: appointedOks.value,
@@ -195,8 +223,23 @@ function saveDraft(showToast = true) {
 }
 
 onMounted(() => {
+  // RG-CE apply is for Majikan (company wakil). Staff may open for support; Pemohon is redirected.
+  if (session.role === "applicant") {
+    toast.error("Akses", "Pendaftaran Kontraktor Elektrik hanya untuk akaun Majikan.");
+    router.replace(session.homeRoute());
+    return;
+  }
   prefill();
-  loadDraft();
+  const restored = loadDraft();
+  if (!restored) {
+    prefill();
+  } else if (session.currentPersona) {
+    const p = session.currentPersona;
+    form.representativeName = p.name;
+    form.representativeIc = p.icNumber ?? form.representativeIc;
+    form.representativeEmail = p.email;
+    if (p.organisation) form.companyName = p.organisation;
+  }
   // Re-hydrate the structured address from whatever the draft/prefill left behind.
   addressForm.value = {
     ...parseAddress(form.companyAddress),
@@ -306,7 +349,7 @@ function canProceed(): boolean {
     case 4:
       return (
         CONFIRMATION_CHECKS.every((c) => confirmationChecks.value.includes(c.id)) &&
-        DOC_LABELS.value.every((l) => documents.value.some((d) => d.label === l))
+        hasRequiredDocs()
       );
     default:
       return true;
@@ -351,6 +394,7 @@ async function submit() {
 
   const id = await regStore.submitContractorElectric({
     applicantPersonaId: session.currentPersonaId,
+    employerId: employerStore.myEmployer?.id,
     representativeName: form.representativeName,
     representativeIc: form.representativeIc,
     representativeGender: form.representativeGender,
@@ -380,7 +424,8 @@ async function submit() {
   });
 
   const app = regStore.byId(id);
-  localStorage.removeItem(DRAFT_KEY);
+  localStorage.removeItem(draftStorageKey());
+  localStorage.removeItem(DRAFT_KEY_PREFIX);
   toast.success(ts("st.ceApply.title"), ts("st.ceApply.submitted", { n: app?.refNo ?? id }));
   router.push(`${portalBase.value}/registration/contractor-electric/applications/${id}`);
 }
@@ -566,9 +611,14 @@ async function submit() {
         </div>
       </div>
 
-      <!-- C: Personel -->
+      <!-- C: Personel (OK) — PFD-RG-CE-NA-02 Carian OK when kindMeta.needsOkSearch -->
       <div v-else-if="step === 2" class="space-y-4">
-        <template v-if="kindMeta.needsClass || form.contractorKind === 'service' || form.contractorKind === 'signboard' || form.contractorKind === 'private_wiring' || form.contractorKind === 'switchboard'">
+        <template v-if="kindMeta.needsOkSearch">
+          <div>
+            <p class="text-sm font-semibold text-slate-800">{{ ts("st.ceApply.carianOkTitle") }}</p>
+            <p class="mt-0.5 text-xs text-slate-500">{{ ts("st.ceApply.carianOkHint") }}</p>
+          </div>
+
           <div v-if="kindMeta.needsClass" class="rounded-lg border border-slate-200 bg-slate-50 p-3">
             <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">{{ ts("st.ceApply.classReq") }} {{ form.contractorClass }}</p>
             <div class="flex flex-wrap gap-2">
@@ -624,6 +674,9 @@ async function submit() {
         </template>
 
         <div v-if="kindMeta.needsSkilledPersons" class="space-y-2">
+          <div class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+            {{ ts("st.ceApply.skilledHint") }}
+          </div>
           <div class="flex items-center justify-between">
             <span class="text-sm font-medium text-slate-700">{{ ts("st.ceApply.skilled") }}</span>
             <button type="button" class="flex items-center gap-1 text-xs font-medium text-[var(--accent-700)]" @click="addSkilled">
@@ -708,7 +761,8 @@ async function submit() {
           </div>
         </div>
         <div>
-          <p class="mb-2 text-sm font-medium text-slate-700">{{ ts("st.ceApply.docsTitle") }}</p>
+          <p class="mb-1 text-sm font-medium text-slate-700">{{ ts("st.ceApply.docsTitle") }}</p>
+          <p class="mb-2 text-xs text-slate-500">{{ ts("st.ceApply.docsHint") }}</p>
           <DocumentUploadField v-model="documents" :labels="DOC_LABELS" />
         </div>
       </div>
@@ -720,7 +774,7 @@ async function submit() {
           <div v-if="kindMeta.needsClass" class="flex justify-between gap-4 py-2"><dt class="text-slate-500">{{ ts("st.ceApply.class") }}</dt><dd class="text-slate-800">{{ form.contractorClass }}</dd></div>
           <div v-if="kindMeta.needsVoltage" class="flex justify-between gap-4 py-2"><dt class="text-slate-500">{{ ts("st.ceApply.voltage") }}</dt><dd class="text-slate-800">{{ form.voltage }}</dd></div>
           <div class="flex justify-between gap-4 py-2"><dt class="text-slate-500">{{ ts("st.ceApply.companyName") }}</dt><dd class="text-right text-slate-800">{{ form.companyName }}</dd></div>
-          <div class="flex justify-between gap-4 py-2"><dt class="text-slate-500">OK / Personel</dt><dd class="text-slate-800">{{ appointedOks.length + skilledPersons.length + professionalEngineers.length }}</dd></div>
+          <div class="flex justify-between gap-4 py-2"><dt class="text-slate-500">{{ ts("st.ceApply.stepC") }}</dt><dd class="text-slate-800">{{ appointedOks.length + skilledPersons.length + professionalEngineers.length }}</dd></div>
           <div class="flex justify-between gap-4 py-2"><dt class="text-slate-500">{{ ts("st.ceApply.equipment") }}</dt><dd class="text-slate-800">{{ equipment.length }}</dd></div>
           <div class="flex justify-between gap-4 py-2"><dt class="text-slate-500">{{ ts("st.ceApply.docsTitle") }}</dt><dd class="text-slate-800">{{ documents.length }}</dd></div>
         </dl>

@@ -4,9 +4,11 @@ import { useRoute, useRouter } from "vue-router";
 
 import { useToast } from "@/composables/useToast";
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
+import { useLocale } from "@/composables/useLocale";
 
 import type { AppDocument, Application, PersonaRole } from "../types";
 import { ROLE_LABEL } from "../mock/personas";
+import { isSosRole, isTechnicalRole, staffRoleForStatus } from "../staff-roles";
 import { useStSessionStore } from "../stores/session";
 import { useStWorkflowStore, type WorkflowAction } from "../stores/workflow";
 import DigitalSignatureModal from "./DigitalSignatureModal.vue";
@@ -30,6 +32,7 @@ const session = useStSessionStore();
 const workflow = useStWorkflowStore();
 const toast = useToast();
 const { confirm } = useConfirmDialog();
+const { ts } = useLocale();
 
 const portalBase = computed(() => (route.path.startsWith("/admin/st") ? "/admin/st" : "/st"));
 
@@ -42,11 +45,15 @@ const confirmOpen = ref(false);
 const confirmDocs = ref<AppDocument[]>([]);
 const CONFIRM_DOC_LABELS = ["Penyata KWSP (EPF)", "Penyata PERKESO (SOCSO)"];
 
-const isConfirmer = computed(
-  () =>
-    props.application.status === "awaiting_employer_confirm" &&
-    props.application.employer?.confirmerPersonaId === session.currentPersonaId,
-);
+const isConfirmer = computed(() => {
+  if (props.application.status !== "awaiting_employer_confirm") return false;
+  const me = session.currentPersonaId;
+  if (!me) return false;
+  if (props.application.employer?.confirmerPersonaId === me) return true;
+  // CE flow: appointed OK confirming their own appointment
+  if (props.application.appointedOks?.some((o) => o.personaId === me && !o.confirmed)) return true;
+  return false;
+});
 
 const identityDone = computed(() => Boolean(props.application.identityCheck));
 
@@ -63,8 +70,11 @@ const actions = computed<ActionBtn[]>(() => {
     return list;
   }
 
-  // Applicant-owned actions
+  // Applicant / majikan-owned actions (CE: applicantPersonaId = wakil majikan)
   if (mine) {
+    // PFD-RG-CE-NA-04 · Hantar Permohonan
+    if (status === "awaiting_final_submit")
+      list.push({ key: "submit_final", label: "Hantar Permohonan", variant: "primary" });
     if (status === "awaiting_processing_payment")
       list.push({ key: "pay_processing", label: "Bayar Yuran Pemprosesan", variant: "primary", to: `${portalBase.value}/applications/${props.application.id}/pay/processing` });
     if (status === "awaiting_registration_payment")
@@ -73,20 +83,21 @@ const actions = computed<ActionBtn[]>(() => {
       list.push({ key: "resubmit", label: "Hantar Semula", variant: "primary", needsNote: true });
     if (status === "certificate_issued")
       list.push({ key: "submit", label: "Lihat Sijil", variant: "primary", to: `${portalBase.value}/applications/${props.application.id}/certificate` });
-    if (["awaiting_employer_confirm", "awaiting_processing_payment", "query_applicant", "awaiting_registration_payment"].includes(status))
-      list.push({ key: "withdraw", label: "Tarik Balik", variant: "danger" });
+    if (["awaiting_employer_confirm", "awaiting_final_submit", "awaiting_processing_payment", "query_applicant", "awaiting_registration_payment"].includes(status))
+      list.push({ key: "withdraw", label: "Tarik Balik", variant: "outline" });
     return list;
   }
 
-  // Back-office actions
-  if (role === "sos" && status === "sos_review") {
+  // Back-office actions — SOS/Technical are stream-specific (OK vs CE); Approver is shared.
+  const streamRole = staffRoleForStatus(props.application.workflowType, status);
+  if (isSosRole(role) && status === "sos_review" && streamRole === role) {
     if (!identityDone.value)
       list.push({ key: "verify_identity", label: "Sahkan Identiti (JPN)", variant: "outline" });
     list.push({ key: "forward", label: "Majukan ke Teknikal", variant: "primary" });
     list.push({ key: "raise_query", label: "Pertanyaan", variant: "outline", needsNote: true });
     list.push({ key: "reject", label: "Tolak", variant: "danger", needsNote: true });
   }
-  if (role === "technical" && status === "technical_review") {
+  if (isTechnicalRole(role) && status === "technical_review" && streamRole === role) {
     list.push({ key: "forward", label: "Majukan ke Pelulus", variant: "primary" });
     list.push({ key: "raise_query", label: "Pertanyaan", variant: "outline", needsNote: true });
     list.push({ key: "reject", label: "Tolak", variant: "danger", needsNote: true });
@@ -100,21 +111,80 @@ const actions = computed<ActionBtn[]>(() => {
 });
 
 /** Which back-office role can act on the current status (if any). */
-const requiredRole = computed<PersonaRole | null>(() => {
-  const status = props.application.status;
-  if (status === "sos_review") return "sos";
-  if (status === "technical_review") return "technical";
-  if (status === "pending_approval") return "approver";
-  return null;
+const requiredRole = computed<PersonaRole | null>(() =>
+  staffRoleForStatus(props.application.workflowType, props.application.status),
+);
+
+/** Appointed OK (CE) who already accepted — no further action on their side. */
+const isAppointedOkViewer = computed(() => {
+  const me = session.currentPersonaId;
+  if (!me) return false;
+  return Boolean(props.application.appointedOks?.some((o) => o.personaId === me));
 });
 
 const idleHint = computed(() => {
   if (actions.value.length > 0) return null;
-  const need = requiredRole.value;
-  if (!need) {
-    return "Tiada tindakan untuk peranan anda pada status permohonan ini.";
+
+  const status = props.application.status;
+  const company = props.application.employer?.name ?? props.application.applicant.fullName;
+
+  // PFD-RG-CE-NA-03 done: OK has accepted; next steps belong to majikan / ST.
+  if (isAppointedOkViewer.value && props.application.workflowType === "CE") {
+    const myOk = props.application.appointedOks?.find((o) => o.personaId === session.currentPersonaId);
+    if (myOk?.confirmed) {
+      switch (status) {
+        case "awaiting_final_submit":
+          return `Lantikan anda telah disahkan. Menunggu ${company} menghantar permohonan (PFD-RG-CE-NA-04).`;
+        case "awaiting_processing_payment":
+          return `Lantikan anda telah disahkan. Menunggu ${company} membuat bayaran fi proses (PFD-RG-CE-NA-05).`;
+        case "sos_review":
+        case "technical_review":
+        case "pending_approval":
+          return `Lantikan anda telah disahkan. Permohonan ${company} sedang diproses oleh Suruhanjaya Tenaga.`;
+        case "query_applicant":
+          return `Lantikan anda telah disahkan. Majikan perlu menjawab pertanyaan Suruhanjaya Tenaga.`;
+        case "awaiting_registration_payment":
+          return `Lantikan anda telah disahkan. Menunggu majikan membuat bayaran fi pendaftaran.`;
+        case "certificate_issued":
+          return `Lantikan anda telah disahkan. Sijil pendaftaran kontraktor telah dikeluarkan.`;
+        case "rejected":
+          return "Permohonan ini telah ditolak. Tiada tindakan lanjut diperlukan daripada anda.";
+        case "withdrawn":
+          return "Permohonan ini telah ditarik balik. Tiada tindakan lanjut diperlukan daripada anda.";
+        default:
+          return `Lantikan anda sebagai Orang Kompeten bagi ${company} telah disahkan. Tiada tindakan lanjut diperlukan daripada anda pada masa ini.`;
+      }
+    }
   }
-  return `Permohonan ini menunggu ${ROLE_LABEL[need]}.`;
+
+  const need = requiredRole.value;
+  if (need) {
+    return `Permohonan ini menunggu tindakan ${ROLE_LABEL[need]}.`;
+  }
+
+  if (status === "awaiting_final_submit") {
+    return "Menunggu majikan menghantar permohonan (PFD-RG-CE-NA-04).";
+  }
+  if (status === "awaiting_processing_payment") {
+    return "Menunggu pemohon/majikan membuat bayaran fi proses.";
+  }
+  if (status === "awaiting_registration_payment") {
+    return "Menunggu pemohon/majikan membuat bayaran fi pendaftaran.";
+  }
+  if (status === "awaiting_employer_confirm") {
+    return "Menunggu pengesahan lantikan oleh pihak yang berkenaan.";
+  }
+  if (status === "certificate_issued") {
+    return "Permohonan telah selesai. Sijil digital telah dikeluarkan.";
+  }
+  if (status === "rejected") {
+    return "Permohonan ini telah ditolak.";
+  }
+  if (status === "withdrawn") {
+    return "Permohonan ini telah ditarik balik.";
+  }
+
+  return "Tiada tindakan diperlukan daripada anda pada status permohonan ini.";
 });
 
 function variantClass(v: ActionBtn["variant"]) {
@@ -134,7 +204,13 @@ async function run(btn: ActionBtn) {
     return;
   }
   if (btn.key === "approve_sign") {
-    signOpen.value = true;
+    // D11 4.2.7 — confirmation popup before digital signature (same pattern as bulk).
+    const ok = await confirm({
+      title: ts("st.inbox.approveTitle"),
+      message: ts("st.inbox.approveMsg", { ref: props.application.refNo }),
+      confirmText: ts("st.inbox.continue"),
+    });
+    if (ok) signOpen.value = true;
     return;
   }
   // OK-flow employer must attach EPF/SOCSO before confirming the appointment.
@@ -152,22 +228,24 @@ async function run(btn: ActionBtn) {
     const ok = await confirm({ title: "Tarik balik permohonan?", message: "Tindakan ini tidak boleh dibatalkan.", destructive: true, confirmText: "Tarik Balik" });
     if (!ok) return;
   }
-  doTransition(btn.key);
+  await doTransition(btn.key);
 }
 
-function submitNote() {
+async function submitNote() {
   if (!notePrompt.value) return;
-  doTransition(notePrompt.value.action, { note: noteText.value });
+  const { action } = notePrompt.value;
+  const note = noteText.value;
   notePrompt.value = null;
+  await doTransition(action, { note });
 }
 
-function submitConfirm() {
+async function submitConfirm() {
   if (confirmDocs.value.length === 0) {
     toast.error("Dokumen diperlukan", "Sila muat naik penyata KWSP & PERKESO sebelum mengesahkan.");
     return;
   }
   try {
-    workflow.transition(props.application.id, "confirm_appointment", { documents: confirmDocs.value });
+    await workflow.transition(props.application.id, "confirm_appointment", { documents: confirmDocs.value });
     confirmOpen.value = false;
     toast.success("Lantikan disahkan", "Penyata KWSP & PERKESO telah dilampirkan.");
   } catch (e) {
@@ -175,9 +253,9 @@ function submitConfirm() {
   }
 }
 
-function onSigned(pin: string) {
+async function onSigned(pin: string) {
   try {
-    workflow.transition(props.application.id, "approve_sign", { pin });
+    await workflow.transition(props.application.id, "approve_sign", { pin });
     signOpen.value = false;
     toast.success("Diluluskan", "Permohonan diluluskan & ditandatangani.");
   } catch (e) {
@@ -185,14 +263,20 @@ function onSigned(pin: string) {
   }
 }
 
-function doTransition(action: ActionKey, payload: { note?: string } = {}) {
-  const actedAsTechnical = session.role === "technical";
+function inboxRoute() {
+  const admin =
+    route.path.startsWith("/admin/st") || String(route.name ?? "").startsWith("admin-st");
+  return { name: admin ? "admin-st-inbox" : "st-inbox" };
+}
+
+async function doTransition(action: ActionKey, payload: { note?: string } = {}) {
+  // Staff queue actions — return to Peti Tugasan immediately (persist runs in background).
+  const returnToInbox = action === "forward" || action === "reject" || action === "raise_query";
   try {
-    workflow.transition(props.application.id, action, payload);
+    await workflow.transition(props.application.id, action, payload);
     toast.success("Berjaya", "Tindakan telah direkodkan.");
-    // After Technical processes a task, return to Peti Tugasan (Baharu).
-    if (actedAsTechnical && ["forward", "reject", "raise_query"].includes(action)) {
-      router.push(`${portalBase.value}/inbox`);
+    if (returnToInbox) {
+      void router.replace(inboxRoute());
     }
   } catch (e) {
     toast.error("Gagal", e instanceof Error ? e.message : "Tindakan gagal.");

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { Lock, Stamp } from "lucide-vue-next";
 
@@ -8,7 +8,9 @@ import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import { useLocale } from "@/composables/useLocale";
 import type { StMessageKey } from "@/i18n/st-messages";
 
-import type { PersonaRole, TaskTab } from "../types";
+import type { PersonaRole, TaskTab, WorkflowType } from "../types";
+import { isStaffOfficerRole } from "../staff-roles";
+import { useStSessionStore } from "../stores/session";
 import { useStWorkflowStore } from "../stores/workflow";
 import { workflowShort } from "../status";
 import type { SmartTableColumn } from "../composables/useSmartTable";
@@ -21,6 +23,7 @@ const props = defineProps<{ role: PersonaRole }>();
 
 const route = useRoute();
 const router = useRouter();
+const session = useStSessionStore();
 const workflow = useStWorkflowStore();
 const toast = useToast();
 const { confirm } = useConfirmDialog();
@@ -29,21 +32,54 @@ const { ts } = useLocale();
 const portalBase = computed(() => (route.path.startsWith("/admin/st") ? "/admin/st" : "/st"));
 
 const tab = ref<TaskTab>("new");
+/** Pelulus: filter Peti by JENIS (OK / CE). */
+type JenisFilter = "all" | WorkflowType;
+const jenisFilter = ref<JenisFilter>("all");
+const showJenisFilter = computed(() => props.role === "approver");
 
 const inbox = computed(() => workflow.inboxFor(props.role));
-const items = computed(() => inbox.value[tab.value]);
+const items = computed(() => {
+  const rows = inbox.value[tab.value];
+  if (!showJenisFilter.value || jenisFilter.value === "all") return rows;
+  return rows.filter((it) => it.workflowType === jenisFilter.value);
+});
 /** SLA FIFO head = oldest stageEnteredAt in Baharu (next claim candidate). */
 const fifoHeadId = computed(() => workflow.fifoHeadId(props.role));
 
 const activeCount = computed(() => workflow.activeCountFor(props.role));
 const atLimit = computed(() => workflow.atActiveLimit(props.role));
 
+const JENIS_OPTIONS = computed(() => [
+  { key: "all" as JenisFilter, label: ts("st.common.filterAll") },
+  { key: "OK" as JenisFilter, label: workflowShort("OK") },
+  { key: "CE" as JenisFilter, label: workflowShort("CE") },
+]);
+
+// Pull DB registration apps (seeded + online) then heal from staff-task notify cache.
+async function healFromServerNotifies() {
+  if (!isStaffOfficerRole(props.role)) return;
+  await workflow.syncFromApi();
+  await workflow.syncInboxFromStaffNotifies(props.role);
+}
+
+onMounted(() => {
+  void healFromServerNotifies();
+});
+
+watch(
+  () => props.role,
+  (role) => {
+    if (role !== "approver") jenisFilter.value = "all";
+    void healFromServerNotifies();
+  },
+);
+
 // ── bulk approval (Pelulus, "Baharu" tab) ──────────────────────────────────
 const canBulk = computed(() => props.role === "approver" && tab.value === "new");
 const selectedIds = ref<string[]>([]);
 const signOpen = ref(false);
 
-watch([tab, () => props.role], () => (selectedIds.value = []));
+watch([tab, () => props.role, jenisFilter], () => (selectedIds.value = []));
 
 function toggleSelect(id: string) {
   const i = selectedIds.value.indexOf(id);
@@ -56,6 +92,12 @@ function toggleSelectAll() {
   selectedIds.value = allSelected.value ? [] : items.value.map((it) => it.applicationId);
 }
 
+function countFor(key: TaskTab) {
+  const rows = inbox.value[key];
+  if (!showJenisFilter.value || jenisFilter.value === "all") return rows.length;
+  return rows.filter((it) => it.workflowType === jenisFilter.value).length;
+}
+
 async function startBulkApprove() {
   if (selectedIds.value.length === 0) return;
   const ok = await confirm({
@@ -66,15 +108,25 @@ async function startBulkApprove() {
   if (ok) signOpen.value = true;
 }
 
-function onBulkSigned(pin: string) {
-  const res = workflow.bulkApprove([...selectedIds.value], pin);
+async function onBulkSigned(pin: string) {
+  const ids = [...selectedIds.value];
   signOpen.value = false;
-  if (res.failed.length && res.ok.length === 0) {
-    toast.error("Gagal", "PIN tandatangan digital tidak sah.");
-    return;
+  try {
+    const res = await workflow.bulkApprove(ids, pin);
+    if (res.failed.length && res.ok.length === 0) {
+      toast.error("Gagal", "PIN tandatangan digital tidak sah, atau tiada permohonan diluluskan.");
+      return;
+    }
+    toast.success(
+      "Kelulusan pukal selesai",
+      `${res.ok.length} permohonan diluluskan${res.failed.length ? `, ${res.failed.length} gagal` : ""}.`,
+    );
+    selectedIds.value = [];
+    // Refresh from API so majikan / other sessions see awaiting_registration_payment.
+    void workflow.syncFromApi();
+  } catch (e) {
+    toast.error("Gagal", e instanceof Error ? e.message : "Kelulusan pukal gagal.");
   }
-  toast.success("Kelulusan pukal selesai", `${res.ok.length} permohonan diluluskan${res.failed.length ? `, ${res.failed.length} gagal` : ""}.`);
-  selectedIds.value = [];
 }
 
 const TABS = computed(() => [
@@ -83,20 +135,24 @@ const TABS = computed(() => [
   { key: "completed" as TaskTab, label: ts("st.inbox.tabDone") },
 ]);
 
-function countFor(key: TaskTab) {
-  return inbox.value[key].length;
-}
-
 function isTaken(applicationId: string): boolean {
-  return Boolean(workflow.byId(applicationId)?.assigneePersonaId);
+  // Only the officer who claimed it gets Buka; others still follow FIFO.
+  const app = workflow.byId(applicationId);
+  return Boolean(app?.assigneePersonaId && app.assigneePersonaId === session.currentPersonaId);
 }
 
-type NewAction = "open" | "take" | "limit" | "wait";
+type NewAction = "open" | "take" | "limit" | "wait" | "claimed";
 
 function newActionFor(applicationId: string): NewAction {
-  // Already claimed → Buka (officer can work their 3 active tasks even at capacity).
+  // Pelulus can open any item and approve in batch — no FIFO claim gate.
+  if (props.role === "approver") return "open";
+  // Already claimed by me → Buka (officer can work their 3 active tasks even at capacity).
+  // Applies to SOS + Technical (+ CE stream roles) alike.
   if (isTaken(applicationId)) return "open";
-  // Untaken: only SLA FIFO head (#1 / oldest stage clock) may be claimed.
+  // Claimed by another officer — Telah Dituntut (not the same as Menunggu giliran).
+  const app = workflow.byId(applicationId);
+  if (app?.assigneePersonaId) return "claimed";
+  // Untaken: only SLA FIFO head may be claimed.
   if (fifoHeadId.value !== applicationId) return "wait";
   if (atLimit.value) return "limit";
   return "take";
@@ -114,12 +170,20 @@ function newActionLabel(action: NewAction): string {
   if (action === "open") return ts("st.common.open");
   if (action === "take") return ts("st.common.takeOpen");
   if (action === "limit") return ts("st.common.limitFull");
+  if (action === "claimed") return ts("st.common.claimed");
   return ts("st.common.waitFifo");
+}
+
+function newActionTitle(action: NewAction): string | undefined {
+  if (action === "wait") return ts("st.common.fifo");
+  if (action === "claimed") return ts("st.common.claimedHint");
+  return undefined;
 }
 
 function newActionClass(action: NewAction): string {
   if (action === "open") return "border border-slate-300 text-slate-700 hover:bg-slate-50";
   if (action === "take") return "bg-[var(--accent-600)] text-white hover:bg-[var(--accent-700)]";
+  if (action === "claimed") return "cursor-not-allowed bg-amber-50 text-amber-700";
   return "cursor-not-allowed bg-slate-100 text-slate-400";
 }
 
@@ -139,6 +203,10 @@ function takeAndOpen(applicationId: string) {
   }
   if (action === "wait") {
     toast.error(ts("st.common.fifo"), ts("st.common.waitFifo"));
+    return;
+  }
+  if (action === "claimed") {
+    toast.error(ts("st.common.claimed"), ts("st.common.claimedHint"));
     return;
   }
   const ok = workflow.takeTask(applicationId);
@@ -196,15 +264,31 @@ const columns = computed<SmartTableColumn<InboxItem>[]>(() => {
         </button>
       </div>
 
-      <div
-        :class="[
-          'flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium',
-          atLimit ? 'bg-rose-50 text-rose-700' : 'bg-slate-100 text-slate-600',
-        ]"
-        :title="ts('st.common.activeTasks')"
-      >
-        <Lock v-if="atLimit" class="h-3.5 w-3.5" />
-        {{ ts("st.common.activeTasks") }}: {{ activeCount }} / {{ workflow.maxActiveTasks }}
+      <div class="flex flex-wrap items-center gap-2">
+        <!-- Pelulus: filter by JENIS (OK / CE) -->
+        <div v-if="showJenisFilter" class="flex items-center gap-1.5">
+          <label class="text-[11px] font-semibold uppercase tracking-wider text-slate-400" for="inbox-jenis-filter">
+            {{ ts("st.common.type") }}
+          </label>
+          <select
+            id="inbox-jenis-filter"
+            v-model="jenisFilter"
+            class="rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 shadow-sm focus:border-[var(--accent-500)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]/30"
+          >
+            <option v-for="opt in JENIS_OPTIONS" :key="opt.key" :value="opt.key">{{ opt.label }}</option>
+          </select>
+        </div>
+
+        <div
+          :class="[
+            'flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium',
+            atLimit ? 'bg-rose-50 text-rose-700' : 'bg-slate-100 text-slate-600',
+          ]"
+          :title="ts('st.common.activeTasks')"
+        >
+          <Lock v-if="atLimit" class="h-3.5 w-3.5" />
+          {{ ts("st.common.activeTasks") }}: {{ activeCount }} / {{ workflow.maxActiveTasks }}
+        </div>
       </div>
     </div>
 

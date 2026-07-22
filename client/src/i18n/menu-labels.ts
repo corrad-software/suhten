@@ -137,6 +137,7 @@ export const MENU_LABELS: Record<string, LabelPair> = {
   "st-admin-system": { bm: "Pemantauan Sistem", bi: "System Monitoring" },
   "st-admin-audit": { bm: "Audit Trail", bi: "Audit Trail" },
   "st-admin-integrations": { bm: "Integrasi Luaran", bi: "External Integrations" },
+  "st-admin-tetapan": { bm: "Tetapan", bi: "Settings" },
 
   // Module sub-items (shared suffix pattern)
   "st-lc-le-applications": { bm: "Permohonan", bi: "Applications" },

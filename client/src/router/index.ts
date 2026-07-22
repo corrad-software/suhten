@@ -1,5 +1,7 @@
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter } from "vue-router";
 import type { RouteLocationGeneric, RouteRecordRaw } from "vue-router";
+
+import { createAppHistory, persistMaskedRoute } from "@/router/history";
 
 import DashboardView from "@/views/DashboardView.vue";
 import MainDashboardView from "@/views/MainDashboardView.vue";
@@ -50,6 +52,7 @@ import CertificateView from "@/st/views/CertificateView.vue";
 import ReceiptView from "@/st/views/ReceiptView.vue";
 import StNotificationsView from "@/st/views/StNotificationsView.vue";
 import StSearchView from "@/st/views/StSearchView.vue";
+import StTaskLinkView from "@/st/views/StTaskLinkView.vue";
 import AinaUserChatView from "@/st/views/aina/AinaUserChatView.vue";
 // ST public portal (pre-login) + post-login service landing
 import StPublicHomeView from "@/st/views/public/StPublicHomeView.vue";
@@ -70,6 +73,7 @@ import StServiceWorkspaceView from "@/st/views/workspace/StServiceWorkspaceView.
 import StOpsWorkspaceView from "@/st/views/workspace/StOpsWorkspaceView.vue";
 import StAnalyticsWorkspaceView from "@/st/views/workspace/StAnalyticsWorkspaceView.vue";
 import StAdminWorkspaceView from "@/st/views/workspace/StAdminWorkspaceView.vue";
+import StTetapanView from "@/st/views/admin/StTetapanView.vue";
 import { staffMenuLeafRoutes } from "@/st/config/staff-menu";
 import {
   ADMIN_SCREENS,
@@ -90,6 +94,7 @@ const ST_PHASE2_IMPLEMENTED = new Set([
   "notifications",
   "search",
   "aina",
+  "admin/tetapan",
   "registration/ok-electric/applications",
   "registration/ok-electric/review",
   "registration/ok-electric/compliance",
@@ -321,7 +326,9 @@ async function stAuthGuard(to: RouteLocationGeneric) {
   const session = useStSessionStore();
   session.syncFromAuth();
   if (!auth.isAuthenticated || !session.currentPersona) {
-    return to.path === "/st" ? { path: "/st/utama" } : { path: "/st/login" };
+    return to.path === "/st"
+      ? { path: "/st/utama" }
+      : { path: "/st/login", query: { redirect: to.fullPath } };
   }
   return true;
 }
@@ -369,6 +376,7 @@ const stAdminRoutes: RouteRecordRaw = {
     { path: "notifications", name: "admin-st-notifications", component: StNotificationsView, meta: { requiresAuth: true, title: "Notifikasi — ST" } },
     { path: "search", name: "admin-st-search", component: StSearchView, meta: { requiresAuth: true, title: "Carian & Semakan Status — ST" } },
     { path: "aina", name: "admin-st-aina", component: AinaUserChatView, meta: { requiresAuth: true, title: "AINA — User" } },
+    { path: "admin/tetapan", name: "admin-st-tetapan", component: StTetapanView, meta: { requiresAuth: true, title: "Tetapan — ST" } },
     ...registrationRoutes("admin-st"),
     ...serviceWorkspaceRoutes("admin-st"),
     ...opsWorkspaceRoutes("admin-st"),
@@ -422,7 +430,7 @@ const settingsRedirects: RouteRecordRaw[] = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createAppHistory(),
   routes: [
     { path: "/admin/login", name: "login", component: LoginView, meta: { guestOnly: true, title: "Login" } },
     { path: "/admin", name: "main-dashboard", component: MainDashboardView, meta: { requiresAuth: true, title: "Main Dashboard" } },
@@ -564,6 +572,8 @@ const router = createRouter({
         { path: "majikan/profil", name: "st-employer-profile", component: StEmployerProfileView, meta: { title: "Maklumat Majikan — ST" } },
         { path: "dashboard", name: "st-dashboard", component: StDashboardView, meta: { title: "Papan Pemuka — ST" } },
         { path: "inbox", name: "st-inbox", component: StInboxView, meta: { title: "Peti Tugasan — ST" } },
+        // Opaque email deep-link — token decrypts server-side (staff → /st/inbox for FIFO)
+        { path: "go/:token", name: "st-task-link", component: StTaskLinkView, meta: { title: "Membuka Tugasan — ST" } },
         { path: "applications", name: "st-applications", component: StApplicationListView, meta: { title: "Permohonan — ST" } },
         { path: "applications/new", name: "st-application-new", component: ApplicationFormView, meta: { title: "Permohonan Baharu — ST" } },
         {
@@ -617,6 +627,7 @@ const router = createRouter({
         { path: "notifications", name: "st-notifications", component: StNotificationsView, meta: { title: "Notifikasi — ST" } },
         { path: "search", name: "st-search", component: StSearchView, meta: { title: "Carian & Semakan Status — ST" } },
         { path: "aina", name: "st-aina", component: AinaUserChatView, meta: { title: "AINA — User" } },
+        { path: "admin/tetapan", name: "st-tetapan", component: StTetapanView, meta: { title: "Tetapan — ST" } },
         ...registrationRoutes("st"),
         ...serviceWorkspaceRoutes("st"),
         ...opsWorkspaceRoutes("st"),
@@ -648,7 +659,7 @@ function safeInternalRedirect(raw: unknown): string | null {
     return null;
   }
   // Only allow in-app admin/ST paths (email deep links).
-  if (!raw.startsWith("/admin")) {
+  if (!raw.startsWith("/admin") && !raw.startsWith("/st")) {
     return null;
   }
   return raw;
@@ -680,6 +691,7 @@ router.afterEach((to) => {
   const site = useSiteStore();
   const pageTitle = (to.meta.title as string) || "Admin";
   site.setDocumentTitle(pageTitle);
+  persistMaskedRoute(to.fullPath);
 });
 
 export default router;

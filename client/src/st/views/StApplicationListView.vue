@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { FilePlus2 } from "lucide-vue-next";
 
@@ -20,10 +20,30 @@ const workflow = useStWorkflowStore();
 const { ts } = useLocale();
 
 const isEmployer = computed(() => session.role === "employer");
+const isApplicant = computed(() => session.role === "applicant");
 
 const rows = computed(() => {
-  if (isEmployer.value) return session.currentPersonaId ? workflow.confirmationsFor(session.currentPersonaId) : [];
-  return workflow.myApplications;
+  const personaId = session.currentPersonaId;
+  if (!personaId) return [];
+
+  const confirmations = workflow.confirmationsFor(personaId);
+  const mine = workflow.myApplications;
+  const seen = new Set(confirmations.map((a) => a.id));
+
+  // Majikan: confirmation tasks + own CE apps (incl. NA-04 hantar / NA-05 bayar).
+  if (isEmployer.value) {
+    return [...confirmations, ...mine.filter((a) => !seen.has(a.id))];
+  }
+  // OK applicants: CE NA-03 acceptance tasks + own applications.
+  if (isApplicant.value) {
+    return [...confirmations, ...mine.filter((a) => !seen.has(a.id))];
+  }
+  return mine;
+});
+
+// Refresh from DB so online OK submits appear for majikan confirmation.
+onMounted(() => {
+  void workflow.syncFromApi();
 });
 
 function fmt(iso: string): string {
@@ -52,13 +72,21 @@ const columns = computed<SmartTableColumn<AppRow>[]>(() => {
 <template>
   <div class="space-y-5">
     <StPageHero
-      :title="isEmployer ? 'Pengesahan Lantikan' : 'Permohonan Saya'"
-      :subtitle="`${rows.length} ${isEmployer ? 'menunggu pengesahan' : 'permohonan'}`"
+      :title="isEmployer ? 'Permohonan & Pengesahan' : 'Permohonan Saya'"
+      :subtitle="`${rows.length} item`"
     >
       <template v-if="!isEmployer" #action>
         <button
-          class="flex shrink-0 items-center gap-1.5 rounded-md bg-[var(--accent-600)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--accent-700)]"
-          @click="router.push('/st/applications/new')"
+          class="flex shrink-0 items-center gap-1.5 rounded-md bg-white px-4 py-2 text-sm font-medium text-[var(--accent-700)] transition-colors hover:bg-white/90"
+          @click="router.push('/st/registration/ok-electric/applications/new')"
+        >
+          <FilePlus2 class="h-4 w-4" /> Permohonan Baharu
+        </button>
+      </template>
+      <template v-else #action>
+        <button
+          class="flex shrink-0 items-center gap-1.5 rounded-md bg-white px-4 py-2 text-sm font-medium text-[var(--accent-700)] transition-colors hover:bg-white/90"
+          @click="router.push('/st/registration/contractor-electric/applications/new')"
         >
           <FilePlus2 class="h-4 w-4" /> Permohonan Baharu
         </button>

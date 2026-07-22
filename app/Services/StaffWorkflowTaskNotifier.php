@@ -19,14 +19,20 @@ use Throwable;
 class StaffWorkflowTaskNotifier
 {
     /** @var list<string> */
-    public const STAFF_ROLES = ['sos', 'technical', 'approver'];
+    public const STAFF_ROLES = ['sos', 'sos_ce', 'technical', 'technical_ce', 'approver'];
 
     /** @var array<string, string> */
     private const ROLE_LABELS = [
-        'sos' => 'Pegawai SOS',
-        'technical' => 'Pegawai Teknikal',
+        'sos' => 'Pegawai SOS (OK Elektrik)',
+        'sos_ce' => 'Pegawai SOS (Kontraktor Elektrik)',
+        'technical' => 'Pegawai Teknikal (OK Elektrik)',
+        'technical_ce' => 'Pegawai Teknikal (Kontraktor Elektrik)',
         'approver' => 'Pelulus',
     ];
+
+    public function __construct(
+        protected StaffTaskLinkService $taskLinks,
+    ) {}
 
     public function handle(WorkflowWaitingEvent $event): void
     {
@@ -77,7 +83,6 @@ class StaffWorkflowTaskNotifier
         $applicantName = is_string($context['applicant_name'] ?? null) ? $context['applicant_name'] : null;
         $applicationCode = is_string($context['application_code'] ?? null) ? $context['application_code'] : null;
         $stepId = is_string($context['step_id'] ?? null) ? $context['step_id'] : null;
-        $actionPath = is_string($context['action_path'] ?? null) ? $context['action_path'] : null;
 
         $intended = User::query()
             ->where('role', $role)
@@ -100,7 +105,8 @@ class StaffWorkflowTaskNotifier
             return false;
         }
 
-        $actionUrl = $this->buildActionUrl($moduleCode, $applicationId, $applicationCode, $actionPath);
+        // Always open Peti Tugasan so staff process by FIFO (not a single application detail).
+        $actionUrl = $this->buildActionUrl();
 
         $payload = [
             'role' => $role,
@@ -152,32 +158,10 @@ class StaffWorkflowTaskNotifier
         }
     }
 
-    private function buildActionUrl(
-        ?string $moduleCode,
-        ?int $applicationId,
-        ?string $applicationCode = null,
-        ?string $actionPath = null,
-    ): string {
+    private function buildActionUrl(): string
+    {
         $frontend = rtrim((string) config('st.frontend_url', ''), '/');
 
-        if (is_string($actionPath) && str_starts_with($actionPath, '/')) {
-            return $frontend.$actionPath;
-        }
-
-        $paths = config('st.registration_module_paths', []);
-        $modulePath = is_string($moduleCode) && isset($paths[$moduleCode])
-            ? $paths[$moduleCode]
-            : null;
-
-        if ($frontend !== '' && $modulePath !== null && $applicationId !== null) {
-            return $frontend.'/admin/st/'.$modulePath.'/applications/'.$applicationId;
-        }
-
-        if ($frontend !== '' && is_string($applicationCode) && $applicationCode !== '') {
-            // D11 mock applications detail (auth-gated under /admin/st)
-            return $frontend.'/admin/st/applications/'.$applicationCode;
-        }
-
-        return $frontend.'/admin/st/inbox';
+        return $this->taskLinks->sealUrl($frontend, '/st/inbox');
     }
 }

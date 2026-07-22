@@ -6,8 +6,10 @@ import { FilePlus2, Filter, Sparkles } from "lucide-vue-next";
 import { useLocale } from "@/composables/useLocale";
 import type { StMessageKey } from "@/i18n/st-messages";
 import type { ApplicationStatus } from "../../types";
-import type { RegistrationAppType } from "../../mock/registration";
+import type { RegistrationAppType, RegistrationApplication } from "../../mock/registration";
+import { useStEmployerStore } from "../../stores/employer";
 import { useStRegistrationStore } from "../../stores/registration";
+import { useStSessionStore } from "../../stores/session";
 import { appTypeLabel, useRegistrationModule } from "../../composables/useRegistrationModule";
 import type { SmartTableColumn } from "../../composables/useSmartTable";
 import RegStatusBadge from "../../components/RegStatusBadge.vue";
@@ -17,6 +19,8 @@ const route = useRoute();
 const router = useRouter();
 const { ts, locale } = useLocale();
 const regStore = useStRegistrationStore();
+const session = useStSessionStore();
+const employerStore = useStEmployerStore();
 const { code, def, title, subtitle, actRef, processTypes, docChecklist, eligibility } = useRegistrationModule();
 
 const portalBase = computed(() => (route.path.startsWith("/admin/st") ? "/admin/st" : "/st"));
@@ -24,9 +28,42 @@ const statusFilter = ref<ApplicationStatus | "">("");
 const typeFilter = ref<RegistrationAppType | "">("");
 const showGuide = ref(true);
 
-const rows = computed(() => {
+function norm(value: string | null | undefined): string {
+  return (value ?? "").trim().toLowerCase();
+}
+
+/** Majikan only sees contractor apps owned by their organisation / persona. */
+function belongsToCurrentEmployer(a: RegistrationApplication): boolean {
+  const persona = session.currentPersona;
+  const mine = employerStore.myEmployer;
+  if (!persona && !mine) return false;
+
+  const org = norm(mine?.name ?? persona?.organisation);
+  const personaId = persona?.id ?? null;
+  const employerId = mine?.id ?? null;
+  const ce = a.detail?.ce as { representativeName?: string; companyName?: string } | undefined;
+
+  if (employerId && a.detail?.employerId === employerId) return true;
+  if (personaId && a.detail?.applicantPersonaId === personaId) return true;
+  if (org && (norm(a.applicantName) === org || norm(a.employerName) === org || norm(ce?.companyName) === org)) {
+    return true;
+  }
+  if (persona?.name && ce?.representativeName && norm(ce.representativeName) === norm(persona.name)) {
+    return true;
+  }
+  return false;
+}
+
+const scopedApps = computed(() => {
   if (!code.value) return [];
-  return regStore.applicationsFor(code.value).filter((a) => {
+  const all = regStore.applicationsFor(code.value);
+  // Fail closed for majikan — never show other employers' contractor apps.
+  if (session.role === "employer") return all.filter(belongsToCurrentEmployer);
+  return all;
+});
+
+const rows = computed(() => {
+  return scopedApps.value.filter((a) => {
     if (statusFilter.value && a.status !== statusFilter.value) return false;
     if (typeFilter.value && a.appType !== typeFilter.value) return false;
     return true;
@@ -34,8 +71,7 @@ const rows = computed(() => {
 });
 
 const stats = computed(() => {
-  if (!code.value) return { total: 0, inProgress: 0, query: 0, issued: 0 };
-  const all = regStore.applicationsFor(code.value);
+  const all = scopedApps.value;
   const terminal = new Set(["certificate_issued", "rejected", "withdrawn"]);
   return {
     total: all.length,
@@ -87,6 +123,7 @@ const STATUS_OPTIONS: ApplicationStatus[] = [
   "pending_approval",
   "query_applicant",
   "awaiting_employer_confirm",
+  "awaiting_final_submit",
   "awaiting_processing_payment",
   "awaiting_registration_payment",
   "certificate_issued",

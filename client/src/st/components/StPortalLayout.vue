@@ -86,10 +86,9 @@ const initials = computed(() =>
 );
 
 function logout() {
-  void session.logout().then(() => {
-    toast.info("Log keluar", "Anda telah log keluar.");
-    router.push("/st/login");
-  });
+  toast.info("Log keluar", "Anda telah log keluar.");
+  void router.replace("/st/login");
+  void session.logout();
 }
 
 const handleDocumentClick = (event: MouseEvent) => {
@@ -288,6 +287,5 @@ onBeforeUnmount(() => {
       </router-link>
     </nav>
 
-    <StChatWidget />
   </div>
 </template>
