@@ -43,16 +43,18 @@ const OK_DOCS_BI = [
   "Passport-sized photograph",
 ];
 const CE_DOCS_BM = [
-  "Sijil pendaftaran SSM / Borang 9 & 49",
-  "Senarai Orang Kompeten dilantik",
-  "Penyata kewangan terkini",
-  "Surat lantikan pengarah / wakil",
+  "Perjanjian sewa atau jual beli pejabat",
+  "Lesen perniagaan PBT",
+  "Annual return / Perakuan Pendaftaran",
+  "SOCSO Borang 8A (3 bulan) + resit",
+  "Perjanjian bengkel (pilihan)",
 ];
 const CE_DOCS_BI = [
-  "SSM registration / Forms 9 & 49",
-  "List of appointed Competent Persons",
-  "Latest financial statement",
-  "Director / representative appointment letter",
+  "Office tenancy or sale agreement",
+  "PBT business licence",
+  "Annual return / Certificate of Registration",
+  "SOCSO Form 8A (3 months) + receipts",
+  "Workshop agreement (optional)",
 ];
 
 export function useRegistrationModule() {

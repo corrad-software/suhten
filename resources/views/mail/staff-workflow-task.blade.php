@@ -15,7 +15,7 @@
                         <p style="margin:0 0 8px;font-size:13px;color:#697386;text-transform:uppercase;letter-spacing:0.04em;">Sistem Digital ST</p>
                         <h1 style="margin:0 0 12px;font-size:20px;line-height:1.3;">Tugasan baharu — {{ $roleLabel }}</h1>
                         <p style="margin:0 0 20px;font-size:14px;line-height:1.5;color:#3c4257;">
-                            Permohonan menunggu tindakan anda. Sila log masuk untuk membuka butiran permohonan dan memproses tugasan.
+                            Permohonan menunggu tindakan anda. Sila buka Peti Tugasan dan proses mengikut giliran FIFO (terlama dahulu).
                         </p>
                     </td>
                 </tr>
@@ -47,14 +47,15 @@
                     <td style="padding:0 28px 28px;" align="center">
                         <a href="{{ $actionUrl }}"
                            style="display:inline-block;background:#0f4c81;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:12px 22px;border-radius:6px;">
-                            Buka butiran permohonan
+                            Buka Peti Tugasan
                         </a>
                         <p style="margin:14px 0 0;font-size:12px;line-height:1.5;color:#697386;word-break:break-all;">
-                            Atau salin pautan ini:<br>
+                            Atau salin pautan selamat ini:<br>
                             <a href="{{ $actionUrl }}" style="color:#0f4c81;">{{ $actionUrl }}</a>
                         </p>
                         <p style="margin:16px 0 0;font-size:12px;line-height:1.5;color:#697386;">
-                            Jika anda belum log masuk, anda akan diminta log masuk dahulu. Selepas log masuk, halaman butiran permohonan akan dibuka secara automatik.
+                            Jika anda belum log masuk, anda akan diminta log masuk dahulu. Selepas log masuk, <strong>Peti Tugasan</strong> akan dibuka.
+                            Proses tugasan mengikut giliran FIFO — ambil tugasan terlama dahulu, bukan terus ke permohonan dalam e-mel ini.
                         </p>
                         @if ($intendedEmail)
                             <p style="margin:12px 0 0;font-size:12px;line-height:1.5;color:#3c4257;background:#fff8e6;border:1px solid #f5d78e;border-radius:6px;padding:10px 12px;text-align:left;">

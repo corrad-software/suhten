@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import { computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { ArrowLeft, BadgeCheck, Building2, FileText, Receipt, ShieldCheck, UserCheck } from "lucide-vue-next";
+import { ArrowLeft, Award, BadgeCheck, Building2, FileText, Receipt, ShieldCheck, UserCheck, Wrench } from "lucide-vue-next";
 
 import { getStaffTaskNotifyState } from "@/api/st-registration";
+import { useLocale } from "@/composables/useLocale";
 import { useStWorkflowStore } from "../stores/workflow";
+import { useStRegistrationStore } from "../stores/registration";
 import { competencyMeta, contractorClassMeta } from "../mock/competencies";
+import { contractorKindMeta, type ContractorKind } from "../registration/ce-rules";
+import { PLACE_RESTRICTIONS, VOLTAGE_RESTRICTIONS } from "../registration/ok-rules";
 import { workflowLabel } from "../status";
 import StatusBadge from "../components/StatusBadge.vue";
 import SlaIndicator from "../components/SlaIndicator.vue";
@@ -15,13 +19,48 @@ import ApplicationActionBar from "../components/ApplicationActionBar.vue";
 
 const route = useRoute();
 const router = useRouter();
+const { ts, locale } = useLocale();
 const workflow = useStWorkflowStore();
+const regStore = useStRegistrationStore();
 
 const app = computed(() => workflow.byId(String(route.params.id)));
+const isCe = computed(() => app.value?.workflowType === "CE");
+
+const okCompetency = computed(() => {
+  const a = app.value;
+  if (!a || a.workflowType !== "OK") return undefined;
+  if (a.competencyCertificate) return a.competencyCertificate;
+  // Fallback: registration store twin (same code) when workflow mapping is sparse.
+  const twin = regStore.byId(a.id);
+  const cert = twin?.detail?.certificate;
+  if (!cert) return undefined;
+  return {
+    certificateNo: cert.certificateNo,
+    category: cert.category || a.competencyCategory || twin.categoryOrClass,
+    voltageRestriction: cert.voltageRestriction,
+    placeRestriction: cert.placeRestriction,
+    active: cert.active,
+    suspended: cert.suspended,
+  };
+});
+
+function voltageLabel(code?: string): string {
+  const row = VOLTAGE_RESTRICTIONS.find((v) => v.code === code);
+  if (!row) return code || "—";
+  return locale.value === "bi" ? row.bi : row.bm;
+}
+
+function placeLabel(code?: string): string {
+  const row = PLACE_RESTRICTIONS.find((v) => v.code === code);
+  if (!row) return code || "—";
+  return locale.value === "bi" ? row.bi : row.bm;
+}
 
 const STAGE_BY_ROLE: Record<string, string> = {
   sos: "sos_review",
+  sos_ce: "sos_review",
   technical: "technical_review",
+  technical_ce: "technical_review",
   approver: "pending_approval",
 };
 
@@ -32,6 +71,7 @@ async function applyEmailStageSync() {
 
   const stageFromQuery = typeof route.query.stage === "string" ? route.query.stage : "";
   if (stageFromQuery) {
+    // Heal stale mock stage only — claim stays in Peti Tugasan (FIFO).
     workflow.syncFromEmailStage(id, stageFromQuery);
     return;
   }
@@ -47,7 +87,11 @@ async function applyEmailStageSync() {
 }
 
 onMounted(() => {
-  void applyEmailStageSync();
+  void (async () => {
+    await workflow.syncFromApi();
+    void regStore.fetchFromApi();
+    await applyEmailStageSync();
+  })();
 });
 
 watch(
@@ -60,9 +104,13 @@ watch(
 const categoryLine = computed(() => {
   const a = app.value;
   if (!a) return "";
-  if (a.workflowType === "OK" && a.competencyCategory) {
-    const m = competencyMeta(a.competencyCategory);
-    return `${m.code} — ${m.label}`;
+  if (a.workflowType === "OK") {
+    const code = a.competencyCategory ?? (okCompetency.value?.category as typeof a.competencyCategory);
+    if (code) {
+      const m = competencyMeta(code);
+      return `${m.code} — ${m.label}`;
+    }
+    if (okCompetency.value?.category) return okCompetency.value.category;
   }
   if (a.workflowType === "CE" && a.contractorClass) {
     const m = contractorClassMeta(a.contractorClass);
@@ -71,10 +119,132 @@ const categoryLine = computed(() => {
   return "";
 });
 
+/** Prefer RG-CE registration twin (same company / SSM) when present for full Bahagian A–F. */
+const regTwin = computed(() => {
+  const a = app.value;
+  if (!a || a.workflowType !== "CE") return undefined;
+  const company = a.employer?.name?.trim().toLowerCase();
+  const ssm = a.employer?.registrationNo?.trim().toLowerCase();
+  return regStore.applications.find((r) => {
+    if (r.moduleCode !== "RG-CE") return false;
+    const ce = (r.detail?.ce ?? {}) as Record<string, unknown>;
+    const names = [r.applicantName, typeof ce.companyName === "string" ? ce.companyName : ""]
+      .map((s) => s.trim().toLowerCase())
+      .filter(Boolean);
+    const regs = [r.identityNo, typeof ce.companyRegNo === "string" ? ce.companyRegNo : ""]
+      .map((s) => s.trim().toLowerCase())
+      .filter(Boolean);
+    return (company != null && names.includes(company)) || (ssm != null && regs.includes(ssm));
+  });
+});
+
+const ce = computed(() => {
+  const a = app.value;
+  if (!a || a.workflowType !== "CE") return {} as Record<string, unknown>;
+
+  const emp = a.employer;
+  const cls = a.contractorClass ?? "C";
+  const fallback: Record<string, unknown> = {
+    contractorKind: "electrical",
+    contractorClass: cls,
+    voltage: cls === "A" ? "33kV" : "415V",
+    companyName: emp?.name ?? a.applicant.fullName,
+    companyRegNo: emp?.registrationNo ?? "—",
+    companyAddress: emp?.address ?? a.applicant.address,
+    postcode: "",
+    city: emp?.city,
+    state: emp?.state,
+    companyPhone: emp?.phone ?? a.applicant.phone,
+    companyFax: emp?.id === "emp-tenaga-murni" ? "03-5511 2244" : emp?.id === "emp-elektrik-maju" ? "03-7788 4466" : "",
+    companyEmail: emp?.email ?? a.applicant.email,
+    representativeName: a.applicant.fullName,
+    representativeIc: a.applicant.icNumber,
+    directors: [
+      {
+        name: a.applicant.fullName,
+        icNumber: a.applicant.icNumber,
+        address: emp?.address ?? a.applicant.address,
+        sharePercent: 100,
+      },
+    ],
+    appointedOks: (a.appointedOks ?? []).map((o) => ({
+      name: o.name,
+      wirerType: o.wirerType,
+      mykad: o.mykad,
+      certificateNo: `OK-E/${o.wirerType}/2024/00821`,
+      periodYears: a.registrationPeriodYears,
+    })),
+    skilledPersons: [],
+    professionalEngineers: [],
+    equipment: [
+      {
+        equipmentType: "insulation_tester",
+        brand: "fluke",
+        model: "1507",
+        serialNo: `INS-${a.refNo.slice(-5)}`,
+      },
+      {
+        equipmentType: "earth_tester",
+        brand: "megger",
+        model: "DET3TD",
+        serialNo: `EAR-${a.refNo.slice(-5)}`,
+      },
+    ],
+  };
+
+  const fromReg = (regTwin.value?.detail?.ce ?? null) as Record<string, unknown> | null;
+  if (!fromReg || !Object.keys(fromReg).length) return fallback;
+
+  const merged = { ...fallback, ...fromReg };
+  for (const key of ["directors", "appointedOks", "equipment"] as const) {
+    const cur = merged[key];
+    if (!Array.isArray(cur) || cur.length === 0) merged[key] = fallback[key];
+  }
+  for (const key of ["voltage", "companyAddress", "companyPhone", "companyFax", "city", "state", "postcode"] as const) {
+    if (!merged[key]) merged[key] = fallback[key];
+  }
+  return merged;
+});
+
+const directors = computed(() => (Array.isArray(ce.value.directors) ? ce.value.directors : []) as Array<Record<string, unknown>>);
+const oks = computed(() => {
+  if (Array.isArray(ce.value.appointedOks) && ce.value.appointedOks.length) {
+    return ce.value.appointedOks as Array<Record<string, unknown>>;
+  }
+  return (app.value?.appointedOks ?? []).map((o) => ({
+    name: o.name,
+    wirerType: o.wirerType,
+    mykad: o.mykad,
+    certificateNo: `OK-E/${o.wirerType}/2024/00821`,
+    periodYears: app.value?.registrationPeriodYears,
+  }));
+});
+const equipment = computed(() => (Array.isArray(ce.value.equipment) ? ce.value.equipment : []) as Array<Record<string, unknown>>);
+
+const companyAddressLine = computed(() => {
+  const street = typeof ce.value.companyAddress === "string" ? ce.value.companyAddress.trim() : "";
+  const postcode = typeof ce.value.postcode === "string" ? ce.value.postcode.trim() : "";
+  const city = typeof ce.value.city === "string" ? ce.value.city.trim() : "";
+  const state = typeof ce.value.state === "string" ? ce.value.state.trim() : "";
+  const locality = [postcode, city].filter(Boolean).join(" ");
+  const parts = [street, [locality, state].filter(Boolean).join(", ")].filter(Boolean);
+  return parts.length ? parts.join(" · ") : "—";
+});
+
+const periodYears = computed(() => regTwin.value?.detail?.periodYears ?? app.value?.registrationPeriodYears ?? "—");
+
+function kindLabel(code?: unknown): string {
+  if (typeof code !== "string") return "—";
+  const k = contractorKindMeta(code as ContractorKind);
+  return locale.value === "bi" ? k.bi : k.bm;
+}
+
 function fmt(iso?: string): string {
   if (!iso) return "";
   return new Date(iso).toLocaleString("ms-MY", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
 }
+
+const portalBase = computed(() => (route.path.startsWith("/admin/st") ? "/admin/st" : "/st"));
 </script>
 
 <template>
@@ -88,7 +258,9 @@ function fmt(iso?: string): string {
       <div class="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p class="font-mono text-xs text-slate-500">{{ app.refNo }}</p>
-          <h1 class="text-lg font-semibold text-slate-900">{{ workflowLabel(app.workflowType) }}</h1>
+          <h1 class="text-lg font-semibold text-slate-900">
+            {{ isCe ? ts("st.ceDetail.title") : workflowLabel(app.workflowType) }}
+          </h1>
           <p class="text-sm text-slate-600">{{ categoryLine }} · {{ app.registrationPeriodYears }} tahun</p>
         </div>
         <div class="flex flex-col items-end gap-2">
@@ -109,34 +281,188 @@ function fmt(iso?: string): string {
       <p class="mt-1 text-xs text-slate-500" v-if="app.status === 'certificate_issued'">Permohonan selesai. Sijil digital telah dikeluarkan.</p>
     </div>
 
-    <div class="grid gap-5 md:grid-cols-2">
-      <!-- Applicant -->
-      <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h2 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700"><UserCheck class="h-4 w-4 text-slate-400" /> Maklumat Pemohon</h2>
-        <dl class="space-y-1.5 text-sm">
-          <div class="flex justify-between"><dt class="text-slate-500">Nama</dt><dd class="font-medium text-slate-800">{{ app.applicant.fullName }}</dd></div>
-          <div class="flex justify-between"><dt class="text-slate-500">No. KP</dt><dd class="font-mono text-slate-800">{{ app.applicant.icNumber }}</dd></div>
-          <div class="flex justify-between"><dt class="text-slate-500">Umur</dt><dd class="text-slate-800">{{ app.applicant.age }} tahun</dd></div>
-          <div class="flex justify-between"><dt class="text-slate-500">Telefon</dt><dd class="text-slate-800">{{ app.applicant.phone }}</dd></div>
-          <div class="flex justify-between"><dt class="text-slate-500">E-mel</dt><dd class="text-slate-800">{{ app.applicant.email }}</dd></div>
-        </dl>
+    <!-- CE: contractor company detail (same fields as modul Permohonan) -->
+    <template v-if="isCe">
+      <div class="grid gap-5 lg:grid-cols-2">
+        <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
+            <Building2 class="h-4 w-4 text-slate-400" />
+            {{ ts("st.ceApply.stepA") }} / {{ ts("st.ceApply.stepB") }}
+          </h2>
+          <dl class="grid gap-2 text-sm sm:grid-cols-2">
+            <div><dt class="text-xs text-slate-400">{{ ts("st.ceApply.kind") }}</dt><dd>{{ kindLabel(ce.contractorKind) }}</dd></div>
+            <div><dt class="text-xs text-slate-400">{{ ts("st.ceApply.class") }}</dt><dd>{{ ce.contractorClass ?? app.contractorClass ?? "—" }}</dd></div>
+            <div><dt class="text-xs text-slate-400">{{ ts("st.ceApply.voltage") }}</dt><dd>{{ ce.voltage || "—" }}</dd></div>
+            <div><dt class="text-xs text-slate-400">{{ ts("st.ceApply.period") }}</dt><dd>{{ periodYears }}</dd></div>
+            <div class="sm:col-span-2">
+              <dt class="text-xs text-slate-400">{{ ts("st.ceApply.companyName") }}</dt>
+              <dd class="font-medium">{{ ce.companyName || app.employer?.name || "—" }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs text-slate-400">{{ ts("st.ceApply.companyReg") }}</dt>
+              <dd class="font-mono text-xs">{{ ce.companyRegNo || app.employer?.registrationNo || "—" }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs text-slate-400">{{ ts("st.ceApply.companyPhone") }}</dt>
+              <dd>{{ ce.companyPhone || app.employer?.phone || "—" }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs text-slate-400">{{ ts("st.ceApply.companyFax") }}</dt>
+              <dd>{{ ce.companyFax || "—" }}</dd>
+            </div>
+            <div class="sm:col-span-2">
+              <dt class="text-xs text-slate-400">{{ ts("st.ceApply.companyAddress") }}</dt>
+              <dd>{{ companyAddressLine }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs text-slate-400">{{ ts("st.ceApply.repName") }}</dt>
+              <dd>{{ ce.representativeName || app.applicant.fullName }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs text-slate-400">{{ ts("st.ceApply.repIc") }}</dt>
+              <dd class="font-mono text-xs">{{ ce.representativeIc || app.applicant.icNumber || "—" }}</dd>
+            </div>
+          </dl>
+          <div v-if="app.identityCheck" class="mt-3 flex items-center gap-2 rounded-md bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
+            <ShieldCheck class="h-4 w-4" />
+            Identiti disahkan (JPN — {{ app.identityCheck.jpnStatus === "alive" ? "masih hidup" : app.identityCheck.jpnStatus }}) · {{ fmt(app.identityCheck.checkedAt) }}
+          </div>
+        </section>
 
-        <div v-if="app.identityCheck" class="mt-3 flex items-center gap-2 rounded-md bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
-          <ShieldCheck class="h-4 w-4" />
-          Identiti disahkan (JPN — {{ app.identityCheck.jpnStatus === 'alive' ? 'masih hidup' : app.identityCheck.jpnStatus }}) · {{ fmt(app.identityCheck.checkedAt) }}
+        <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 class="mb-3 text-sm font-semibold text-slate-700">Jejak proses</h2>
+          <ol class="space-y-3">
+            <li v-for="ev in app.auditTrail" :key="ev.id" class="border-l-2 border-slate-200 pl-3">
+              <p class="text-sm font-medium text-slate-800">{{ ev.action }}</p>
+              <p class="text-xs text-slate-500">{{ ev.actorName }} · {{ fmt(ev.at) }}</p>
+            </li>
+            <li v-if="!app.auditTrail.length" class="text-sm text-slate-400">—</li>
+          </ol>
+        </section>
+      </div>
+
+      <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 class="mb-3 text-sm font-semibold text-slate-700">{{ ts("st.ceApply.directors") }}</h2>
+        <ul class="divide-y divide-slate-50 text-sm">
+          <li v-for="(d, i) in directors" :key="i" class="py-2">
+            <span class="font-medium">{{ d.name }}</span>
+            <span class="ml-2 font-mono text-xs text-slate-500">{{ d.icNumber }}</span>
+            <span v-if="d.sharePercent != null" class="ml-2 text-xs text-slate-400">{{ d.sharePercent }}%</span>
+            <p v-if="d.address" class="text-xs text-slate-500">{{ d.address }}</p>
+          </li>
+          <li v-if="!directors.length" class="py-2 text-slate-400">—</li>
+        </ul>
+      </section>
+
+      <div class="grid gap-5 lg:grid-cols-2">
+        <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
+            <UserCheck class="h-4 w-4 text-slate-400" />
+            {{ ts("st.ceApply.stepC") }}
+          </h2>
+          <ul class="space-y-2 text-sm">
+            <li v-for="(o, i) in oks" :key="'ok' + i" class="rounded-md border border-slate-100 px-3 py-2">
+              <p class="font-medium">{{ o.name }} <span class="text-xs text-slate-500">({{ o.wirerType }})</span></p>
+              <p class="font-mono text-xs text-slate-500">{{ o.mykad }} · {{ o.certificateNo }} · {{ o.periodYears }}y</p>
+            </li>
+            <li v-if="!oks.length" class="text-slate-400">—</li>
+          </ul>
+        </section>
+
+        <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
+            <Wrench class="h-4 w-4 text-slate-400" />
+            {{ ts("st.ceApply.equipment") }}
+          </h2>
+          <ul class="space-y-2 text-sm">
+            <li v-for="(eq, i) in equipment" :key="i" class="rounded-md border border-slate-100 px-3 py-2">
+              <p class="font-medium">{{ eq.equipmentType }} · {{ eq.brand }}</p>
+              <p class="text-xs text-slate-500">{{ eq.model }} · S/N {{ eq.serialNo }}</p>
+            </li>
+            <li v-if="!equipment.length" class="text-slate-400">—</li>
+          </ul>
+        </section>
+      </div>
+    </template>
+
+    <!-- OK: person + competency + employer -->
+    <template v-else>
+      <div class="grid gap-5 md:grid-cols-2">
+        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700"><UserCheck class="h-4 w-4 text-slate-400" /> Maklumat Pemohon</h2>
+          <dl class="space-y-1.5 text-sm">
+            <div class="flex justify-between gap-4"><dt class="text-slate-500">Nama</dt><dd class="text-right font-medium text-slate-800">{{ app.applicant.fullName }}</dd></div>
+            <div class="flex justify-between gap-4"><dt class="text-slate-500">No. KP</dt><dd class="font-mono text-slate-800">{{ app.applicant.icNumber }}</dd></div>
+            <div class="flex justify-between gap-4"><dt class="text-slate-500">Umur</dt><dd class="text-slate-800">{{ app.applicant.age }} tahun</dd></div>
+            <div class="flex justify-between gap-4"><dt class="text-slate-500">Telefon</dt><dd class="text-slate-800">{{ app.applicant.phone || "—" }}</dd></div>
+            <div class="flex justify-between gap-4"><dt class="text-slate-500">E-mel</dt><dd class="text-right text-slate-800">{{ app.applicant.email || "—" }}</dd></div>
+          </dl>
+
+          <div v-if="app.identityCheck" class="mt-3 flex items-center gap-2 rounded-md bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
+            <ShieldCheck class="h-4 w-4" />
+            Identiti disahkan (JPN — {{ app.identityCheck.jpnStatus === 'alive' ? 'masih hidup' : app.identityCheck.jpnStatus }}) · {{ fmt(app.identityCheck.checkedAt) }}
+          </div>
+        </div>
+
+        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
+            <Award class="h-4 w-4 text-slate-400" /> Maklumat Kekompetenan
+          </h2>
+          <dl class="space-y-1.5 text-sm">
+            <div class="flex justify-between gap-4">
+              <dt class="text-slate-500">{{ ts("st.common.category") }}</dt>
+              <dd class="text-right font-medium text-slate-800">{{ categoryLine || okCompetency?.category || "—" }}</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="text-slate-500">{{ ts("st.okApply.certNo") }}</dt>
+              <dd class="font-mono text-xs text-slate-800">{{ okCompetency?.certificateNo || "—" }}</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="text-slate-500">{{ ts("st.okApply.period") }}</dt>
+              <dd class="text-slate-800">{{ ts("st.okApply.periodYear", { n: app.registrationPeriodYears }) }}</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="text-slate-500">{{ ts("st.okApply.voltage") }}</dt>
+              <dd class="text-right text-slate-800">{{ voltageLabel(okCompetency?.voltageRestriction) }}</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="text-slate-500">{{ ts("st.okApply.place") }}</dt>
+              <dd class="text-right text-slate-800">{{ placeLabel(okCompetency?.placeRestriction) }}</dd>
+            </div>
+            <div v-if="okCompetency" class="flex justify-between gap-4">
+              <dt class="text-slate-500">Status perakuan</dt>
+              <dd class="text-slate-800">
+                <span v-if="okCompetency.suspended" class="text-rose-600">Digantung</span>
+                <span v-else-if="okCompetency.active === false" class="text-amber-600">Tidak aktif</span>
+                <span v-else class="text-emerald-700">Aktif</span>
+              </dd>
+            </div>
+          </dl>
         </div>
       </div>
 
-      <!-- Employer / confirmer -->
       <div v-if="app.employer" class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h2 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700"><Building2 class="h-4 w-4 text-slate-400" /> {{ app.workflowType === 'OK' ? 'Majikan' : 'Syarikat / Orang Kompeten' }}</h2>
-        <dl class="space-y-1.5 text-sm">
-          <div class="flex justify-between"><dt class="text-slate-500">Nama</dt><dd class="font-medium text-slate-800">{{ app.employer.name }}</dd></div>
-          <div class="flex justify-between"><dt class="text-slate-500">No. Pendaftaran</dt><dd class="font-mono text-xs text-slate-800">{{ app.employer.registrationNo }}</dd></div>
-          <div class="flex justify-between"><dt class="text-slate-500">Pegawai Dihubungi</dt><dd class="text-slate-800">{{ app.employer.contactPerson }}</dd></div>
+        <h2 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700"><Building2 class="h-4 w-4 text-slate-400" /> Majikan</h2>
+        <dl class="grid gap-x-6 gap-y-1.5 text-sm sm:grid-cols-2">
+          <div class="flex justify-between gap-4 sm:block">
+            <dt class="text-slate-500">Nama</dt>
+            <dd class="font-medium text-slate-800">{{ app.employer.name }}</dd>
+          </div>
+          <div class="flex justify-between gap-4 sm:block">
+            <dt class="text-slate-500">No. Pendaftaran</dt>
+            <dd class="font-mono text-xs text-slate-800">{{ app.employer.registrationNo }}</dd>
+          </div>
+          <div class="flex justify-between gap-4 sm:block">
+            <dt class="text-slate-500">Pegawai Dihubungi</dt>
+            <dd class="text-slate-800">{{ app.employer.contactPerson }}</dd>
+          </div>
+          <div v-if="app.employer.address" class="sm:col-span-2">
+            <dt class="text-slate-500">Alamat</dt>
+            <dd class="text-slate-800">{{ app.employer.address }}</dd>
+          </div>
         </dl>
       </div>
-    </div>
+    </template>
 
     <!-- Documents -->
     <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -166,7 +492,7 @@ function fmt(iso?: string): string {
       <button
         v-if="app.payments.length"
         class="flex w-full items-center justify-between rounded-xl border border-emerald-200 bg-gradient-to-r from-emerald-50 to-white p-4 text-left shadow-sm hover:from-emerald-100"
-        @click="router.push(`/st/applications/${app.id}/receipt`)"
+        @click="router.push(`${portalBase}/applications/${app.id}/receipt`)"
       >
         <span class="flex items-center gap-3">
           <Receipt class="h-6 w-6 text-emerald-600" />
@@ -181,7 +507,7 @@ function fmt(iso?: string): string {
       <button
         v-if="app.status === 'certificate_issued'"
         class="flex w-full items-center justify-between rounded-xl border border-[var(--accent-200)] bg-gradient-to-r from-[var(--accent-50)] to-white p-4 text-left shadow-sm hover:from-[var(--accent-100)]"
-        @click="router.push(`/st/applications/${app.id}/certificate`)"
+        @click="router.push(`${portalBase}/applications/${app.id}/certificate`)"
       >
         <span class="flex items-center gap-3">
           <BadgeCheck class="h-6 w-6 text-[var(--accent-600)]" />
@@ -194,8 +520,8 @@ function fmt(iso?: string): string {
       </button>
     </div>
 
-    <!-- Audit trail -->
-    <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <!-- Audit trail (OK only — CE already shows jejak proses above) -->
+    <div v-if="!isCe" class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
       <h2 class="mb-4 text-sm font-semibold text-slate-700">Jejak Audit</h2>
       <AuditTrailTimeline :entries="app.auditTrail" />
     </div>
@@ -203,6 +529,6 @@ function fmt(iso?: string): string {
 
   <div v-else class="mx-auto max-w-md py-16 text-center">
     <p class="text-slate-500">Permohonan tidak dijumpai.</p>
-    <button class="mt-3 text-sm font-medium text-[var(--accent-700)] hover:underline" @click="router.push('/st/dashboard')">Kembali ke papan pemuka</button>
+    <button class="mt-3 text-sm font-medium text-[var(--accent-700)] hover:underline" @click="router.push(`${portalBase}/dashboard`)">Kembali ke papan pemuka</button>
   </div>
 </template>

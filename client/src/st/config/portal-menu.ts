@@ -34,7 +34,8 @@ function publicMenuFor(role: PersonaRole): PortalMenuGroup[] {
         items: [
           DASHBOARD,
           { id: "applications", label: "Permohonan Saya", shortLabel: "Permohonan", to: "/st/applications", icon: FileText },
-          { id: "new", label: "Permohonan Baharu", shortLabel: "Baharu", to: "/st/applications/new", icon: FilePlus2 },
+          // Pemohon: Orang Kompeten (RG-KE) only — Kontraktor Elektrik is Majikan.
+          { id: "new", label: "Permohonan Baharu", shortLabel: "Baharu", to: "/st/registration/ok-electric/applications/new", icon: FilePlus2 },
           NOTIFICATIONS,
         ],
       },
@@ -49,6 +50,13 @@ function publicMenuFor(role: PersonaRole): PortalMenuGroup[] {
         items: [
           DASHBOARD,
           { id: "applications", label: "Pengesahan Lantikan", shortLabel: "Lantikan", to: "/st/applications", icon: ShieldCheck },
+          {
+            id: "ce-applications",
+            label: "Permohonan Kontraktor",
+            shortLabel: "Kontraktor",
+            to: "/st/registration/contractor-electric/applications",
+            icon: FileText,
+          },
           { id: "employer-profile", label: "Maklumat Majikan", shortLabel: "Majikan", to: "/st/majikan/profil", icon: Building2 },
           NOTIFICATIONS,
         ],

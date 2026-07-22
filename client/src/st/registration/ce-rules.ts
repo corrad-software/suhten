@@ -1,14 +1,8 @@
-import type { ContractorClass, RegistrationPeriod, WirerType } from "../types";
+import type { ContractorClass, ContractorKind, RegistrationPeriod, WirerType } from "../types";
 import { CLASS_REQUIREMENTS, validateOkSet } from "../mock/competencies";
 
 /** Jenis kontraktor from panduan Bahagian A / PFD-RG-CE-NA. */
-export type ContractorKind =
-  | "electrical"
-  | "service"
-  | "repair"
-  | "signboard"
-  | "switchboard"
-  | "private_wiring";
+export type { ContractorKind };
 
 export const CONTRACTOR_KINDS: Array<{
   code: ContractorKind;
@@ -16,6 +10,8 @@ export const CONTRACTOR_KINDS: Array<{
   bi: string;
   needsClass: boolean;
   needsVoltage: boolean;
+  /** PFD-RG-CE-NA-02 — search & appoint registered OK (MyKad / No. Perakuan). */
+  needsOkSearch: boolean;
   needsSkilledPersons: boolean;
   needsProfessionalEngineers: boolean;
 }> = [
@@ -25,6 +21,7 @@ export const CONTRACTOR_KINDS: Array<{
     bi: "Electrical Contractor",
     needsClass: true,
     needsVoltage: false,
+    needsOkSearch: true,
     needsSkilledPersons: false,
     needsProfessionalEngineers: false,
   },
@@ -34,15 +31,18 @@ export const CONTRACTOR_KINDS: Array<{
     bi: "Electrical Service Contractor",
     needsClass: false,
     needsVoltage: true,
+    needsOkSearch: true,
     needsSkilledPersons: false,
     needsProfessionalEngineers: false,
   },
   {
     code: "repair",
+    // Tender D11: Pembaikan uses "orang berkemahiran" (Borang T), not registered OK appointment.
     bm: "Kontraktor Pembaikan Elektrik",
     bi: "Electrical Repair Contractor",
     needsClass: false,
     needsVoltage: false,
+    needsOkSearch: false,
     needsSkilledPersons: true,
     needsProfessionalEngineers: false,
   },
@@ -52,6 +52,7 @@ export const CONTRACTOR_KINDS: Array<{
     bi: "Electrical Signboard Contractor",
     needsClass: false,
     needsVoltage: false,
+    needsOkSearch: true,
     needsSkilledPersons: false,
     needsProfessionalEngineers: false,
   },
@@ -61,6 +62,7 @@ export const CONTRACTOR_KINDS: Array<{
     bi: "Switchboard Manufacturer",
     needsClass: false,
     needsVoltage: true,
+    needsOkSearch: true,
     needsSkilledPersons: false,
     needsProfessionalEngineers: true,
   },
@@ -70,6 +72,7 @@ export const CONTRACTOR_KINDS: Array<{
     bi: "Private Wiring Unit",
     needsClass: false,
     needsVoltage: false,
+    needsOkSearch: true,
     needsSkilledPersons: false,
     needsProfessionalEngineers: false,
   },
@@ -161,18 +164,41 @@ export const CONFIRMATION_CHECKS = [
   { id: "docs_ok", bm: "Dokumen sokongan akan dimuat naik", bi: "Supporting documents will be uploaded" },
 ] as const;
 
-/** Panduan Bahagian F — dokumen sokongan (digital checklist). */
+/**
+ * D11 PFD-RG-CE-NA-01 — dokumen sokongan eksplisit (Bahagian B).
+ * Workshop tenancy is optional when office ≠ workshop.
+ */
 export const SUPPORTING_DOCS = [
-  { id: "ssm", bm: "Sijil pendaftaran SSM / Borang 9", bi: "SSM registration / Form 9" },
-  { id: "form49", bm: "Borang 49 / senarai pengarah", bi: "Form 49 / director list" },
-  { id: "annual_return", bm: "Laporan annual return terkini", bi: "Latest annual return" },
-  { id: "business_licence", bm: "Lesen perniagaan PBT", bi: "Local authority business licence" },
-  { id: "premise_tenancy", bm: "Perjanjian sewa / jual beli pejabat", bi: "Office tenancy / sale agreement" },
-  { id: "workshop_tenancy", bm: "Perjanjian sewa / jual beli bengkel (jika berbeza)", bi: "Workshop tenancy / sale (if different)" },
-  { id: "socso", bm: "SOCSO Borang 8A (3 bulan) + resit", bi: "SOCSO Form 8A (3 months) + receipts" },
-  { id: "insurance", bm: "Perlindungan insurans syarikat & kakitangan", bi: "Company & staff insurance cover" },
-  { id: "ok_appointment", bm: "Surat lantikan Orang Kompeten", bi: "Competent Person appointment letter" },
-  { id: "photo", bm: "Foto premis / operasi", bi: "Premise / operations photo" },
+  {
+    id: "premise_tenancy",
+    bm: "Perjanjian sewa atau jual beli pejabat",
+    bi: "Office tenancy or sale agreement",
+    required: true,
+  },
+  {
+    id: "business_licence",
+    bm: "Lesen perniagaan daripada Pihak Berkuasa Tempatan (PBT)",
+    bi: "Local authority (PBT) business licence",
+    required: true,
+  },
+  {
+    id: "annual_return",
+    bm: "Salinan laporan annual return terkini (disahkan setiausaha syarikat) atau Perakuan Pendaftaran",
+    bi: "Latest annual return (company secretary certified) or Certificate of Registration",
+    required: true,
+  },
+  {
+    id: "socso_insurance",
+    bm: "Perlindungan insurans syarikat & kakitangan (SOCSO) — Borang 8A 3 bulan terkini + resit",
+    bi: "Company & staff insurance (SOCSO) — Form 8A last 3 months + receipts",
+    required: true,
+  },
+  {
+    id: "workshop_tenancy",
+    bm: "Perjanjian sewa atau jual beli bengkel (jika alamat pejabat berbeza)",
+    bi: "Workshop tenancy or sale agreement (if office address differs)",
+    required: false,
+  },
 ] as const;
 
 export function classRequirementsLabel(cls: ContractorClass): string {

@@ -28,6 +28,8 @@ export type StMessageKey =
   | "st.common.takeOpen"
   | "st.common.limitFull"
   | "st.common.waitFifo"
+  | "st.common.claimed"
+  | "st.common.claimedHint"
   | "st.common.activeTasks"
   | "st.common.fifo"
   // Inbox
@@ -47,7 +49,29 @@ export type StMessageKey =
   | "st.inbox.bulkApprove"
   | "st.inbox.bulkTitle"
   | "st.inbox.bulkMsg"
+  | "st.inbox.approveTitle"
+  | "st.inbox.approveMsg"
   | "st.inbox.continue"
+  | "st.inbox.tpHintTitle"
+  | "st.inbox.tpHintBody"
+  | "st.inbox.escalationList"
+  | "st.inbox.escalationEmpty"
+  | "st.inbox.currentSos"
+  | "st.inbox.hoursInQueue"
+  | "st.inbox.unassigned"
+  | "st.inbox.reassign"
+  | "st.inbox.reassignTitle"
+  | "st.inbox.reassignMsg"
+  | "st.inbox.reassignPick"
+  | "st.inbox.reassignConfirm"
+  | "st.inbox.reassignFail"
+  | "st.inbox.reassignOk"
+  | "st.inbox.reassignOkHint"
+  | "st.inbox.reassignSlaNote"
+  | "st.inbox.targetSos"
+  | "st.inbox.cancel"
+  | "st.inbox.tpCharter"
+  | "st.inbox.escalatedBadge"
   // Notifications
   | "st.notif.title"
   | "st.notif.unread"
@@ -224,6 +248,62 @@ export type StMessageKey =
   | "st.ws.adminIntegrations"
   | "st.ws.adminSubtitle"
   | "st.ws.tableName"
+  // Tetapan — D11 reference tables §7–9
+  | "st.tetapan.title"
+  | "st.tetapan.subtitle"
+  | "st.tetapan.reset"
+  | "st.tetapan.resetTitle"
+  | "st.tetapan.resetMsg"
+  | "st.tetapan.resetConfirm"
+  | "st.tetapan.resetDone"
+  | "st.tetapan.saved"
+  | "st.tetapan.add"
+  | "st.tetapan.active"
+  | "st.tetapan.tabRequirements"
+  | "st.tetapan.tabDocuments"
+  | "st.tetapan.tabPayment"
+  | "st.tetapan.tabReminder"
+  | "st.tetapan.tabNotif"
+  | "st.tetapan.tabStatus"
+  | "st.tetapan.reqTitle"
+  | "st.tetapan.reqHint"
+  | "st.tetapan.category"
+  | "st.tetapan.maxAge"
+  | "st.tetapan.activeCert"
+  | "st.tetapan.selfEmploy"
+  | "st.tetapan.periodTitle"
+  | "st.tetapan.periodHint"
+  | "st.tetapan.catGroup"
+  | "st.tetapan.ageMin"
+  | "st.tetapan.ageMax"
+  | "st.tetapan.maxPeriod"
+  | "st.tetapan.noUpper"
+  | "st.tetapan.years"
+  | "st.tetapan.docTitle"
+  | "st.tetapan.docHint"
+  | "st.tetapan.allModules"
+  | "st.tetapan.resetCeDocs"
+  | "st.tetapan.resetCeDocsDone"
+  | "st.tetapan.labelBm"
+  | "st.tetapan.labelBi"
+  | "st.tetapan.required"
+  | "st.tetapan.skipSelf"
+  | "st.tetapan.sort"
+  | "st.tetapan.payTitle"
+  | "st.tetapan.payHint"
+  | "st.tetapan.feeKind"
+  | "st.tetapan.paymentDays"
+  | "st.tetapan.remTitle"
+  | "st.tetapan.remHint"
+  | "st.tetapan.reminderDays"
+  | "st.tetapan.notifTitle"
+  | "st.tetapan.notifHint"
+  | "st.tetapan.subjectBm"
+  | "st.tetapan.subjectBi"
+  | "st.tetapan.bodyBm"
+  | "st.tetapan.bodyBi"
+  | "st.tetapan.statusTitle"
+  | "st.tetapan.statusHint"
   | "st.ws.rows"
   | "st.ws.updated"
   | "st.ws.feeItem"
@@ -332,9 +412,12 @@ export type StMessageKey =
   | "st.ceApply.addDirector"
   | "st.ceApply.sharePercent"
   | "st.ceApply.searchOk"
+  | "st.ceApply.carianOkTitle"
+  | "st.ceApply.carianOkHint"
   | "st.ceApply.okPeriod"
   | "st.ceApply.okBlocked"
   | "st.ceApply.skilled"
+  | "st.ceApply.skilledHint"
   | "st.ceApply.addSkilled"
   | "st.ceApply.qualification"
   | "st.ceApply.field"
@@ -349,11 +432,20 @@ export type StMessageKey =
   | "st.ceApply.model"
   | "st.ceApply.confirmTitle"
   | "st.ceApply.docsTitle"
+  | "st.ceApply.docsHint"
   | "st.ceApply.classReq"
   | "st.ceApply.submitted"
   | "st.ceApply.remove"
   | "st.ceDetail.title"
-  | "st.ceDetail.backList";
+  | "st.ceDetail.backList"
+  | "st.ceDetail.viewCert"
+  | "st.ceDetail.certIssuedHint"
+  | "st.ceDetail.payProcessingHint"
+  | "st.ceDetail.payProcessing"
+  | "st.ceDetail.submitFinalHint"
+  | "st.ceDetail.submitFinal"
+  | "st.ceDetail.payRegistrationHint"
+  | "st.ceDetail.payRegistration";
 
 const BM: Record<StMessageKey, string> = {
   "st.common.refNo": "No. Rujukan",
@@ -382,6 +474,8 @@ const BM: Record<StMessageKey, string> = {
   "st.common.takeOpen": "Ambil & Buka",
   "st.common.limitFull": "Had penuh",
   "st.common.waitFifo": "Menunggu giliran",
+  "st.common.claimed": "Telah Dituntut",
+  "st.common.claimedHint": "Tugasan ini telah dituntut oleh pegawai lain",
   "st.common.activeTasks": "Tugasan aktif",
   "st.common.fifo": "Giliran FIFO",
 
@@ -401,7 +495,29 @@ const BM: Record<StMessageKey, string> = {
   "st.inbox.bulkApprove": "Lulus & Tandatangan Pukal",
   "st.inbox.bulkTitle": "Lulus & tandatangan secara pukal?",
   "st.inbox.bulkMsg": "{n} permohonan akan diluluskan dan ditandatangani secara digital dengan satu PIN.",
+  "st.inbox.approveTitle": "Lulus & tandatangan permohonan ini?",
+  "st.inbox.approveMsg": "Permohonan {ref} akan diluluskan dan ditandatangani secara digital. Anda akan diminta memasukkan PIN tandatangan.",
   "st.inbox.continue": "Teruskan",
+  "st.inbox.tpHintTitle": "Eskalasi SLA SOS (D11)",
+  "st.inbox.tpHintBody": "Sistem menanda permohonan yang melebihi {n} jam dalam Peti Tugasan (Baharu). Anda boleh menyerah semula kepada SOS lain — masa Piagam Pelanggan diteruskan.",
+  "st.inbox.escalationList": "Permohonan di-eskalasi",
+  "st.inbox.escalationEmpty": "Tiada permohonan melebihi ambang eskalasi buat masa ini.",
+  "st.inbox.currentSos": "SOS semasa",
+  "st.inbox.hoursInQueue": "Masa dalam peti",
+  "st.inbox.unassigned": "Belum diambil",
+  "st.inbox.reassign": "Serah semula",
+  "st.inbox.reassignTitle": "Serah semula kepada SOS lain?",
+  "st.inbox.reassignMsg": "{ref} akan diserah kepada {name} dan diletakkan di baris teratas petinya. Masa Piagam tidak direset.",
+  "st.inbox.reassignPick": "Pilih pegawai SOS sasaran. Audit trail akan merekod penyerahan semula.",
+  "st.inbox.reassignConfirm": "Serah semula",
+  "st.inbox.reassignFail": "Penyerahan gagal",
+  "st.inbox.reassignOk": "Diserah semula",
+  "st.inbox.reassignOkHint": "Tugasan kini di baris teratas peti {name}.",
+  "st.inbox.reassignSlaNote": "Masa Piagam Pelanggan dikira secara berterusan (tidak bermula semula).",
+  "st.inbox.targetSos": "Pegawai SOS sasaran",
+  "st.inbox.cancel": "Batal",
+  "st.inbox.tpCharter": "Eskalasi selepas {n} jam di Baharu",
+  "st.inbox.escalatedBadge": "Eskalasi",
 
   "st.notif.title": "Notifikasi",
   "st.notif.unread": "{n} belum dibaca",
@@ -558,7 +674,7 @@ const BM: Record<StMessageKey, string> = {
   "st.ceApply.subtitle": "Aliran berpandu RG-CE — semua medan Bahagian A–G, UI baharu",
   "st.ceApply.stepA": "Jenis & Kelas",
   "st.ceApply.stepB": "Syarikat",
-  "st.ceApply.stepC": "Personel",
+  "st.ceApply.stepC": "Personel (OK)",
   "st.ceApply.stepD": "Peralatan",
   "st.ceApply.stepEF": "Semakan & Dokumen",
   "st.ceApply.stepG": "Pengakuan",
@@ -581,9 +697,12 @@ const BM: Record<StMessageKey, string> = {
   "st.ceApply.addDirector": "Tambah pengarah / pemegang saham",
   "st.ceApply.sharePercent": "Milikan (%)",
   "st.ceApply.searchOk": "Cari No. MyKad, No. Perakuan atau nama…",
+  "st.ceApply.carianOkTitle": "Carian OK (PFD-RG-CE-NA-02)",
+  "st.ceApply.carianOkHint": "Cari dan pilih Orang Kompeten berdaftar melalui No. MyKad atau No. Perakuan, kemudian tetapkan tempoh pelantikan.",
   "st.ceApply.okPeriod": "Tempoh OK (tahun)",
   "st.ceApply.okBlocked": "OK ini telah / sedang berkhidmat di syarikat lain — tidak boleh dilantik.",
   "st.ceApply.skilled": "Orang berkemahiran (Pembaikan Elektrik)",
+  "st.ceApply.skilledHint": "Kategori Pembaikan Elektrik memerlukan orang berkemahiran (Borang T), bukan Carian OK. Untuk aktiviti PFD-RG-CE-NA-02, pilih Kontraktor Elektrik pada langkah Jenis & Kelas.",
   "st.ceApply.addSkilled": "Tambah orang berkemahiran",
   "st.ceApply.qualification": "Kelayakan",
   "st.ceApply.field": "Bidang",
@@ -597,12 +716,21 @@ const BM: Record<StMessageKey, string> = {
   "st.ceApply.brand": "Jenama",
   "st.ceApply.model": "Model",
   "st.ceApply.confirmTitle": "Pengesahan / senarai semak",
-  "st.ceApply.docsTitle": "Foto / dokumen sokongan",
+  "st.ceApply.docsTitle": "Dokumen sokongan (D11 CE-NA-01)",
+  "st.ceApply.docsHint": "4 dokumen wajib. Perjanjian bengkel hanya jika alamat pejabat berbeza.",
   "st.ceApply.classReq": "Syarat minima kelas",
   "st.ceApply.submitted": "Permohonan dihantar. Rujukan: {n}",
   "st.ceApply.remove": "Buang",
   "st.ceDetail.title": "Butiran permohonan kontraktor",
   "st.ceDetail.backList": "Kembali ke senarai",
+  "st.ceDetail.viewCert": "Lihat Sijil",
+  "st.ceDetail.certIssuedHint": "Permohonan selesai. Sijil digital kontraktor telah dikeluarkan.",
+  "st.ceDetail.payProcessingHint": "Pelantikan OK telah diterima. Sila buat bayaran fi proses (PFD-RG-CE-NA-05).",
+  "st.ceDetail.payProcessing": "Bayar Yuran Pemprosesan",
+  "st.ceDetail.submitFinalHint": "OK telah menerima pelantikan. Sila hantar permohonan secara rasmi (PFD-RG-CE-NA-04).",
+  "st.ceDetail.submitFinal": "Hantar Permohonan",
+  "st.ceDetail.payRegistrationHint": "Kelulusan selesai. Sila buat bayaran fi pendaftaran.",
+  "st.ceDetail.payRegistration": "Bayar Yuran Pendaftaran",
 
   "st.mod.LC-LE": "Pelesenan Elektrik",
   "st.mod.LC-PE": "Pepasangan Elektrik",
@@ -688,6 +816,62 @@ const BM: Record<StMessageKey, string> = {
   "st.ws.adminIntegrations": "Integrasi Luaran",
   "st.ws.adminSubtitle": "Konfigurasi & pentadbiran Sistem Digital ST",
   "st.ws.tableName": "Nama jadual",
+
+  "st.tetapan.title": "Tetapan",
+  "st.tetapan.subtitle": "Jadual rujukan untuk syarat permohonan, jenis dokumen, hari bayaran, peringatan, teks notifikasi dan status (PFD-RG-KE-NA-01 §7–9).",
+  "st.tetapan.reset": "Set semula lalai",
+  "st.tetapan.resetTitle": "Set semula semua jadual rujukan?",
+  "st.tetapan.resetMsg": "Semua perubahan tempatan akan diganti dengan nilai lalai D11.",
+  "st.tetapan.resetConfirm": "Set semula",
+  "st.tetapan.resetDone": "Jadual rujukan telah diset semula.",
+  "st.tetapan.saved": "Disimpan",
+  "st.tetapan.add": "Tambah",
+  "st.tetapan.active": "Aktif",
+  "st.tetapan.tabRequirements": "Syarat Permohonan",
+  "st.tetapan.tabDocuments": "Jenis Dokumen",
+  "st.tetapan.tabPayment": "Hari Bayaran",
+  "st.tetapan.tabReminder": "Hari Peringatan",
+  "st.tetapan.tabNotif": "Teks Notifikasi",
+  "st.tetapan.tabStatus": "Status Permohonan",
+  "st.tetapan.reqTitle": "Syarat mengikut kategori kekompetenan",
+  "st.tetapan.reqHint": "Pemilik modul / pentadbir mengemas kini keperluan permohonan.",
+  "st.tetapan.category": "Kategori",
+  "st.tetapan.maxAge": "Had umur",
+  "st.tetapan.activeCert": "Perakuan aktif",
+  "st.tetapan.selfEmploy": "Bekerja sendiri",
+  "st.tetapan.periodTitle": "Tempoh pendaftaran mengikut umur",
+  "st.tetapan.periodHint": "Jadual had umur → tempoh maksimum (1–5 tahun) seperti Appendix D11.",
+  "st.tetapan.catGroup": "Kumpulan kategori",
+  "st.tetapan.ageMin": "Umur min",
+  "st.tetapan.ageMax": "Umur maks",
+  "st.tetapan.maxPeriod": "Tempoh maks",
+  "st.tetapan.noUpper": "Tiada had",
+  "st.tetapan.years": "tahun",
+  "st.tetapan.docTitle": "Jenis dokumen muat naik",
+  "st.tetapan.docHint": "Tentukan dokumen yang diperlukan bagi setiap modul. RG-CE mengikut senarai D11 CE-NA-01.",
+  "st.tetapan.allModules": "Semua modul",
+  "st.tetapan.resetCeDocs": "Set semula RG-CE (D11)",
+  "st.tetapan.resetCeDocsDone": "Dokumen RG-CE telah diset semula kepada senarai D11 CE-NA-01.",
+  "st.tetapan.labelBm": "Label (BM)",
+  "st.tetapan.labelBi": "Label (BI)",
+  "st.tetapan.required": "Wajib",
+  "st.tetapan.skipSelf": "Langkau jika bekerja sendiri",
+  "st.tetapan.sort": "Susunan",
+  "st.tetapan.payTitle": "Bilangan hari bayaran",
+  "st.tetapan.payHint": "Tempoh hari untuk membuat bayaran selepas notis dikeluarkan.",
+  "st.tetapan.feeKind": "Jenis fi",
+  "st.tetapan.paymentDays": "Hari bayaran",
+  "st.tetapan.remTitle": "Hari peringatan notifikasi",
+  "st.tetapan.remHint": "Bilangan hari sebelum tarikh akhir untuk menghantar peringatan.",
+  "st.tetapan.reminderDays": "Hari peringatan",
+  "st.tetapan.notifTitle": "Teks notifikasi",
+  "st.tetapan.notifHint": "Kemas kini subjek dan kandungan mesej notifikasi.",
+  "st.tetapan.subjectBm": "Subjek (BM)",
+  "st.tetapan.subjectBi": "Subjek (BI)",
+  "st.tetapan.bodyBm": "Kandungan (BM)",
+  "st.tetapan.bodyBi": "Kandungan (BI)",
+  "st.tetapan.statusTitle": "Status permohonan",
+  "st.tetapan.statusHint": "Urus label dan keterlihatan status dalam sistem.",
   "st.ws.rows": "Baris",
   "st.ws.updated": "Dikemas kini",
   "st.ws.feeItem": "Item fi",
@@ -738,6 +922,8 @@ const BI: Record<StMessageKey, string> = {
   "st.common.takeOpen": "Take & Open",
   "st.common.limitFull": "At limit",
   "st.common.waitFifo": "Waiting in queue",
+  "st.common.claimed": "Has Been Claimed",
+  "st.common.claimedHint": "This task has been claimed by another officer",
   "st.common.activeTasks": "Active tasks",
   "st.common.fifo": "FIFO queue",
 
@@ -757,7 +943,29 @@ const BI: Record<StMessageKey, string> = {
   "st.inbox.bulkApprove": "Bulk Approve & Sign",
   "st.inbox.bulkTitle": "Bulk approve & sign?",
   "st.inbox.bulkMsg": "{n} applications will be approved and digitally signed with one PIN.",
+  "st.inbox.approveTitle": "Approve & sign this application?",
+  "st.inbox.approveMsg": "Application {ref} will be approved and digitally signed. You will be asked for your signature PIN.",
   "st.inbox.continue": "Continue",
+  "st.inbox.tpHintTitle": "SOS SLA escalation (D11)",
+  "st.inbox.tpHintBody": "The system flags applications that exceed {n} hours in Task Inbox (New). You may reassign to another SOS — the Customer Charter clock keeps running.",
+  "st.inbox.escalationList": "Escalated applications",
+  "st.inbox.escalationEmpty": "No applications currently exceed the escalation threshold.",
+  "st.inbox.currentSos": "Current SOS",
+  "st.inbox.hoursInQueue": "Time in queue",
+  "st.inbox.unassigned": "Unassigned",
+  "st.inbox.reassign": "Reassign",
+  "st.inbox.reassignTitle": "Reassign to another SOS?",
+  "st.inbox.reassignMsg": "{ref} will be reassigned to {name} and placed at the top of their queue. Charter time is not reset.",
+  "st.inbox.reassignPick": "Choose the target SOS officer. An audit trail entry will record the reassignment.",
+  "st.inbox.reassignConfirm": "Reassign",
+  "st.inbox.reassignFail": "Reassignment failed",
+  "st.inbox.reassignOk": "Reassigned",
+  "st.inbox.reassignOkHint": "The task is now at the top of {name}'s inbox.",
+  "st.inbox.reassignSlaNote": "Customer Charter time continues (does not restart).",
+  "st.inbox.targetSos": "Target SOS officer",
+  "st.inbox.cancel": "Cancel",
+  "st.inbox.tpCharter": "Escalate after {n} hours in New",
+  "st.inbox.escalatedBadge": "Escalated",
 
   "st.notif.title": "Notifications",
   "st.notif.unread": "{n} unread",
@@ -914,7 +1122,7 @@ const BI: Record<StMessageKey, string> = {
   "st.ceApply.subtitle": "Guided RG-CE journey — all Section A–G fields, new UI",
   "st.ceApply.stepA": "Type & Class",
   "st.ceApply.stepB": "Company",
-  "st.ceApply.stepC": "Personnel",
+  "st.ceApply.stepC": "Personnel (OK)",
   "st.ceApply.stepD": "Equipment",
   "st.ceApply.stepEF": "Checks & Documents",
   "st.ceApply.stepG": "Declaration",
@@ -937,9 +1145,12 @@ const BI: Record<StMessageKey, string> = {
   "st.ceApply.addDirector": "Add director / shareholder",
   "st.ceApply.sharePercent": "Share (%)",
   "st.ceApply.searchOk": "Search MyKad, certificate No. or name…",
+  "st.ceApply.carianOkTitle": "OK search (PFD-RG-CE-NA-02)",
+  "st.ceApply.carianOkHint": "Search and select a registered Competent Person by MyKad or certificate No., then set the appointment period.",
   "st.ceApply.okPeriod": "OK period (years)",
   "st.ceApply.okBlocked": "This CP is already employed by another company — cannot appoint.",
   "st.ceApply.skilled": "Skilled persons (Electrical Repair)",
+  "st.ceApply.skilledHint": "Electrical Repair uses skilled persons (Form T), not OK search. For PFD-RG-CE-NA-02, choose Electrical Contractor on the Type & Class step.",
   "st.ceApply.addSkilled": "Add skilled person",
   "st.ceApply.qualification": "Qualification",
   "st.ceApply.field": "Field",
@@ -953,12 +1164,21 @@ const BI: Record<StMessageKey, string> = {
   "st.ceApply.brand": "Brand",
   "st.ceApply.model": "Model",
   "st.ceApply.confirmTitle": "Confirmation checklist",
-  "st.ceApply.docsTitle": "Photos / supporting documents",
+  "st.ceApply.docsTitle": "Supporting documents (D11 CE-NA-01)",
+  "st.ceApply.docsHint": "4 required documents. Workshop agreement only if the office address differs.",
   "st.ceApply.classReq": "Minimum class requirements",
   "st.ceApply.submitted": "Application submitted. Reference: {n}",
   "st.ceApply.remove": "Remove",
   "st.ceDetail.title": "Contractor application details",
   "st.ceDetail.backList": "Back to list",
+  "st.ceDetail.viewCert": "View Certificate",
+  "st.ceDetail.certIssuedHint": "Application complete. The digital contractor certificate has been issued.",
+  "st.ceDetail.payProcessingHint": "OK appointment accepted. Please pay the processing fee (PFD-RG-CE-NA-05).",
+  "st.ceDetail.payProcessing": "Pay Processing Fee",
+  "st.ceDetail.submitFinalHint": "OK has accepted the appointment. Please submit the application formally (PFD-RG-CE-NA-04).",
+  "st.ceDetail.submitFinal": "Submit Application",
+  "st.ceDetail.payRegistrationHint": "Approval complete. Please pay the registration fee.",
+  "st.ceDetail.payRegistration": "Pay Registration Fee",
 
   "st.mod.LC-LE": "Electrical Licensing",
   "st.mod.LC-PE": "Electrical Installation",
@@ -1044,6 +1264,62 @@ const BI: Record<StMessageKey, string> = {
   "st.ws.adminIntegrations": "External Integrations",
   "st.ws.adminSubtitle": "ST Digital system configuration & administration",
   "st.ws.tableName": "Table name",
+
+  "st.tetapan.title": "Settings",
+  "st.tetapan.subtitle": "Reference tables for application requirements, document types, payment days, reminders, notification text and statuses (PFD-RG-KE-NA-01 §7–9).",
+  "st.tetapan.reset": "Reset to defaults",
+  "st.tetapan.resetTitle": "Reset all reference tables?",
+  "st.tetapan.resetMsg": "All local changes will be replaced with D11 default values.",
+  "st.tetapan.resetConfirm": "Reset",
+  "st.tetapan.resetDone": "Reference tables have been reset.",
+  "st.tetapan.saved": "Saved",
+  "st.tetapan.add": "Add",
+  "st.tetapan.active": "Active",
+  "st.tetapan.tabRequirements": "Application Requirements",
+  "st.tetapan.tabDocuments": "Document Types",
+  "st.tetapan.tabPayment": "Payment Days",
+  "st.tetapan.tabReminder": "Reminder Days",
+  "st.tetapan.tabNotif": "Notification Text",
+  "st.tetapan.tabStatus": "Application Status",
+  "st.tetapan.reqTitle": "Requirements by competency category",
+  "st.tetapan.reqHint": "Module owner / administrator updates application requirements.",
+  "st.tetapan.category": "Category",
+  "st.tetapan.maxAge": "Age limit",
+  "st.tetapan.activeCert": "Active certificate",
+  "st.tetapan.selfEmploy": "Self-employed",
+  "st.tetapan.periodTitle": "Registration period by age",
+  "st.tetapan.periodHint": "Age limit → max period (1–5 years) as in Appendix D11.",
+  "st.tetapan.catGroup": "Category group",
+  "st.tetapan.ageMin": "Age min",
+  "st.tetapan.ageMax": "Age max",
+  "st.tetapan.maxPeriod": "Max period",
+  "st.tetapan.noUpper": "No upper limit",
+  "st.tetapan.years": "years",
+  "st.tetapan.docTitle": "Upload document types",
+  "st.tetapan.docHint": "Define required documents per module. RG-CE follows the D11 CE-NA-01 list.",
+  "st.tetapan.allModules": "All modules",
+  "st.tetapan.resetCeDocs": "Reset RG-CE (D11)",
+  "st.tetapan.resetCeDocsDone": "RG-CE documents have been reset to the D11 CE-NA-01 list.",
+  "st.tetapan.labelBm": "Label (BM)",
+  "st.tetapan.labelBi": "Label (BI)",
+  "st.tetapan.required": "Required",
+  "st.tetapan.skipSelf": "Skip if self-employed",
+  "st.tetapan.sort": "Order",
+  "st.tetapan.payTitle": "Payment days",
+  "st.tetapan.payHint": "Days allowed to pay after a payment notice is issued.",
+  "st.tetapan.feeKind": "Fee kind",
+  "st.tetapan.paymentDays": "Payment days",
+  "st.tetapan.remTitle": "Reminder notification days",
+  "st.tetapan.remHint": "Days before due date to send reminder notifications.",
+  "st.tetapan.reminderDays": "Reminder days",
+  "st.tetapan.notifTitle": "Notification text",
+  "st.tetapan.notifHint": "Update notification subject and body text.",
+  "st.tetapan.subjectBm": "Subject (BM)",
+  "st.tetapan.subjectBi": "Subject (BI)",
+  "st.tetapan.bodyBm": "Body (BM)",
+  "st.tetapan.bodyBi": "Body (BI)",
+  "st.tetapan.statusTitle": "Application statuses",
+  "st.tetapan.statusHint": "Manage status labels and visibility in the system.",
   "st.ws.rows": "Rows",
   "st.ws.updated": "Updated",
   "st.ws.feeItem": "Fee item",

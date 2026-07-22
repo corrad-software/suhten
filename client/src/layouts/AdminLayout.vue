@@ -147,14 +147,10 @@ const childRowClass = computed(() =>
     : "block rounded-md px-3 py-1 text-sm transition-all hover:bg-(--accent-50)",
 );
 
-async function signOut() {
-  try {
-    await auth.signOut();
-    toast.success("Signed out", "You have been logged out.");
-    router.push("/admin/login");
-  } catch (e) {
-    toast.error("Sign out failed", e instanceof Error ? e.message : "Please try again.");
-  }
+function signOut() {
+  toast.success("Signed out", "You have been logged out.");
+  void router.replace("/admin/login");
+  void auth.signOut();
 }
 
 function isActive(path: string): boolean {

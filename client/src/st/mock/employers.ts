@@ -53,6 +53,22 @@ export const EMPLOYERS: EmployerRef[] = [
     location: { lat: 1.4927, lng: 103.7414 },
     status: "active",
   },
+  {
+    id: "emp-abc-elektrik",
+    name: "ABC Elektrik Sdn Bhd",
+    registrationNo: "201901089012 (1289012-H)",
+    stRegNo: "ST-CE-B-01289",
+    category: "kontraktor",
+    address: "No. 18, Jalan Industri USJ 1, 47600 Subang Jaya, Selangor",
+    city: "Subang Jaya",
+    state: "Selangor",
+    contactPerson: "Ahmad Faizal bin Omar",
+    confirmerPersonaId: "p-faizal",
+    phone: "03-8023 1188",
+    email: "info@abcelektrik.com.my",
+    location: { lat: 3.0642, lng: 101.5851 },
+    status: "active",
+  },
   // ── Pool for a convincing "elastic" search (not login-linked) ──
   {
     id: "emp-jana-letrik",

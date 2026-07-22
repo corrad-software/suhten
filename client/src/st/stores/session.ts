@@ -10,15 +10,17 @@ import { personaById } from "../mock/personas";
 // Maps a logged-in persona role to its landing route.
 function homeRouteForRole(role: PersonaRole): string {
   switch (role) {
-    // D11 §4.2.1/§5.2.1: applicants land on the ST services picker after login.
+    // D11 §4.2.1/§5.2.1: public users land on the ST services picker after login.
+    // Pemohon → OK Elektrik; Majikan → Kontraktor Elektrik (filtered in landing view).
     case "applicant":
-      return "/st/perkhidmatan-saya";
     case "employer":
-      return "/st/applications";
+      return "/st/perkhidmatan-saya";
     case "admin":
       return "/st/dashboard";
     case "committee":
       return "/st/operations/committee/queue";
+    case "tp_sos":
+      return "/st/inbox";
     default:
       return "/st/inbox";
   }
@@ -59,18 +61,20 @@ export const useStSessionStore = defineStore("st-session", () => {
     await auth.signIn(email, password);
     syncFromAuth();
     if (!currentPersonaId.value) {
-      await auth.signOut();
+      void auth.signOut();
       throw new Error("ST_UNAUTHORIZED");
     }
+    // Hydrate Peti data in the background — do not block navigation to home/inbox.
+    void import("./workflow").then(({ useStWorkflowStore }) => {
+      void useStWorkflowStore().syncFromApi();
+    });
   }
 
   async function logout() {
     const auth = useAuthStore();
-    try {
-      await auth.signOut();
-    } finally {
-      currentPersonaId.value = null;
-    }
+    // Drop portal persona immediately; server logout can finish in the background.
+    currentPersonaId.value = null;
+    void auth.signOut();
   }
 
   function homeRoute(): string {

@@ -21,7 +21,9 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,
             PostSeeder::class,
             StRegistrationSeeder::class,
+            StPetiApplicationSeeder::class,
             WorkflowDefinitionSeeder::class,
+            RegistrationWorkflowInstanceSeeder::class,
         ]);
     }
 }

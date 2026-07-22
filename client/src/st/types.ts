@@ -7,9 +7,12 @@ export type WorkflowType = "OK" | "CE"; // Orang Kompeten | Kontraktor Elektrik
 export type PersonaRole =
   | "applicant"
   | "employer"
-  | "sos" // Seksyen Operasi Perkhidmatan (service-ops clerk)
-  | "technical" // Pegawai Teknikal
-  | "approver" // Pelulus
+  | "sos" // SOS — OK Elektrik (RG-KE)
+  | "sos_ce" // SOS — Kontraktor Elektrik (RG-CE)
+  | "tp_sos" // TP SOS — escalate / reassign SOS queues (D11)
+  | "technical" // Pegawai Teknikal — OK Elektrik
+  | "technical_ce" // Pegawai Teknikal — Kontraktor Elektrik
+  | "approver" // Pelulus (shared OK + CE)
   | "committee" // Ahli Jawatankuasa (PE-JK)
   | "admin"; // Pentadbir Sistem
 
@@ -19,6 +22,15 @@ export type CompetencyCategory = "JPE" | "JEK" | "PE" | "PJ" | "PW" | "PK";
 export type WirerType = "PW1" | "PW2" | "PW3" | "PW4" | "PW5" | "PW6";
 
 export type ContractorClass = "A" | "B" | "C" | "D";
+
+/** Jenis kontraktor (RG-CE) — aligns with `CONTRACTOR_KINDS` in ce-rules. */
+export type ContractorKind =
+  | "electrical"
+  | "service"
+  | "repair"
+  | "signboard"
+  | "switchboard"
+  | "private_wiring";
 
 export type PaymentKind = "processing" | "registration";
 
@@ -35,11 +47,13 @@ export type NotificationType =
   | "payment_due"
   | "approved"
   | "certificate_issued"
-  | "rejected";
+  | "rejected"
+  | "sla_escalation";
 
 export type ApplicationStatus =
   | "draft"
   | "awaiting_employer_confirm"
+  | "awaiting_final_submit"
   | "awaiting_processing_payment"
   | "sos_review"
   | "query_applicant"
@@ -158,10 +172,37 @@ export interface Certificate {
   holderName: string;
   competencyCategory?: CompetencyCategory;
   contractorClass?: ContractorClass;
+  /** Borang Q — jenis kontraktor (drives certificate title) */
+  contractorKind?: ContractorKind;
   issuedAt: string;
   expiresAt: string;
   qrPayload: string;
   trustmarkId: string;
+  /** Borang N — Perakuan No. (left header), e.g. PW-T-4-B-0177-2006 */
+  perakuanNo?: string;
+  /** Kad Pengenalan / MyKad of the holder */
+  icNumber?: string;
+  /** Date of birth (ISO or dd-mm-yyyy) */
+  dob?: string;
+  /** Display grade under KATEGORI, e.g. PW4 */
+  categoryGrade?: string;
+  /** SEKATAN, JIKA ADA — free-text endorsements / restrictions */
+  restrictions?: string;
+  /** TEMPAT — place of issue */
+  issuedPlace?: string;
+  /** Melalui — issuing channel / body */
+  issuedVia?: string;
+  /** Signatory under the official stamp */
+  signatoryName?: string;
+  signatoryAgency?: string;
+  /** Borang Q — alamat perniagaan dan cawangan */
+  businessAddress?: string;
+  /** Borang Q — No. Pendaftaran (e.g. ST(TKL)SGR/C/KE/00596/2015) */
+  registrationNo?: string;
+  /** Borang Q — Fi RM (yuran pendaftaran) */
+  feeRm?: number;
+  /** Borang Q — tempoh sah (tahun), shown as "selama tempoh N tahun" */
+  periodYears?: number;
 }
 
 export interface IdentityCheck {
@@ -182,6 +223,16 @@ export interface AppointedOk {
   confirmedAt?: string;
 }
 
+/** Competency certificate declared on an OK registration application (not the issued digital sijil). */
+export interface CompetencyCertificateInfo {
+  certificateNo: string;
+  category: string;
+  voltageRestriction?: string;
+  placeRestriction?: string;
+  active?: boolean;
+  suspended?: boolean;
+}
+
 export interface Application {
   id: string;
   refNo: string;
@@ -191,9 +242,13 @@ export interface Application {
   applicantPersonaId: string;
   competencyCategory?: CompetencyCategory; // OK
   contractorClass?: ContractorClass; // CE
+  /** CE — jenis kontraktor (electrical, service, repair, …) */
+  contractorKind?: ContractorKind;
   registrationPeriodYears: RegistrationPeriod;
   employer?: EmployerRef;
   appointedOks?: AppointedOk[]; // CE: the Orang Kompeten appointed to satisfy the class
+  /** OK: perakuan kekompetenan from the application form / registration detail. */
+  competencyCertificate?: CompetencyCertificateInfo;
   documents: AppDocument[];
   payments: Payment[];
   auditTrail: AuditEntry[];
@@ -201,6 +256,10 @@ export interface Application {
   assigneePersonaId: string | null;
   slaTargetHours: number; // Piagam Pelanggan target for the CURRENT stage
   stageEnteredAt: string; // when it entered the current back-office stage
+  /** D11: set when SOS Baharu exceeds 3h — flagged to TP SOS (SLA clock keeps running). */
+  escalationFlaggedAt?: string;
+  /** D11 reassignment: bumps FIFO sort so case sits at top of new SOS queue (does not reset SLA). */
+  queueBoostAt?: string;
   declarationAcceptedAt?: string; // applicant pengakuan confirmed at submission
   identityCheck?: IdentityCheck;
   certificate?: Certificate; // primary cert (OK holder, or CE contractor)

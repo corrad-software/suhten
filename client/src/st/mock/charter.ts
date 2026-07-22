@@ -10,9 +10,15 @@ import type {
 // SOS target 4h reproduces the brief's traffic light: green < 2h, yellow 2–4h, red > 4h.
 export const SLA_TARGET_HOURS: Partial<Record<PersonaRole, number>> = {
   sos: 4,
+  sos_ce: 4,
+  tp_sos: 4,
   technical: 24,
+  technical_ce: 24,
   approver: 8,
 };
+
+/** D11: flag TP SOS when Baharu exceeds this many hours (before 4h red). */
+export const SOS_ESCALATE_AFTER_HOURS = 3;
 
 export function slaTargetFor(role: PersonaRole): number {
   return SLA_TARGET_HOURS[role] ?? 24;
@@ -31,7 +37,10 @@ export const SLA_THRESHOLDS: Record<PersonaRole, SlaThresholds> = {
   applicant: { green: 0.5, yellow: 1.0 },
   employer: { green: 0.5, yellow: 1.0 },
   sos: { green: 0.5, yellow: 1.0 },
+  sos_ce: { green: 0.5, yellow: 1.0 },
+  tp_sos: { green: 0.5, yellow: 1.0 },
   technical: { green: 0.7, yellow: 1.0 },
+  technical_ce: { green: 0.7, yellow: 1.0 },
   approver: { green: 0.7, yellow: 1.0 },
   committee: { green: 0.7, yellow: 1.0 },
   admin: { green: 0.5, yellow: 1.0 },

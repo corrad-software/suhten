@@ -38,11 +38,26 @@ class UserSeeder extends Seeder
             [
                 'email' => 'weisheng@elektrikmaju.com.my',
                 'name' => 'Lim Wei Sheng',
-                'role' => 'applicant',
+                'role' => 'employer',
             ],
             [
                 'email' => 'ck.tan@email.my',
                 'name' => 'Tan Chee Keong',
+                'role' => 'applicant',
+            ],
+            [
+                'email' => 'aisyah.hassan@email.my',
+                'name' => 'Nur Aisyah binti Hassan',
+                'role' => 'applicant',
+            ],
+            [
+                'email' => 'rizal.hassan@email.my',
+                'name' => 'Rizal bin Hassan',
+                'role' => 'applicant',
+            ],
+            [
+                'email' => 'farah.karim@email.my',
+                'name' => 'Farah binti Karim',
                 'role' => 'applicant',
             ],
             [
@@ -51,14 +66,54 @@ class UserSeeder extends Seeder
                 'role' => 'employer',
             ],
             [
+                'email' => 'faizal@abcelektrik.com.my',
+                'name' => 'Ahmad Faizal bin Omar',
+                'role' => 'employer',
+            ],
+            [
                 'email' => 'faridah.hassan@st.gov.my',
                 'name' => 'Faridah binti Hassan',
                 'role' => 'sos',
             ],
             [
+                'email' => 'rosli.ahmad@st.gov.my',
+                'name' => 'Rosli bin Ahmad',
+                'role' => 'sos',
+            ],
+            [
+                'email' => 'mariam.salleh@st.gov.my',
+                'name' => 'Mariam binti Salleh',
+                'role' => 'tp_sos',
+            ],
+            [
+                'email' => 'halim.rahim@st.gov.my',
+                'name' => 'Halim bin Rahim',
+                'role' => 'sos_ce',
+            ],
+            [
+                'email' => 'siti.aminah@st.gov.my',
+                'name' => 'Siti Aminah binti Yusof',
+                'role' => 'sos_ce',
+            ],
+            [
                 'email' => 'kumaravel@st.gov.my',
                 'name' => 'Kumaravel a/l Subramaniam',
                 'role' => 'technical',
+            ],
+            [
+                'email' => 'weiming.chong@st.gov.my',
+                'name' => 'Chong Wei Ming',
+                'role' => 'technical',
+            ],
+            [
+                'email' => 'priya.nair@st.gov.my',
+                'name' => 'Priya a/p Nair',
+                'role' => 'technical_ce',
+            ],
+            [
+                'email' => 'daniel.lim@st.gov.my',
+                'name' => 'Daniel Lim',
+                'role' => 'technical_ce',
             ],
             [
                 'email' => 'zainab.othman@st.gov.my',
