@@ -69,6 +69,8 @@ export interface RegistrationApplication {
     assigneePersonaId?: string | null;
     workflowType?: "OK" | "CE";
     source?: string;
+    /** D11: first lifetime registration skips CDP gate; +2 awarded on perakuan. */
+    isFirstRegistration?: boolean;
   };
 }
 
@@ -109,14 +111,14 @@ export const REGISTRATION_APPLICATIONS: RegistrationApplication[] = [
     refNo: "ST/RG-KE/2026/00041",
     appType: "new_registration",
     applicantName: "Ahmad bin Ismail",
-    identityNo: "850101-10-5432",
+    identityNo: "840512-10-5523",
     categoryOrClass: "PW4",
     status: "sos_review",
     submittedAt: daysAgo(2),
     stageEnteredAt: hoursAgo(18),
     slaTargetHours: 24,
     employerName: "Syarikat Elektrik Maju Sdn Bhd",
-    cdpPoints: 12,
+    cdpPoints: 22,
     assignedOfficer: "Faridah Hassan",
     feeAmount: 50,
   },
@@ -490,7 +492,8 @@ export const REGISTERED_ENTITIES: RegisteredEntity[] = [
     moduleCode: "RG-KE",
     certificateNo: "OK-E/PW4/2024/00821",
     holderName: "Ahmad bin Ismail",
-    identityNo: "850101-10-5432",
+    // Align with persona p-ahmad so OK apply detects renewal + CDP gate.
+    identityNo: "840512-10-5523",
     categoryOrClass: "PW4",
     employerName: "Syarikat Elektrik Maju Sdn Bhd",
     registeredAt: daysAgo(400),

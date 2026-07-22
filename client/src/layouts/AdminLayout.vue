@@ -149,8 +149,8 @@ const childRowClass = computed(() =>
 
 function signOut() {
   toast.success("Signed out", "You have been logged out.");
+  auth.signOut();
   void router.replace("/admin/login");
-  void auth.signOut();
 }
 
 function isActive(path: string): boolean {

@@ -149,8 +149,13 @@ class StPetiApplicationSeeder extends Seeder
         [$name, $ic, $age] = $pool[$who % count($pool)];
         $slug = strtolower((string) preg_replace('/[^a-z]+/i', '.', $name));
         $slug = trim($slug, '.');
+        $index = $who % 12;
+        // Nurul Aina is a login-linked demo applicant (UserSeeder + PERSONAS p-nurul).
+        $personaId = $index === 0
+            ? 'p-nurul'
+            : 'p-ext-'.str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT);
 
-        return $this->person($name, $ic, $age, $slug.'@email.my', 'p-ext-'.str_pad((string) (($who % 12) + 1), 2, '0', STR_PAD_LEFT));
+        return $this->person($name, $ic, $age, $slug.'@email.my', $personaId);
     }
 
     /**
@@ -195,20 +200,25 @@ class StPetiApplicationSeeder extends Seeder
         $submitted = $this->hoursAgo($createdHoursAgo);
         $stage = $this->hoursAgo($stageHoursAgo);
 
+        // CE ownership belongs to the majikan wakil, not the OK volume-filler person.
+        $owner = $type === 'CE'
+            ? $this->employerRepresentative($employerId)
+            : $person;
+
         $detail = [
-            'age' => $person['age'],
+            'age' => $owner['age'] ?? $person['age'],
             'gender' => 'male',
-            'email' => $person['email'],
+            'email' => $owner['email'],
             'phone' => '012-3456789',
             'periodYears' => $period,
             'employerCategory' => 'company',
             'employerId' => $employerId,
-            'applicantPersonaId' => $person['personaId'],
+            'applicantPersonaId' => $owner['personaId'],
             'assigneePersonaId' => $assigneePersonaId,
             'workflowType' => $type,
             'source' => 'peti_mock',
             'timeline' => [
-                ['at' => $submitted, 'label' => 'Permohonan dihantar', 'actor' => $person['name']],
+                ['at' => $submitted, 'label' => 'Permohonan dihantar', 'actor' => $owner['name']],
                 ['at' => $stage, 'label' => 'Status: '.$status, 'actor' => $officer ?? 'Sistem'],
             ],
         ];
@@ -226,6 +236,7 @@ class StPetiApplicationSeeder extends Seeder
                 ['label' => 'Salinan MyKad', 'fileName' => 'mykad.pdf'],
                 ['label' => 'Sijil Kekompetenan', 'fileName' => 'sijil-kekompetenan.pdf'],
                 ['label' => 'Gambar passport', 'fileName' => 'passport.jpg'],
+                ['label' => 'Surat tawaran pekerjaan', 'fileName' => 'surat-tawaran-pekerjaan.pdf'],
             ];
         } else {
             $detail['documents'] = [
@@ -239,7 +250,7 @@ class StPetiApplicationSeeder extends Seeder
                 $ref,
                 $category,
                 $period,
-                $person,
+                $owner,
                 $employerId,
                 $employerName,
             );
@@ -283,6 +294,22 @@ class StPetiApplicationSeeder extends Seeder
             'note' => $note,
             'detail' => $detail,
         ];
+    }
+
+    /**
+     * Majikan wakil who owns CE applications for an employer.
+     *
+     * @return array{name: string, ic: string, age: int, email: string, personaId: string}
+     */
+    private function employerRepresentative(string $employerId): array
+    {
+        return match ($employerId) {
+            'emp-tenaga-murni' => $this->person('Rahman bin Abdullah', '750101-10-5432', 51, 'rahman@tenagamurni.com.my', 'p-rahman'),
+            'emp-elektrik-maju' => $this->person('Lim Wei Sheng', '880920-14-5099', 37, 'weisheng@elektrikmaju.com.my', 'p-lim'),
+            'emp-kuasa-bistari' => $this->person('Goh Mei Ling', '820505-01-5566', 44, 'admin@kuasabistari.com.my', 'p-goh'),
+            'emp-abc-elektrik' => $this->person('Ahmad Faizal bin Omar', '850615-10-5521', 40, 'faizal@abcelektrik.com.my', 'p-faizal'),
+            default => $this->person('Wakil Syarikat', '800101-10-5000', 40, 'info@syarikat.my', 'p-ext-employer'),
+        };
     }
 
     /**

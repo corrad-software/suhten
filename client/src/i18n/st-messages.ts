@@ -49,6 +49,7 @@ export type StMessageKey =
   | "st.inbox.bulkApprove"
   | "st.inbox.bulkTitle"
   | "st.inbox.bulkMsg"
+  | "st.inbox.bulkClaimFirst"
   | "st.inbox.approveTitle"
   | "st.inbox.approveMsg"
   | "st.inbox.continue"
@@ -361,6 +362,9 @@ export type StMessageKey =
   | "st.okApply.selfEmployedBlocked"
   | "st.okApply.searchEmployer"
   | "st.okApply.cdpBonus"
+  | "st.okApply.cdpFirst"
+  | "st.okApply.cdpOk"
+  | "st.okApply.cdpFail"
   | "st.okApply.eligibilityOk"
   | "st.okApply.eligibilityFailCert"
   | "st.okApply.eligibilityFailSuspend"
@@ -416,6 +420,9 @@ export type StMessageKey =
   | "st.ceApply.carianOkHint"
   | "st.ceApply.okPeriod"
   | "st.ceApply.okBlocked"
+  | "st.ceApply.cdpFirst"
+  | "st.ceApply.cdpOk"
+  | "st.ceApply.cdpFail"
   | "st.ceApply.skilled"
   | "st.ceApply.skilledHint"
   | "st.ceApply.addSkilled"
@@ -495,6 +502,7 @@ const BM: Record<StMessageKey, string> = {
   "st.inbox.bulkApprove": "Lulus & Tandatangan Pukal",
   "st.inbox.bulkTitle": "Lulus & tandatangan secara pukal?",
   "st.inbox.bulkMsg": "{n} permohonan akan diluluskan dan ditandatangani secara digital dengan satu PIN.",
+  "st.inbox.bulkClaimFirst": "Tuntut tugasan dahulu (FIFO / maks. 3 aktif) sebelum kelulusan pukal",
   "st.inbox.approveTitle": "Lulus & tandatangan permohonan ini?",
   "st.inbox.approveMsg": "Permohonan {ref} akan diluluskan dan ditandatangani secara digital. Anda akan diminta memasukkan PIN tandatangan.",
   "st.inbox.continue": "Teruskan",
@@ -646,6 +654,9 @@ const BM: Record<StMessageKey, string> = {
   "st.okApply.selfEmployedBlocked": "Kategori kekompetenan ini tidak dibenarkan bekerja sendiri.",
   "st.okApply.searchEmployer": "Cari nama syarikat majikan…",
   "st.okApply.cdpBonus": "Mata bonus CDP untuk pendaftaran kali pertama akan dijana selepas kelulusan (contoh: +{n}).",
+  "st.okApply.cdpFirst": "Pendaftaran pertama — tiada semakan mata CDP. Sistem akan merekod +{n} mata CDP pada profil OK selepas perakuan dikeluarkan.",
+  "st.okApply.cdpOk": "Pembaharuan — mata CDP mencukupi ({have} / diperlukan {need}).",
+  "st.okApply.cdpFail": "Pembaharuan — mata CDP tidak mencukupi ({have} / diperlukan {need}; kurang {short}). Kurangkan tempoh atau kemas kini CDP dahulu.",
   "st.okApply.eligibilityOk": "Kelayakan dipenuhi — perakuan aktif & tidak digantung.",
   "st.okApply.eligibilityFailCert": "Perakuan kekompetenan mesti aktif untuk membuat permohonan.",
   "st.okApply.eligibilityFailSuspend": "Perakuan digantung — permohonan tidak dibenarkan.",
@@ -659,7 +670,7 @@ const BM: Record<StMessageKey, string> = {
   "st.okApply.submit": "Hantar permohonan",
   "st.okApply.incomplete": "Sila lengkapkan medan wajib sebelum meneruskan.",
   "st.okApply.submitted": "Permohonan dihantar. Rujukan: {n}",
-  "st.okApply.draftSaved": "Draf disimpan pada peranti ini (auto-simpan).",
+  "st.okApply.draftSaved": "Draf disimpan dan dipaparkan dalam senarai Permohonan.",
   "st.okApply.saveDraft": "Simpan draf",
   "st.okDetail.title": "Butiran permohonan",
   "st.okDetail.timeline": "Jejak proses",
@@ -701,6 +712,9 @@ const BM: Record<StMessageKey, string> = {
   "st.ceApply.carianOkHint": "Cari dan pilih Orang Kompeten berdaftar melalui No. MyKad atau No. Perakuan, kemudian tetapkan tempoh pelantikan.",
   "st.ceApply.okPeriod": "Tempoh OK (tahun)",
   "st.ceApply.okBlocked": "OK ini telah / sedang berkhidmat di syarikat lain — tidak boleh dilantik.",
+  "st.ceApply.cdpFirst": "Pendaftaran pertama OK — tiada semakan mata CDP.",
+  "st.ceApply.cdpOk": "Mata CDP OK mencukupi ({have} / diperlukan {need}).",
+  "st.ceApply.cdpFail": "Mata CDP OK tidak mencukupi ({have} / diperlukan {need}).",
   "st.ceApply.skilled": "Orang berkemahiran (Pembaikan Elektrik)",
   "st.ceApply.skilledHint": "Kategori Pembaikan Elektrik memerlukan orang berkemahiran (Borang T), bukan Carian OK. Untuk aktiviti PFD-RG-CE-NA-02, pilih Kontraktor Elektrik pada langkah Jenis & Kelas.",
   "st.ceApply.addSkilled": "Tambah orang berkemahiran",
@@ -943,6 +957,7 @@ const BI: Record<StMessageKey, string> = {
   "st.inbox.bulkApprove": "Bulk Approve & Sign",
   "st.inbox.bulkTitle": "Bulk approve & sign?",
   "st.inbox.bulkMsg": "{n} applications will be approved and digitally signed with one PIN.",
+  "st.inbox.bulkClaimFirst": "Claim the task first (FIFO / max 3 active) before bulk approval",
   "st.inbox.approveTitle": "Approve & sign this application?",
   "st.inbox.approveMsg": "Application {ref} will be approved and digitally signed. You will be asked for your signature PIN.",
   "st.inbox.continue": "Continue",
@@ -1094,6 +1109,9 @@ const BI: Record<StMessageKey, string> = {
   "st.okApply.selfEmployedBlocked": "This competency category cannot register as self-employed.",
   "st.okApply.searchEmployer": "Search employer company name…",
   "st.okApply.cdpBonus": "First-registration CDP bonus points will be generated after approval (sample: +{n}).",
+  "st.okApply.cdpFirst": "First registration — no CDP check. The system will record +{n} CDP points on the OK profile after the certificate is issued.",
+  "st.okApply.cdpOk": "Renewal — CDP points sufficient ({have} / required {need}).",
+  "st.okApply.cdpFail": "Renewal — CDP points insufficient ({have} / required {need}; short by {short}). Shorten the period or update CDP first.",
   "st.okApply.eligibilityOk": "Eligibility met — certificate active and not suspended.",
   "st.okApply.eligibilityFailCert": "An active competency certificate is required to apply.",
   "st.okApply.eligibilityFailSuspend": "Certificate is suspended — application not allowed.",
@@ -1107,7 +1125,7 @@ const BI: Record<StMessageKey, string> = {
   "st.okApply.submit": "Submit application",
   "st.okApply.incomplete": "Please complete required fields before continuing.",
   "st.okApply.submitted": "Application submitted. Reference: {n}",
-  "st.okApply.draftSaved": "Draft saved on this device (auto-save).",
+  "st.okApply.draftSaved": "Draft saved and shown in your Applications list.",
   "st.okApply.saveDraft": "Save draft",
   "st.okDetail.title": "Application details",
   "st.okDetail.timeline": "Process trail",
@@ -1149,6 +1167,9 @@ const BI: Record<StMessageKey, string> = {
   "st.ceApply.carianOkHint": "Search and select a registered Competent Person by MyKad or certificate No., then set the appointment period.",
   "st.ceApply.okPeriod": "OK period (years)",
   "st.ceApply.okBlocked": "This CP is already employed by another company — cannot appoint.",
+  "st.ceApply.cdpFirst": "First OK registration — no CDP check.",
+  "st.ceApply.cdpOk": "OK CDP points sufficient ({have} / required {need}).",
+  "st.ceApply.cdpFail": "OK CDP points insufficient ({have} / required {need}).",
   "st.ceApply.skilled": "Skilled persons (Electrical Repair)",
   "st.ceApply.skilledHint": "Electrical Repair uses skilled persons (Form T), not OK search. For PFD-RG-CE-NA-02, choose Electrical Contractor on the Type & Class step.",
   "st.ceApply.addSkilled": "Add skilled person",

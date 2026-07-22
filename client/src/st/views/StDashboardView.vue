@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, type Component } from "vue";
+import { computed, type Component, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import {
   FilePlus2, FileText, Inbox, ShieldCheck, Clock, AlertCircle, BadgeCheck,
@@ -24,6 +24,10 @@ const { otherGroups } = useServiceCatalog();
 const router = useRouter();
 const session = useStSessionStore();
 const workflow = useStWorkflowStore();
+
+onMounted(() => {
+  void workflow.syncFromApi();
+});
 
 const persona = computed(() => session.currentPersona);
 const role = computed<PersonaRole | null>(() => session.role);

@@ -12,6 +12,11 @@ type SidebarMenuItem = PortalMenuItem | (StaffMenuGroup["items"][number]);
 
 const props = defineProps<{
   menu: SidebarMenuGroup[];
+  collapsed?: boolean;
+}>();
+
+const emit = defineEmits<{
+  expand: [];
 }>();
 
 const route = useRoute();
@@ -31,18 +36,27 @@ function isNodeActive(node: { to: string; children?: StaffMenuNode[] | PortalMen
 
 function itemClass(active: boolean) {
   return active
-    ? "border border-[var(--accent-200)] bg-[var(--accent-50)] font-medium text-[var(--accent-700)]"
-    : "border border-transparent text-slate-700 hover:bg-[var(--accent-50)] dark:text-slate-300";
+    ? "border border-white/25 bg-white font-medium text-[#1e3a8a] shadow-sm"
+    : "border border-transparent text-blue-100/90 hover:bg-white/10 hover:text-white";
 }
 
 function childClass(active: boolean) {
   return active
-    ? "bg-[var(--accent-50)] font-medium text-[var(--accent-700)]"
-    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-100";
+    ? "bg-white/15 font-medium text-white"
+    : "text-blue-100/70 hover:bg-white/10 hover:text-white";
 }
 
 function toggleMenu(id: string) {
   openMenus[id] = !openMenus[id];
+}
+
+function onCollapsedParentClick(item: SidebarMenuItem) {
+  if (props.collapsed) {
+    emit("expand");
+    openMenus[item.id] = true;
+    return;
+  }
+  toggleMenu(item.id);
 }
 
 function syncOpenMenus() {
@@ -64,9 +78,13 @@ watch(() => props.menu, syncOpenMenus, { deep: true });
 </script>
 
 <template>
-  <nav class="p-3">
+  <nav :class="collapsed ? 'p-1.5 md:px-0 md:py-2' : 'p-2.5'">
     <template v-for="group in menu" :key="group.id">
-      <p v-if="group.label" class="mb-1 mt-3 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+      <p
+        v-if="group.label"
+        class="mb-0.5 mt-2.5 px-2.5 text-[10px] font-semibold uppercase tracking-wider text-blue-200/60"
+        :class="collapsed ? 'md:hidden' : ''"
+      >
         {{ ml(group.id, group.label) }}
       </p>
 
@@ -74,44 +92,69 @@ watch(() => props.menu, syncOpenMenus, { deep: true });
         <button
           v-if="item.children && item.children.length > 0"
           type="button"
-          :class="['flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm transition-all', itemClass(isNodeActive(item))]"
-          @click="toggleMenu(item.id)"
+          :class="[
+            'group relative flex w-full items-center text-left transition-all',
+            collapsed
+              ? 'gap-2 rounded-md px-2.5 py-1.5 text-xs md:justify-center md:rounded-none md:px-0 md:py-2'
+              : 'gap-2 rounded-md px-2.5 py-1.5 text-xs',
+            itemClass(isNodeActive(item)),
+          ]"
+          @click="onCollapsedParentClick(item)"
         >
-          <component :is="item.icon" class="h-4 w-4 shrink-0" />
-          <span class="flex-1">{{ ml(item.id, item.label) }}</span>
+          <component :is="item.icon" class="h-3.5 w-3.5 shrink-0 md:h-4 md:w-4" />
+          <span class="flex-1" :class="collapsed ? 'md:hidden' : ''">{{ ml(item.id, item.label) }}</span>
           <span
             v-if="item.phase === 2"
-            class="rounded bg-amber-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-amber-700 dark:bg-amber-500/15 dark:text-amber-400"
+            class="rounded bg-amber-100/90 px-1 py-0.5 text-[8px] font-semibold uppercase tracking-wide text-amber-800"
+            :class="collapsed ? 'md:hidden' : ''"
           >F2</span>
           <ChevronDown
-            class="h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform duration-200 dark:text-slate-500"
-            :class="{ '-rotate-90': !openMenus[item.id] }"
+            class="h-3 w-3 shrink-0 text-blue-200/50 transition-transform duration-200"
+            :class="[{ '-rotate-90': !openMenus[item.id] }, collapsed ? 'md:hidden' : '']"
           />
+          <span
+            v-if="collapsed"
+            class="pointer-events-none absolute left-full z-50 ml-2 hidden whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-xs font-medium text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 md:block"
+          >
+            {{ ml(item.id, item.label) }}
+          </span>
         </button>
 
         <router-link
           v-else
           :to="item.to"
-          :class="['flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all', itemClass(isActive(item.to))]"
+          :class="[
+            'group relative flex items-center transition-all',
+            collapsed
+              ? 'gap-2 rounded-md px-2.5 py-1.5 text-xs md:justify-center md:rounded-none md:px-0 md:py-2'
+              : 'gap-2 rounded-md px-2.5 py-1.5 text-xs',
+            itemClass(isActive(item.to)),
+          ]"
         >
-          <component :is="item.icon" class="h-4 w-4 shrink-0" />
-          <span>{{ ml(item.id, item.label) }}</span>
+          <component :is="item.icon" class="h-3.5 w-3.5 shrink-0 md:h-4 md:w-4" />
+          <span :class="collapsed ? 'md:hidden' : ''">{{ ml(item.id, item.label) }}</span>
+          <span
+            v-if="collapsed"
+            class="pointer-events-none absolute left-full z-50 ml-2 hidden whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-xs font-medium text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 md:block"
+          >
+            {{ ml(item.id, item.label) }}
+          </span>
         </router-link>
 
         <div
-          v-if="item.children && item.children.length > 0 && openMenus[item.id]"
-          class="ml-5 mt-1 space-y-0.5 border-l-2 border-slate-200 pl-3 dark:border-slate-700"
+          v-if="item.children && item.children.length > 0 && openMenus[item.id] && !collapsed"
+          class="ml-4 mt-0.5 space-y-0.5 border-l-2 border-white/20 pl-2.5"
         >
           <template v-for="child in item.children" :key="child.id">
             <button
               v-if="child.children && child.children.length > 0"
               type="button"
-              :class="['flex w-full items-center rounded-md px-2.5 py-1.5 text-left text-[13px] transition-all', childClass(isNodeActive(child))]"
+              :class="['flex w-full items-center rounded-md px-2 py-1 text-left text-xs transition-all', childClass(isNodeActive(child))]"
               @click="toggleMenu(child.id)"
             >
               <span class="flex-1">{{ ml(child.id, child.label) }}</span>
               <ChevronDown
-                class="h-3 w-3 shrink-0 text-slate-400 transition-transform duration-200 dark:text-slate-500"
+                class="h-2.5 w-2.5 shrink-0 text-blue-200/50 transition-transform duration-200"
                 :class="{ '-rotate-90': !openMenus[child.id] }"
               />
             </button>
@@ -119,20 +162,20 @@ watch(() => props.menu, syncOpenMenus, { deep: true });
             <router-link
               v-else
               :to="child.to"
-              :class="['block rounded-md px-2.5 py-1.5 text-[13px] transition-all', childClass(isActive(child.to))]"
+              :class="['block rounded-md px-2 py-1 text-xs transition-all', childClass(isActive(child.to))]"
             >
               {{ ml(child.id, child.label) }}
             </router-link>
 
             <div
               v-if="child.children && child.children.length > 0 && openMenus[child.id]"
-              class="ml-3 mt-0.5 space-y-0.5 border-l border-slate-200 pl-2.5 dark:border-slate-700"
+              class="ml-2.5 mt-0.5 space-y-0.5 border-l border-white/15 pl-2"
             >
               <router-link
                 v-for="grandchild in child.children"
                 :key="grandchild.id"
                 :to="grandchild.to"
-                :class="['block rounded-md px-2 py-1 text-[12px] transition-all', childClass(isActive(grandchild.to))]"
+                :class="['block rounded-md px-1.5 py-0.5 text-[11px] transition-all', childClass(isActive(grandchild.to))]"
               >
                 {{ ml(grandchild.id, grandchild.label) }}
               </router-link>

@@ -1,4 +1,4 @@
-import type { ContractorClass, ContractorKind, RegistrationPeriod, WirerType } from "../types";
+import type { CompetencyCategory, ContractorClass, ContractorKind, RegistrationPeriod, WirerType } from "../types";
 import { CLASS_REQUIREMENTS, validateOkSet } from "../mock/competencies";
 
 /** Jenis kontraktor from panduan Bahagian A / PFD-RG-CE-NA. */
@@ -130,6 +130,10 @@ export interface AppointedOkForm {
   certificateNo: string;
   periodYears: RegistrationPeriod;
   employedElsewhere: boolean;
+  /** Snapshot for D11 CDP gate (optional — looked up from RegisteredOk when missing). */
+  competencyCategory?: CompetencyCategory;
+  isFirstRegistration?: boolean;
+  cdpPoints?: number;
 }
 
 export interface SkilledPerson {

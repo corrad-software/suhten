@@ -20,15 +20,11 @@ import type {
 } from "../types";
 import { withCeCertificateFields } from "../certificate-ce";
 import { withOkCertificateFields } from "../certificate-ok";
+import { CDP_FIRST_REGISTRATION_BONUS } from "../registration/cdp-rules";
 import {
   getStRegistrationApplicationByCode,
-  getStaffTaskNotifyState,
   listStRegistrationApplications,
-  notifyApplicantQuery,
-  notifyApplicantRejection,
-  notifyStaffWorkflowTask,
   updateStRegistrationApplication,
-  type StaffTaskNotifyInput,
 } from "@/api/st-registration";
 import { seedState } from "../mock";
 import { feeFor as charterFeeFor, slaTargetFor, SOS_ESCALATE_AFTER_HOURS } from "../mock/charter";
@@ -47,7 +43,7 @@ import {
 import { useStSessionStore } from "./session";
 import { useStNotificationsStore } from "./notifications";
 
-const STORAGE_KEY = "st.workflow.state.v14";
+const STORAGE_KEY = "st.workflow.state.v17";
 const MAX_ACTIVE_TASKS = 3;
 
 // Demo PIN for the digital signature step.
@@ -118,6 +114,9 @@ export const useStWorkflowStore = defineStore("st-workflow", () => {
     const session = useStSessionStore();
     const id = session.currentPersonaId;
     if (!id) return [];
+    const persona = session.currentPersona;
+    const myIc = persona?.icNumber?.trim() ?? "";
+    const myEmail = persona?.email?.trim().toLowerCase() ?? "";
     const myEmployerIds = new Set(
       EMPLOYERS.filter((e) => e.confirmerPersonaId === id).map((e) => e.id),
     );
@@ -126,11 +125,17 @@ export const useStWorkflowStore = defineStore("st-workflow", () => {
     );
     return applications.value
       .filter((a) => {
-        if (a.applicantPersonaId === id) return true;
+        // Own OK applications (persona id, or IC/email fallback for remapped demos).
+        if (a.workflowType === "OK") {
+          if (a.applicantPersonaId === id) return true;
+          if (myIc && a.applicant.icNumber === myIc) return true;
+          if (myEmail && a.applicant.email?.trim().toLowerCase() === myEmail) return true;
+        }
         // CE NA-03: appointed OK follows the contractor application after acceptance.
         if (a.appointedOks?.some((o) => o.personaId === id)) return true;
-        // Majikan: own contractor applications (by org / employer id).
+        // Majikan: own contractor applications (by wakil persona / org / employer id).
         if (a.workflowType === "CE") {
+          if (a.applicantPersonaId === id) return true;
           if (a.employer?.id && myEmployerIds.has(a.employer.id)) return true;
           if (a.employer?.name && myOrgNames.has(a.employer.name.trim().toLowerCase())) return true;
         }
@@ -154,7 +159,10 @@ export const useStWorkflowStore = defineStore("st-workflow", () => {
       if (a.workflowType === "CE" && a.appointedOks?.length) {
         return a.appointedOks.some((o) => o.personaId === personaId && !o.confirmed);
       }
-      if (a.employer?.confirmerPersonaId === personaId) return true;
+      // Prefer live employer registry over embedded snapshot (avoids stale confirmer IDs).
+      const live = a.employer?.id ? employerById(a.employer.id) : undefined;
+      const confirmerId = live?.confirmerPersonaId ?? a.employer?.confirmerPersonaId;
+      if (confirmerId === personaId) return true;
       if (a.employer?.id && myEmployerIds.has(a.employer.id)) return true;
       if (a.employer?.name && myOrgNames.has(a.employer.name.trim().toLowerCase())) return true;
       return false;
@@ -383,108 +391,47 @@ export const useStWorkflowStore = defineStore("st-workflow", () => {
   function claimFromEmailLink(applicationId: string): boolean {
     const app = byId(applicationId);
     const session = useStSessionStore();
-    if (!app || !session.role || app.assignedRole !== session.role) return false;
+    if (!app || !session.role) return false;
+    // Align role with current stage (stale assignedRole must not block claim).
+    const queueRole = staffRoleForStatus(app.workflowType, app.status) ?? app.assignedRole;
+    if (!queueRole || queueRole !== session.role) return false;
     if (app.assigneePersonaId === session.currentPersonaId) return true;
     if (app.assigneePersonaId) return false;
-    if (!canClaimByFifo(applicationId, session.role)) return false;
-    if (atActiveLimit(session.role, session.currentPersonaId)) return false;
+    if (!canClaimByFifo(applicationId, queueRole)) return false;
+    if (atActiveLimit(queueRole, session.currentPersonaId)) return false;
+    app.assignedRole = queueRole;
     app.assigneePersonaId = session.currentPersonaId;
     addAudit(app, session.currentPersonaId ?? "system", "Mengambil tugasan (pautan e-mel)");
     clearEmailPriority(applicationId);
     app.queueBoostAt = undefined;
+    // Persist so detail-page syncFromApi does not wipe the claim.
+    queuePersistApplicationStatus(app, app.status, {
+      timelineLabel: "Mengambil tugasan (pautan e-mel)",
+    });
     return true;
   }
 
   /**
-   * Heal Peti Tugasan when this browser's localStorage lags the server notify
-   * cache (SOS forwarded + emailed in another session/browser).
+   * Staff-task email notify API disabled — Peti / bell use local mock notifications only.
+   * (API fan-out was stalling login on single-threaded `php artisan serve`.)
    */
-  async function syncInboxFromStaffNotifies(role: PersonaRole): Promise<number> {
-    const targetStage = STAGE_FOR_STAFF_ROLE[role];
-    if (!targetStage) return 0;
-
-    // Include apps already at this stage (unassigned) so email priority is restored
-    // after a refresh, plus anything still lagging behind — scoped to this role's stream.
-    const candidates = applications.value.filter(
-      (a) =>
-        staffRoleForStatus(a.workflowType, targetStage) === role &&
-        ((a.status === targetStage && !a.assigneePersonaId) ||
-          statusRank(a.status) < statusRank(targetStage)),
-    );
-    if (candidates.length === 0) return 0;
-
-    let healed = 0;
-    await Promise.all(
-      candidates.map(async (a) => {
-        try {
-          const res = await getStaffTaskNotifyState(a.id);
-          const notifyRole = res.data?.role;
-          if (notifyRole !== role) return;
-          const notifyStage = STAGE_FOR_STAFF_ROLE[notifyRole as PersonaRole];
-          if (!notifyStage) return;
-          if (syncFromEmailStage(a.id, notifyStage) || a.status === notifyStage) {
-            markEmailPriority(a.id);
-            healed += 1;
-          }
-        } catch {
-          // No notify recorded for this code — leave local mock as-is.
-        }
-      }),
-    );
-    return healed;
+  async function syncInboxFromStaffNotifies(_role: PersonaRole): Promise<number> {
+    return 0;
   }
 
-  /** Email SOS / technical / approver via backend (simulation inbox override). */
-  function emailStaffTask(app: Application, role: PersonaRole) {
-    if (!(role in STAGE_FOR_STAFF_ROLE)) return;
-    const moduleCode = app.workflowType === "CE" ? "RG-CE" : "RG-KE";
-    void notifyStaffWorkflowTask({
-      role: role as StaffTaskNotifyInput["role"],
-      refNo: app.refNo,
-      applicantName: app.applicant.fullName,
-      moduleCode,
-      applicationCode: app.id,
-      // Staff emails open Peti Tugasan (FIFO); stage heal happens via notify cache on inbox load.
-      actionPath: "/st/inbox",
-      stepId: `mock-${role}`,
-    }).catch(() => {
-      // Non-blocking: UI transition must not fail if mail/API is unavailable.
-    });
+  /** Staff email notify API disabled — local mock `notify()` still updates the bell. */
+  function emailStaffTask(_app: Application, _role: PersonaRole) {
+    // no-op (mock notifications only)
   }
 
-  /** Email applicant when staff raises Pertanyaan (simulation inbox override). */
-  function emailApplicantQuery(app: Application, note: string) {
-    const trimmed = note.trim();
-    if (!trimmed || !app.applicant.email) return;
-    const moduleCode = app.workflowType === "CE" ? "RG-CE" : "RG-KE";
-    void notifyApplicantQuery({
-      applicantEmail: app.applicant.email,
-      note: trimmed,
-      refNo: app.refNo,
-      applicantName: app.applicant.fullName,
-      moduleCode,
-      applicationCode: app.id,
-      actionPath: `/st/applications/${app.id}?stage=query_applicant`,
-    }).catch(() => {
-      // Non-blocking: UI transition must not fail if mail/API is unavailable.
-    });
+  /** Applicant query email API disabled — local mock `notify()` still updates the bell. */
+  function emailApplicantQuery(_app: Application, _note: string) {
+    // no-op (mock notifications only)
   }
 
-  /** Email applicant when staff rejects an application (simulation inbox override). */
-  function emailApplicantRejection(app: Application, note?: string) {
-    if (!app.applicant.email) return;
-    const moduleCode = app.workflowType === "CE" ? "RG-CE" : "RG-KE";
-    void notifyApplicantRejection({
-      applicantEmail: app.applicant.email,
-      note: note?.trim() || undefined,
-      refNo: app.refNo,
-      applicantName: app.applicant.fullName,
-      moduleCode,
-      applicationCode: app.id,
-      actionPath: `/st/applications/${app.id}?stage=rejected`,
-    }).catch(() => {
-      // Non-blocking: UI transition must not fail if mail/API is unavailable.
-    });
+  /** Applicant rejection email API disabled — local mock `notify()` still updates the bell. */
+  function emailApplicantRejection(_app: Application, _note?: string) {
+    // no-op (mock notifications only)
   }
 
   /**
@@ -824,7 +771,8 @@ export const useStWorkflowStore = defineStore("st-workflow", () => {
         resolveNotifications(app.id, ["task_assigned"]);
         notify(app.applicantPersonaId, "approved", "Permohonan diluluskan",
           `Permohonan ${app.refNo} diluluskan. Sila bayar yuran pendaftaran.`, app.id);
-        await persistApplicationStatus(app, app.status, {
+        // Fire-and-forget like forward/reject so the Digicert modal can close immediately.
+        queuePersistApplicationStatus(app, app.status, {
           timelineLabel: "Diluluskan & ditandatangani secara digital",
         });
         break;
@@ -891,6 +839,17 @@ export const useStWorkflowStore = defineStore("st-workflow", () => {
         ? withOkCertificateFields(base, app)
         : withCeCertificateFields(base, app);
 
+    // D11 PFD-RG-KE-NA-10 / CE-NA-11: record +2 CDP on first lifetime OK registration only.
+    if (app.workflowType === "OK" && app.isFirstRegistration) {
+      const before = app.cdpPoints ?? 0;
+      app.cdpPoints = before + CDP_FIRST_REGISTRATION_BONUS;
+      addAudit(app, "system", `Merekodkan mata CDP (+${CDP_FIRST_REGISTRATION_BONUS}) — pendaftaran pertama`, {
+        actorRole: "system",
+        actorName: "Sistem",
+      });
+      app.isFirstRegistration = false;
+    }
+
     // CE: also issue a Perakuan Orang Kompeten for each appointed OK.
     if (app.workflowType === "CE" && app.appointedOks?.length) {
       app.okCertificates = app.appointedOks.map((ok, i) => {
@@ -911,7 +870,103 @@ export const useStWorkflowStore = defineStore("st-workflow", () => {
           categoryGrade: ok.wirerType,
         });
       });
+      // Award +2 to each appointed OK that is on first registration.
+      for (const ok of app.appointedOks) {
+        if (ok.isFirstRegistration) {
+          ok.cdpPoints = (ok.cdpPoints ?? 0) + CDP_FIRST_REGISTRATION_BONUS;
+          ok.isFirstRegistration = false;
+          addAudit(
+            app,
+            "system",
+            `Merekodkan mata CDP (+${CDP_FIRST_REGISTRATION_BONUS}) bagi ${ok.name} — pendaftaran pertama`,
+            { actorRole: "system", actorName: "Sistem" },
+          );
+        }
+      }
     }
+  }
+
+  /** Stable local-only id so Simpan Draf upserts one list row per persona × module. */
+  function localDraftId(workflowType: WorkflowType, personaId: string): string {
+    return `draft-${workflowType.toLowerCase()}-${personaId}`;
+  }
+
+  /**
+   * Persist a draft row in Peti / Permohonan Saya (form body still lives in
+   * apply-view localStorage). Does not call submit — status stays `draft`.
+   */
+  function upsertLocalDraft(input: {
+    workflowType: WorkflowType;
+    applicantPersonaId: string;
+    applicant: Application["applicant"];
+    competencyCategory?: CompetencyCategory;
+    contractorClass?: ContractorClass;
+    contractorKind?: Application["contractorKind"];
+    registrationPeriodYears?: RegistrationPeriod;
+    employer?: Application["employer"];
+    appointedOks?: AppointedOk[];
+    documents?: Application["documents"];
+  }): string {
+    const id = localDraftId(input.workflowType, input.applicantPersonaId);
+    const stamp = new Date(now.value).toISOString();
+    const existing = byId(id);
+    if (existing && existing.status === "draft") {
+      existing.applicant = input.applicant;
+      existing.applicantPersonaId = input.applicantPersonaId;
+      existing.competencyCategory = input.competencyCategory;
+      existing.contractorClass = input.contractorClass;
+      existing.contractorKind =
+        input.contractorKind ??
+        (input.workflowType === "CE" ? "electrical" : existing.contractorKind);
+      if (input.registrationPeriodYears) {
+        existing.registrationPeriodYears = input.registrationPeriodYears;
+      }
+      existing.employer = input.employer ?? existing.employer;
+      existing.appointedOks = input.appointedOks ?? existing.appointedOks;
+      existing.documents = input.documents ?? existing.documents;
+      existing.updatedAt = stamp;
+      existing.stageEnteredAt = stamp;
+      persist();
+      return id;
+    }
+    const refSeq = 300 + applications.value.length;
+    const app: Application = {
+      id,
+      refNo: `ST/${input.workflowType}/DRAF/${String(refSeq).padStart(5, "0")}`,
+      workflowType: input.workflowType,
+      status: "draft",
+      applicant: input.applicant,
+      applicantPersonaId: input.applicantPersonaId,
+      competencyCategory: input.competencyCategory,
+      contractorClass: input.contractorClass,
+      contractorKind:
+        input.contractorKind ??
+        (input.workflowType === "CE" ? "electrical" : undefined),
+      registrationPeriodYears: input.registrationPeriodYears ?? 1,
+      employer: input.employer,
+      appointedOks: input.appointedOks,
+      documents: input.documents ?? [],
+      payments: [],
+      auditTrail: [],
+      assignedRole: null,
+      assigneePersonaId: null,
+      slaTargetHours: 0,
+      stageEnteredAt: stamp,
+      createdAt: stamp,
+      updatedAt: stamp,
+    };
+    applications.value.unshift(app);
+    addAudit(app, input.applicantPersonaId, "Menyimpan draf permohonan");
+    persist();
+    return id;
+  }
+
+  function discardLocalDraft(workflowType: WorkflowType, personaId: string): void {
+    const id = localDraftId(workflowType, personaId);
+    const i = applications.value.findIndex((a) => a.id === id && a.status === "draft");
+    if (i < 0) return;
+    applications.value.splice(i, 1);
+    persist();
   }
 
   // ── convenience wrappers ─────────────────────────────────────────────────
@@ -951,11 +1006,18 @@ export const useStWorkflowStore = defineStore("st-workflow", () => {
   }
 
   // Approve & digitally sign several applications with one PIN entry (BRS §4.2.7 pukal).
+  // Only claimed active tasks (FIFO / max-3) — no skip of unclaimed queue items.
   // Must await each transition so DB persist finishes before the majikan refreshes.
   async function bulkApprove(ids: string[], pin: string): Promise<{ ok: string[]; failed: string[] }> {
+    const session = useStSessionStore();
     const result = { ok: [] as string[], failed: [] as string[] };
     for (const id of ids) {
       try {
+        const claimed = byId(id);
+        if (!claimed || claimed.assigneePersonaId !== session.currentPersonaId) {
+          result.failed.push(id);
+          continue;
+        }
         await transition(id, "approve_sign", { pin });
         const app = byId(id);
         if (!app || app.status !== "awaiting_registration_payment") {
@@ -974,18 +1036,28 @@ export const useStWorkflowStore = defineStore("st-workflow", () => {
   function takeTask(applicationId: string): boolean {
     const app = byId(applicationId);
     const session = useStSessionStore();
-    if (!app || !app.assignedRole || !session.role) return false;
+    if (!app || !session.role) return false;
+    // Queue role follows current status — not a possibly-stale assignedRole
+    // (e.g. still sos_ce/technical_ce after the case reached pending_approval).
+    const queueRole = staffRoleForStatus(app.workflowType, app.status) ?? app.assignedRole;
+    if (!queueRole) return false;
     // Already claimed by me → idempotent success; claimed by another → refuse.
     if (app.assigneePersonaId) {
       return app.assigneePersonaId === session.currentPersonaId;
     }
-    if (atActiveLimit(app.assignedRole, session.currentPersonaId)) return false; // max-3 per officer
-    // Strict FIFO by SLA, unless this app was assigned via staff-task email.
-    if (!canClaimByFifo(applicationId, app.assignedRole)) return false;
+    if (atActiveLimit(queueRole, session.currentPersonaId)) return false; // max-3 per officer
+    // Strict FIFO by SLA — same head the Peti "Ambil & Buka" button uses.
+    if (!canClaimByFifo(applicationId, queueRole)) return false;
+    app.assignedRole = queueRole;
     app.assigneePersonaId = session.currentPersonaId;
     app.queueBoostAt = undefined;
     addAudit(app, session.currentPersonaId ?? "system", "Mengambil tugasan");
     clearEmailPriority(applicationId);
+    // Persist claim — detail view calls syncFromApi on mount and would otherwise
+    // replace this with the API row (assignee still null) and show the FIFO hint.
+    queuePersistApplicationStatus(app, app.status, {
+      timelineLabel: "Mengambil tugasan",
+    });
     return true;
   }
 
@@ -1188,13 +1260,43 @@ export const useStWorkflowStore = defineStore("st-workflow", () => {
       const merged = mapped.map((apiApp) => {
         const local = localById.get(apiApp.id);
         if (local && statusRank(local.status) > statusRank(apiApp.status)) {
-          return local;
+          // Keep local workflow progress, but always take ownership fields from API
+          // so persona remaps (e.g. p-ext-01 → p-nurul) are not stuck in localStorage.
+          return {
+            ...local,
+            applicantPersonaId: apiApp.applicantPersonaId,
+            applicant: apiApp.applicant,
+            documents: apiApp.documents.length ? apiApp.documents : local.documents,
+          };
+        }
+        // Keep an in-flight Peti claim until the API write catches up — otherwise
+        // opening the detail right after "Ambil & Buka" wipes assigneePersonaId.
+        if (
+          local &&
+          local.status === apiApp.status &&
+          local.assigneePersonaId &&
+          !apiApp.assigneePersonaId
+        ) {
+          return {
+            ...apiApp,
+            assigneePersonaId: local.assigneePersonaId,
+            assignedRole: local.assignedRole ?? apiApp.assignedRole,
+          };
         }
         return apiApp;
       });
       const apiIds = new Set(merged.map((a) => a.id));
       // Keep in-session / local-only apps (e.g. ApplicationFormView) not yet in DB.
-      const localExtras = applications.value.filter((a) => !apiIds.has(a.id));
+      // For pemohon, drop stale CE rows that the scoped API no longer returns.
+      const session = useStSessionStore();
+      const localExtras = applications.value.filter((a) => {
+        if (apiIds.has(a.id)) return false;
+        if (session.role === "applicant" && a.workflowType === "CE") {
+          const pid = session.currentPersonaId;
+          return Boolean(pid && a.appointedOks?.some((o) => o.personaId === pid));
+        }
+        return true;
+      });
       applyingRemote = true;
       applications.value = [...merged, ...localExtras];
       applyingRemote = false;
@@ -1209,6 +1311,9 @@ export const useStWorkflowStore = defineStore("st-workflow", () => {
     if (typeof window !== "undefined") {
       // Drop legacy keys so a version bump always reseeds once.
       for (const legacy of [
+        "st.workflow.state.v16",
+        "st.workflow.state.v15",
+        "st.workflow.state.v14",
         "st.workflow.state.v13",
         "st.workflow.state.v12",
         "st.workflow.state.v11",
@@ -1298,6 +1403,9 @@ export const useStWorkflowStore = defineStore("st-workflow", () => {
     claimFromEmailLink,
     isEmailPriority,
     submitNewApplication,
+    upsertLocalDraft,
+    discardLocalDraft,
+    localDraftId,
     bulkApprove,
     takeTask,
     syncSosEscalationFlags,

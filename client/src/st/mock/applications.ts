@@ -193,7 +193,7 @@ export function seedApplications(baseNow: number): Application[] {
   }
 
   const EXTRA = [
-    { id: "p-ext-01", p: profile("Nurul Aina binti Rosli", "900314-14-5182", 36, "Ampang", "Selangor") },
+    { id: "p-nurul", p: profile("Nurul Aina binti Rosli", "900314-14-5182", 36, "Ampang", "Selangor") },
     { id: "p-ext-02", p: profile("Sivakumar a/l Rajan", "830722-08-5461", 43, "Ipoh", "Perak") },
     { id: "p-ext-03", p: profile("Mohd Hafiz bin Zulkifli", "870105-03-5237", 39, "Kuantan", "Pahang") },
     { id: "p-ext-04", p: profile("Lee Chong Wei", "810918-07-5119", 45, "Bayan Lepas", "Pulau Pinang") },
@@ -245,25 +245,49 @@ export function seedApplications(baseNow: number): Application[] {
       : [paidPayment(baseNow, "processing", type === "OK" ? 50 : 100, opts.createdHoursAgo - 1)];
     if (status === "certificate_issued") paid.push(paidPayment(baseNow, "registration", 300, 1));
 
+    const employerId = EMPLOYER_IDS[who % EMPLOYER_IDS.length];
+    const employer = employerById(employerId);
+    const ceOwnerPersonaId = employer?.confirmerPersonaId ?? e.id;
+    const ceOwner = personaById(ceOwnerPersonaId);
+    const ownerPersonaId = type === "CE" ? ceOwnerPersonaId : e.id;
+    const ownerApplicant =
+      type === "CE" && ceOwner
+        ? {
+            fullName: ceOwner.name,
+            icNumber: ceOwner.icNumber ?? e.p.icNumber,
+            dob: e.p.dob,
+            age: e.p.age,
+            address: employer?.address ?? e.p.address,
+            phone: employer?.phone ?? e.p.phone,
+            email: ceOwner.email,
+          }
+        : e.p;
+
     return {
       ref,
       type,
       status,
-      applicantPersonaId: e.id,
-      applicant: e.p,
+      applicantPersonaId: ownerPersonaId,
+      applicant: ownerApplicant,
       competencyCategory: type === "OK" ? (opts.cat ?? OK_CATS[who % OK_CATS.length]) : undefined,
       contractorClass: type === "CE" ? (opts.cls ?? "C") : undefined,
       period: opts.period ?? ((1 + (who % 5)) as Spec["period"]),
-      employerId: EMPLOYER_IDS[who % EMPLOYER_IDS.length],
+      employerId,
       assignedRole: role,
       assigneePersonaId: opts.assignee ?? null,
       stageHoursAgo: opts.stageHoursAgo,
       createdHoursAgo: opts.createdHoursAgo,
       documents: docs(baseNow, type === "OK" ? OK_DOCS : CE_DOCS, status === "sos_review" ? "pending" : "accepted"),
       payments: paid,
-      appointedOks: type === "CE" ? appointedOksForClass(opts.cls ?? "C", baseNow, EMPLOYER_IDS[who % EMPLOYER_IDS.length]) : undefined,
+      appointedOks: type === "CE" ? appointedOksForClass(opts.cls ?? "C", baseNow, employerId) : undefined,
       auditTrail: audit(baseNow, [
-        { actorPersonaId: e.id, action: "Menghantar permohonan", hoursAgo: opts.createdHoursAgo, actorRole: "applicant", actorName: e.p.fullName },
+        {
+          actorPersonaId: ownerPersonaId,
+          action: "Menghantar permohonan",
+          hoursAgo: opts.createdHoursAgo,
+          actorRole: type === "CE" ? "employer" : "applicant",
+          actorName: ownerApplicant.fullName,
+        },
       ]),
       identityVerified: opts.identityVerified,
     };
@@ -280,11 +304,11 @@ export function seedApplications(baseNow: number): Application[] {
         { actorPersonaId: "p-ahmad", action: "Menghantar permohonan", hoursAgo: 6, toStatus: "awaiting_employer_confirm" },
       ]),
     },
-    // 1b) OK — awaiting employer confirmation (Tan → Rahman, via Kuasa Bistari).
+    // 1b) OK — awaiting employer confirmation (Tan → Rahman / Tenaga Murni).
     // Baharu diterima (2j) — untuk menguji PFD-RG-KE-NA-03 Mengesahkan Pelantikan.
     {
       ref: 111, type: "OK", status: "awaiting_employer_confirm", applicantPersonaId: "p-tan", applicant: tan,
-      competencyCategory: "JEK", period: 5, employerId: "emp-kuasa-bistari", assignedRole: null,
+      competencyCategory: "JEK", period: 5, employerId: "emp-tenaga-murni", assignedRole: null,
       stageHoursAgo: 2, createdHoursAgo: 2, documents: docs(baseNow, OK_DOCS),
       payments: [],
       auditTrail: audit(baseNow, [
@@ -334,7 +358,7 @@ export function seedApplications(baseNow: number): Application[] {
       payments: [paidPayment(baseNow, "processing", 50, 1.2)],
       auditTrail: audit(baseNow, [
         { actorPersonaId: "p-tan", action: "Menghantar permohonan", hoursAgo: 26 },
-        { actorPersonaId: "p-rahman", action: "Mengesahkan lantikan", hoursAgo: 22 },
+        { actorPersonaId: "p-goh", action: "Mengesahkan lantikan", hoursAgo: 22 },
         { actorPersonaId: "p-tan", action: "Membayar yuran pemprosesan", hoursAgo: 1.2, toStatus: "sos_review" },
       ]),
     },
@@ -398,10 +422,10 @@ export function seedApplications(baseNow: number): Application[] {
       ]),
       identityVerified: true,
     },
-    // 8) OK — pending approval
+    // 8) OK — pending approval (unassigned — Pelulus claims via FIFO / max-3)
     {
       ref: 109, type: "OK", status: "pending_approval", applicantPersonaId: "p-ahmad", applicant: ahmad,
-      competencyCategory: "PE", period: 3, employerId: "emp-tenaga-murni", assignedRole: "approver", assigneePersonaId: "p-zainab",
+      competencyCategory: "PE", period: 3, employerId: "emp-tenaga-murni", assignedRole: "approver", assigneePersonaId: null,
       stageHoursAgo: 2, createdHoursAgo: 60, documents: docs(baseNow, OK_DOCS, "accepted"),
       payments: [paidPayment(baseNow, "processing", 50, 55)],
       auditTrail: audit(baseNow, [
@@ -468,13 +492,13 @@ export function seedApplications(baseNow: number): Application[] {
     },
 
     // ── Volume: realistic back-office load ────────────────────────────────
-    // Pelulus queue — enough for a convincing bulk-approval (§4.2.7) demo.
+    // Pelulus queue — FIFO + max-3 (D11): a few already claimed for bulk demo; rest unassigned.
     mk(301, "pending_approval", 0, { cat: "PW", stageHoursAgo: 1, createdHoursAgo: 62, assignee: "p-zainab", identityVerified: true }),
     mk(302, "pending_approval", 1, { cat: "PE", stageHoursAgo: 3, createdHoursAgo: 70, assignee: "p-zainab", identityVerified: true }),
-    mk(303, "pending_approval", 2, { cat: "PJ", stageHoursAgo: 5, createdHoursAgo: 74, assignee: "p-zainab", identityVerified: true }),
-    mk(304, "pending_approval", 3, { cat: "JEK", stageHoursAgo: 6.5, createdHoursAgo: 80, assignee: "p-zainab", identityVerified: true }),
-    mk(305, "pending_approval", 4, { cat: "PK", stageHoursAgo: 9, createdHoursAgo: 92, assignee: "p-zainab", identityVerified: true }),
-    mk(306, "pending_approval", 5, { type: "CE", cls: "A", stageHoursAgo: 2, createdHoursAgo: 66, assignee: "p-zainab", identityVerified: true }),
+    mk(303, "pending_approval", 2, { cat: "PJ", stageHoursAgo: 5, createdHoursAgo: 74, assignee: null, identityVerified: true }),
+    mk(304, "pending_approval", 3, { cat: "JEK", stageHoursAgo: 6.5, createdHoursAgo: 80, assignee: null, identityVerified: true }),
+    mk(305, "pending_approval", 4, { cat: "PK", stageHoursAgo: 9, createdHoursAgo: 92, assignee: null, identityVerified: true }),
+    mk(306, "pending_approval", 5, { type: "CE", cls: "A", stageHoursAgo: 2, createdHoursAgo: 66, assignee: null, identityVerified: true }),
 
     // Teknikal queue — some already claimed by officer 1 / 2; rest unassigned for FIFO
     // (other officer sees Telah Dituntut — same Peti Tugasan Tindakan as SOS).

@@ -55,10 +55,15 @@ function postLoginDestination(): string {
 }
 
 onMounted(async () => {
-  // Warm CSRF so submit does not wait on /sanctum/csrf-cookie.
-  void ensureCsrfCookie();
-  if (!site.initialized) await site.load();
-  await auth.initialize();
+  // Warm CSRF in parallel with site settings. Do not wait on background logout —
+  // server logout keeps the session/CSRF cookie so re-login is a single POST.
+  if (!auth.initialized) {
+    await auth.initialize();
+  }
+  await Promise.all([
+    ensureCsrfCookie(),
+    site.initialized ? Promise.resolve() : site.load(),
+  ]);
   session.syncFromAuth();
   if (auth.isAuthenticated && session.currentPersona) {
     router.replace(postLoginDestination());
@@ -70,7 +75,9 @@ async function submit() {
   loading.value = true;
   try {
     await session.loginWithCredentials(email.value.trim(), password.value);
-    void router.replace(postLoginDestination());
+    // Clear spinner before navigation so auth wait is not confused with inbox load.
+    loading.value = false;
+    await router.replace(postLoginDestination());
   } catch (e) {
     error.value =
       e instanceof Error && e.message === "ST_UNAUTHORIZED"
@@ -78,7 +85,6 @@ async function submit() {
         : e instanceof Error
           ? e.message
           : t("login.failed");
-  } finally {
     loading.value = false;
   }
 }
@@ -125,13 +131,15 @@ async function loginWithMyDigitalId() {
           </button>
         </div>
 
-        <!-- Logo -->
+        <!-- Logo → public home -->
         <div class="mb-7 flex justify-center lg:justify-start">
-          <img
-            :src="site.siteIconUrl ? resolveUrl(site.siteIconUrl) : '/logo-st-color.svg'"
-            alt="Suruhanjaya Tenaga"
-            class="h-9 w-auto object-contain"
-          />
+          <router-link to="/st/utama" class="inline-flex" :aria-label="bm ? 'Ke halaman utama' : 'Go to home'">
+            <img
+              :src="site.siteIconUrl ? resolveUrl(site.siteIconUrl) : '/logo-st-color.svg'"
+              alt="Suruhanjaya Tenaga"
+              class="h-9 w-auto object-contain"
+            />
+          </router-link>
         </div>
 
         <h1 class="mb-1 text-center text-xl font-semibold tracking-tight text-[#1a1f36] lg:text-left">{{ t('login.title') }}</h1>

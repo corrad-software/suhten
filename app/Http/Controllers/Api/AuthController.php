@@ -34,7 +34,8 @@ class AuthController extends Controller
         $request->session()->regenerate();
 
         $user = Auth::user();
-        $this->auditService->logAuth('login', $user);
+        // Defer audit write so the login response returns as soon as the session is ready.
+        defer(fn () => $this->auditService->logAuth('login', $user));
 
         return $this->sendOk([
             'user' => $this->userPayload($user),
@@ -42,19 +43,21 @@ class AuthController extends Controller
     }
 
     /**
-     * Log the user out and invalidate the session.
+     * Log the user out without destroying the session.
+     * Invalidating the session forces a new CSRF round-trip and races fast SPA re-login
+     * on single-threaded `php artisan serve`. Auth::logout() clears the user; login
+     * already calls session()->regenerate() to mitigate fixation.
      */
     public function logout(Request $request): JsonResponse
     {
         $user = Auth::user();
 
         if ($user) {
-            $this->auditService->logAuth('logout', $user);
+            // Defer audit so logout returns immediately for fast SPA re-login.
+            defer(fn () => $this->auditService->logAuth('logout', $user));
         }
 
         Auth::guard('web')->logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
 
         return $this->sendOk(['success' => true]);
     }

@@ -51,7 +51,10 @@ export interface OkElectricSubmitInput {
   periodYears: RegistrationPeriod;
   employerCategory: EmployerCategory;
   employerId?: string;
+  /** Snapshot CDP balance at submit (renewal) or 0 (first registration). */
   cdpPoints: number;
+  isFirstRegistration: boolean;
+  appType: RegistrationAppType;
   oshRequired: boolean;
   oshUploaded: boolean;
   documents: Array<{ label: string; fileName: string }>;
@@ -86,7 +89,8 @@ export interface ContractorElectricSubmitInput {
   equipment: TestEquipment[];
   confirmationChecks: string[];
   documents: Array<{ label: string; fileName: string }>;
-  cdpPoints: number;
+  /** Not used for contractor CDP — appointed OKs carry their own balances. */
+  cdpPoints?: number;
 }
 
 let seq = 500;
@@ -409,12 +413,13 @@ export const useStRegistrationStore = defineStore("st-registration", () => {
           actor: "Sistem",
         },
       ],
+      isFirstRegistration: input.isFirstRegistration,
     };
 
     try {
       const res = await createStRegistrationApplication({
         moduleCode: "RG-KE",
-        appType: "new_registration",
+        appType: input.appType,
         applicantName: input.fullName,
         identityNo: input.icNumber,
         categoryOrClass: input.competencyCategory,
@@ -449,7 +454,7 @@ export const useStRegistrationStore = defineStore("st-registration", () => {
         id,
         moduleCode: "RG-KE",
         refNo,
-        appType: "new_registration",
+        appType: input.appType,
         applicantName: input.fullName,
         identityNo: input.icNumber,
         categoryOrClass: input.competencyCategory,
@@ -547,7 +552,7 @@ export const useStRegistrationStore = defineStore("st-registration", () => {
         stageEnteredAt: now,
         slaTargetHours: 48,
         employerName: input.companyName,
-        cdpPoints: input.cdpPoints,
+        cdpPoints: input.cdpPoints ?? 0,
         feeAmount: 200,
         note: `${input.appointedOks.length} OK dilantik · menunggu pengesahan`,
         detail,
@@ -572,7 +577,7 @@ export const useStRegistrationStore = defineStore("st-registration", () => {
         stageEnteredAt: now,
         slaTargetHours: 48,
         employerName: input.companyName,
-        cdpPoints: input.cdpPoints,
+        cdpPoints: input.cdpPoints ?? 0,
         feeAmount: 200,
         note: `${input.appointedOks.length} OK dilantik · menunggu pengesahan`,
         detail,

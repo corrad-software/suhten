@@ -1,4 +1,4 @@
-import { computed, type ComputedRef, onMounted, onUnmounted, reactive, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from "vue";
 
 export interface SmartTableColumn<T> {
   key: string;
@@ -22,38 +22,62 @@ export interface SmartTableChip {
  */
 export function useSmartTable<T>(
   getRows: () => T[],
-  columns: SmartTableColumn<T>[],
+  getColumns: SmartTableColumn<T>[] | (() => SmartTableColumn<T>[]),
   options?: { pageSizeOptions?: number[] },
 ) {
   const rows = computed(getRows);
+  const columns = computed(() =>
+    typeof getColumns === "function" ? getColumns() : getColumns,
+  );
   const pageSizeOptions = options?.pageSizeOptions ?? [5, 10, 25, 50];
 
   const search = ref("");
   const page = ref(1);
   const pageSize = ref(pageSizeOptions[0]);
 
-  const filterableColumns = columns.filter((c) => c.filterable !== false);
-  const columnFilters = reactive<Record<string, string[]>>(
-    Object.fromEntries(filterableColumns.map((c) => [c.key, []])),
-  );
+  const filterableColumns = computed(() => columns.value.filter((c) => c.filterable !== false));
+  const columnFilters = reactive<Record<string, string[]>>({});
   const openFilterCol = ref<string | null>(null);
 
-  const columnOptions: Record<string, ComputedRef<string[]>> = {};
-  for (const c of filterableColumns) {
-    columnOptions[c.key] = computed(() => [...new Set(rows.value.map((r) => c.value(r)))]);
-  }
+  watch(
+    filterableColumns,
+    (cols) => {
+      const keys = new Set(cols.map((c) => c.key));
+      for (const c of cols) {
+        if (!(c.key in columnFilters)) columnFilters[c.key] = [];
+      }
+      for (const key of Object.keys(columnFilters)) {
+        if (!keys.has(key)) delete columnFilters[key];
+      }
+    },
+    { immediate: true },
+  );
+
+  /** Unique, sorted option values per filterable column (plain arrays — safe under reactive()). */
+  const columnOptions = computed(() => {
+    const result: Record<string, string[]> = {};
+    for (const c of filterableColumns.value) {
+      const values = rows.value
+        .map((r) => c.value(r))
+        .filter((v) => v != null && String(v).trim() !== "");
+      result[c.key] = [...new Set(values)].sort((a, b) =>
+        a.localeCompare(b, undefined, { sensitivity: "base" }),
+      );
+    }
+    return result;
+  });
 
   function toggleFilterCol(key: string) {
     openFilterCol.value = openFilterCol.value === key ? null : key;
   }
 
   function isAllSelected(key: string): boolean {
-    const opts = columnOptions[key]?.value ?? [];
+    const opts = columnOptions.value[key] ?? [];
     return opts.length > 0 && (columnFilters[key]?.length ?? 0) === opts.length;
   }
 
   function toggleSelectAll(key: string) {
-    columnFilters[key] = isAllSelected(key) ? [] : [...(columnOptions[key]?.value ?? [])];
+    columnFilters[key] = isAllSelected(key) ? [] : [...(columnOptions.value[key] ?? [])];
   }
 
   function clearColumnFilter(key: string) {
@@ -64,27 +88,46 @@ export function useSmartTable<T>(
     for (const key of Object.keys(columnFilters)) columnFilters[key] = [];
   }
 
-  function onDocumentClick(ev: MouseEvent) {
-    if (!(ev.target as HTMLElement).closest("[data-col-filter]")) openFilterCol.value = null;
+  function closeFilterPanel() {
+    openFilterCol.value = null;
   }
-  onMounted(() => document.addEventListener("click", onDocumentClick));
-  onUnmounted(() => document.removeEventListener("click", onDocumentClick));
+
+  function onDocumentClick(ev: MouseEvent) {
+    if (!(ev.target as HTMLElement).closest("[data-col-filter]")) closeFilterPanel();
+  }
+
+  function onScrollOrResize(ev: Event) {
+    // Keep panel open while scrolling inside the options list itself.
+    if (ev.type === "scroll" && (ev.target as HTMLElement | null)?.closest?.("[data-col-filter]")) return;
+    closeFilterPanel();
+  }
+
+  onMounted(() => {
+    document.addEventListener("click", onDocumentClick);
+    window.addEventListener("scroll", onScrollOrResize, true);
+    window.addEventListener("resize", onScrollOrResize);
+  });
+  onUnmounted(() => {
+    document.removeEventListener("click", onDocumentClick);
+    window.removeEventListener("scroll", onScrollOrResize, true);
+    window.removeEventListener("resize", onScrollOrResize);
+  });
 
   const filtered = computed(() => {
     const q = search.value.trim().toLowerCase();
     return rows.value.filter((row) => {
-      for (const c of filterableColumns) {
+      for (const c of filterableColumns.value) {
         const sel = columnFilters[c.key];
-        if (sel.length && !sel.includes(c.value(row))) return false;
+        if (sel?.length && !sel.includes(c.value(row))) return false;
       }
       if (!q) return true;
-      return columns.some((c) => c.value(row).toLowerCase().includes(q));
+      return columns.value.some((c) => c.value(row).toLowerCase().includes(q));
     });
   });
 
   const activeFilterChips = computed<SmartTableChip[]>(() =>
-    filterableColumns
-      .filter((c) => columnFilters[c.key].length > 0)
+    filterableColumns.value
+      .filter((c) => (columnFilters[c.key]?.length ?? 0) > 0)
       .map((c) => ({ key: c.key, label: c.label, count: columnFilters[c.key].length })),
   );
 

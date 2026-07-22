@@ -42,14 +42,14 @@ class StRegistrationSeeder extends Seeder
                 'ref_no' => 'ST/RG-KE/2026/00041',
                 'app_type' => 'new_registration',
                 'applicant_name' => 'Ahmad bin Ismail',
-                'identity_no' => '850101-10-5432',
+                'identity_no' => '840512-10-5523',
                 'category_or_class' => 'PW4',
                 'status' => 'sos_review',
                 'submitted_at' => $this->daysAgo(2),
                 'stage_entered_at' => $this->hoursAgo(18),
                 'sla_target_hours' => 24,
                 'employer_name' => 'Syarikat Elektrik Maju Sdn Bhd',
-                'cdp_points' => 12,
+                'cdp_points' => 22,
                 'assigned_officer' => 'Faridah Hassan',
                 'fee_amount' => 50,
             ],
@@ -434,11 +434,26 @@ class StRegistrationSeeder extends Seeder
      */
     private function enrichOkDetail(array $app): array
     {
+        $employerCategory = ! empty($app['employer_name']) ? 'company' : 'self_employed';
+        $documents = [
+            ['label' => 'Salinan MyKad', 'fileName' => 'mykad.pdf'],
+            ['label' => 'Sijil Kekompetenan', 'fileName' => 'sijil-kekompetenan.pdf'],
+            ['label' => 'Gambar passport', 'fileName' => 'passport.jpg'],
+        ];
+        // Required at submit for company employment (skipped for self-employed).
+        if ($employerCategory === 'company') {
+            $documents[] = [
+                'label' => 'Surat tawaran pekerjaan',
+                'fileName' => 'surat-tawaran-pekerjaan.pdf',
+            ];
+        }
+
         $app['detail'] = [
             'age' => 41,
             'gender' => 'male',
             'periodYears' => 1,
-            'employerCategory' => ! empty($app['employer_name']) ? 'company' : 'self_employed',
+            'employerCategory' => $employerCategory,
+            'documents' => $documents,
             'certificate' => [
                 'certificateNo' => 'COMP/'.$app['category_or_class'].'/2024/'.substr($app['code'], -3),
                 'category' => $app['category_or_class'],
@@ -697,7 +712,7 @@ class StRegistrationSeeder extends Seeder
                 'module_code' => 'RG-KE',
                 'certificate_no' => 'OK-E/PW4/2024/00821',
                 'holder_name' => 'Ahmad bin Ismail',
-                'identity_no' => '850101-10-5432',
+                'identity_no' => '840512-10-5523',
                 'category_or_class' => 'PW4',
                 'employer_name' => 'Syarikat Elektrik Maju Sdn Bhd',
                 'registered_at' => $this->daysAgo(400),

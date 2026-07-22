@@ -93,22 +93,41 @@ class EmployerRegistrationScope
             $mykad = $okProfile['mykad'] ?? null;
 
             return $query->where(function (Builder $builder) use ($user, $email, $name, $personaId, $mykad) {
-                $builder
-                    ->where('detail->email', $user->email)
-                    ->orWhere('detail->email', $email);
-                if ($name !== '') {
-                    $builder->orWhere('applicant_name', $name);
-                }
+                // Own OK (RG-KE) applications only — not CE volume rows that reused OK emails.
+                $builder->where(function (Builder $ok) use ($user, $email, $name, $personaId, $mykad) {
+                    $ok->where('module_code', 'RG-KE')
+                        ->where(function (Builder $own) use ($user, $email, $name, $personaId, $mykad) {
+                            $own
+                                ->where('detail->email', $user->email)
+                                ->orWhere('detail->email', $email);
+                            if ($name !== '') {
+                                $own->orWhere('applicant_name', $name);
+                            }
+                            if ($personaId) {
+                                $own->orWhere('detail->applicantPersonaId', $personaId);
+                            }
+                            if ($mykad) {
+                                $own->orWhere('identity_no', $mykad);
+                            }
+                        });
+                });
+
                 // CE NA-03: appointed OK can list contractor apps they appear on.
-                if ($personaId) {
-                    $builder->orWhereJsonContains('detail->ce->appointedOks', ['personaId' => $personaId]);
-                }
-                if ($mykad) {
-                    $builder->orWhereJsonContains('detail->ce->appointedOks', ['mykad' => $mykad]);
-                }
-                if ($name !== '') {
-                    $builder->orWhereJsonContains('detail->ce->appointedOks', ['name' => $name]);
-                }
+                $builder->orWhere(function (Builder $ce) use ($personaId, $mykad, $name) {
+                    $ce->where('module_code', 'RG-CE')
+                        ->where(function (Builder $appointed) use ($personaId, $mykad, $name) {
+                            $appointed->whereRaw('1 = 0');
+                            if ($personaId) {
+                                $appointed->orWhereJsonContains('detail->ce->appointedOks', ['personaId' => $personaId]);
+                            }
+                            if ($mykad) {
+                                $appointed->orWhereJsonContains('detail->ce->appointedOks', ['mykad' => $mykad]);
+                            }
+                            if ($name !== '') {
+                                $appointed->orWhereJsonContains('detail->ce->appointedOks', ['name' => $name]);
+                            }
+                        });
+                });
             });
         }
 
@@ -175,19 +194,33 @@ class EmployerRegistrationScope
      */
     public function applicantOwns(StRegistrationApplication $row, User $user): bool
     {
+        $module = strtoupper((string) $row->module_code);
         $detail = is_array($row->detail) ? $row->detail : [];
         $email = strtolower(trim((string) ($detail['email'] ?? '')));
         $userEmail = strtolower(trim((string) $user->email));
+        $okProfile = $this->okProfileFor($user);
 
-        if ($email !== '' && $email === $userEmail) {
-            return true;
+        if ($module === 'RG-KE') {
+            if ($email !== '' && $email === $userEmail) {
+                return true;
+            }
+            if (strtolower(trim((string) $row->applicant_name)) === strtolower(trim((string) $user->name))) {
+                return true;
+            }
+            if ($okProfile) {
+                if (($detail['applicantPersonaId'] ?? null) === $okProfile['persona_id']) {
+                    return true;
+                }
+                $mykad = (string) ($okProfile['mykad'] ?? '');
+                if ($mykad !== '' && (string) ($row->identity_no ?? '') === $mykad) {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
-        // Fallback when submit omitted detail.email — match identity on known demo users.
-        if (strtolower(trim((string) $row->applicant_name)) === strtolower(trim((string) $user->name))) {
-            return true;
-        }
-
+        // CE: applicants only see contractor apps where they are appointed OK.
         return $this->applicantIsAppointedOk($row, $user);
     }
 

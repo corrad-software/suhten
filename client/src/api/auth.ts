@@ -1,7 +1,10 @@
-import { apiRequest, ensureCsrfCookie } from "./client";
+import { apiRequest, cancelLogoutInFlight, ensureCsrfCookie } from "./client";
 import type { User } from "@/types";
 
 export async function login(email: string, password: string) {
+  // Do not queue behind a background /api/auth/logout on `php artisan serve`.
+  cancelLogoutInFlight();
+  // Reuse CSRF cookie when present — avoid an extra sanctum round-trip on re-login.
   await ensureCsrfCookie();
   return apiRequest<{ data: { user: User } }>("/api/auth/login", {
     method: "POST",
@@ -9,9 +12,10 @@ export async function login(email: string, password: string) {
   });
 }
 
-export async function logout() {
+export async function logout(signal?: AbortSignal) {
   return apiRequest<{ data: { success: boolean } }>("/api/auth/logout", {
     method: "POST",
+    signal,
   });
 }
 

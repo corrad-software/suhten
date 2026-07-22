@@ -3,7 +3,8 @@ import { fuzzySearch } from "../search";
 
 // Employers selectable via the "elastic" search in the application form
 // (D11 §4.2.2). confirmerPersonaId points at the persona who must confirm the
-// appointment; only the first three link to a login persona (for the demo).
+// appointment. Login-linked confirmers: Tenaga Murni (p-rahman), Elektrik Maju
+// (p-lim), ABC Elektrik (p-faizal). All others use non-login placeholders.
 export const EMPLOYERS: EmployerRef[] = [
   {
     id: "emp-tenaga-murni",
@@ -47,7 +48,7 @@ export const EMPLOYERS: EmployerRef[] = [
     city: "Johor Bahru",
     state: "Johor",
     contactPerson: "Goh Mei Ling",
-    confirmerPersonaId: "p-rahman",
+    confirmerPersonaId: "p-goh",
     phone: "07-2233 6677",
     email: "admin@kuasabistari.com.my",
     location: { lat: 1.4927, lng: 103.7414 },
@@ -80,7 +81,7 @@ export const EMPLOYERS: EmployerRef[] = [
     city: "Batu Caves",
     state: "Selangor",
     contactPerson: "Tan Boon Huat",
-    confirmerPersonaId: "p-rahman",
+    confirmerPersonaId: "p-ext-jana",
     status: "active",
   },
   {
@@ -93,7 +94,7 @@ export const EMPLOYERS: EmployerRef[] = [
     city: "Kulim",
     state: "Kedah",
     contactPerson: "Nurul Huda binti Aziz",
-    confirmerPersonaId: "p-rahman",
+    confirmerPersonaId: "p-ext-voltan",
     status: "active",
   },
   {
@@ -106,7 +107,7 @@ export const EMPLOYERS: EmployerRef[] = [
     city: "Perai",
     state: "Pulau Pinang",
     contactPerson: "K. Anbarasu",
-    confirmerPersonaId: "p-rahman",
+    confirmerPersonaId: "p-ext-arus",
     status: "active",
   },
   {
@@ -119,7 +120,7 @@ export const EMPLOYERS: EmployerRef[] = [
     city: "Seremban",
     state: "Negeri Sembilan",
     contactPerson: "Faridah binti Omar",
-    confirmerPersonaId: "p-rahman",
+    confirmerPersonaId: "p-ext-suria",
     status: "active",
   },
   {
@@ -132,7 +133,7 @@ export const EMPLOYERS: EmployerRef[] = [
     city: "Kuantan",
     state: "Pahang",
     contactPerson: "Mohd Redza bin Ali",
-    confirmerPersonaId: "p-rahman",
+    confirmerPersonaId: "p-ext-daya",
     status: "active",
   },
   {
@@ -145,7 +146,7 @@ export const EMPLOYERS: EmployerRef[] = [
     city: "Kuching",
     state: "Sarawak",
     contactPerson: "Sylvester Anak Jugah",
-    confirmerPersonaId: "p-rahman",
+    confirmerPersonaId: "p-ext-mega",
     status: "active",
   },
   {
@@ -158,7 +159,7 @@ export const EMPLOYERS: EmployerRef[] = [
     city: "Kajang",
     state: "Selangor",
     contactPerson: "Dr. Halim bin Yusof",
-    confirmerPersonaId: "p-rahman",
+    confirmerPersonaId: "p-ext-institut",
     status: "active",
   },
   {
@@ -172,7 +173,7 @@ export const EMPLOYERS: EmployerRef[] = [
     city: "Ayer Keroh",
     state: "Melaka",
     contactPerson: "Chong Kah Wai",
-    confirmerPersonaId: "p-rahman",
+    confirmerPersonaId: "p-ext-lestari",
     status: "inactive",
   },
   {
@@ -185,7 +186,7 @@ export const EMPLOYERS: EmployerRef[] = [
     city: "Alor Setar",
     state: "Kedah",
     contactPerson: "Zulkifli bin Hassan",
-    confirmerPersonaId: "p-rahman",
+    confirmerPersonaId: "p-ext-gemilang",
     status: "active",
   },
 ];

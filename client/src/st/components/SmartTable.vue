@@ -1,5 +1,5 @@
 <script setup lang="ts" generic="T extends object">
-import { computed } from "vue";
+import { computed, nextTick, ref } from "vue";
 import { Filter, Search, X } from "lucide-vue-next";
 
 import { useLocale } from "@/composables/useLocale";
@@ -20,7 +20,41 @@ defineEmits<{ (e: "row-click", row: T): void }>();
 const { locale } = useLocale();
 const bm = computed(() => locale.value === "bm");
 
-const table = useSmartTable(() => props.rows, props.columns, { pageSizeOptions: props.pageSizeOptions });
+const table = useSmartTable(() => props.rows, () => props.columns, { pageSizeOptions: props.pageSizeOptions });
+
+/** Viewport position for the teleported filter panel (avoids overflow-x clipping). */
+const filterPanelStyle = ref<{ top: string; left: string } | null>(null);
+const filterButtonRefs = ref<Record<string, HTMLElement | null>>({});
+
+function setFilterButtonRef(key: string, el: unknown) {
+  filterButtonRefs.value[key] = (el as HTMLElement | null) ?? null;
+}
+
+async function onFilterClick(key: string) {
+  const opening = table.openFilterCol !== key;
+  table.toggleFilterCol(key);
+  if (!opening) {
+    filterPanelStyle.value = null;
+    return;
+  }
+  await nextTick();
+  const btn = filterButtonRefs.value[key];
+  if (!btn) {
+    filterPanelStyle.value = null;
+    return;
+  }
+  const rect = btn.getBoundingClientRect();
+  const panelWidth = 224; // w-56
+  const left = Math.min(rect.left, window.innerWidth - panelWidth - 8);
+  filterPanelStyle.value = {
+    top: `${rect.bottom + 4}px`,
+    left: `${Math.max(8, left)}px`,
+  };
+}
+
+function optionsFor(key: string): string[] {
+  return table.columnOptions[key] ?? [];
+}
 </script>
 
 <template>
@@ -83,38 +117,14 @@ const table = useSmartTable(() => props.rows, props.columns, { pageSizeOptions: 
                   <span>{{ col.label }}</span>
                   <button
                     v-if="col.filterable !== false"
+                    :ref="(el) => setFilterButtonRef(col.key, el)"
                     type="button"
                     class="rounded p-0.5 transition-colors hover:text-slate-700 dark:hover:text-slate-300"
                     :class="table.columnFilters[col.key]?.length ? 'text-[var(--accent-600)]' : 'text-slate-400 dark:text-slate-500'"
-                    @click.stop="table.toggleFilterCol(col.key)"
+                    @click.stop="onFilterClick(col.key)"
                   >
                     <Filter class="h-3 w-3" />
                   </button>
-                  <div
-                    v-if="table.openFilterCol === col.key"
-                    class="absolute left-0 top-full z-20 mt-1 w-56 rounded-md border border-slate-200 bg-white p-2 normal-case shadow-lg dark:border-slate-700 dark:bg-slate-800"
-                    @click.stop
-                  >
-                    <label class="mb-1 flex items-center gap-2 rounded border-b border-slate-300 px-1 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800/60">
-                      <input
-                        type="checkbox"
-                        class="h-3.5 w-3.5 rounded border-slate-300 text-[var(--accent-600)] focus:ring-[var(--accent-ring)] dark:border-slate-600"
-                        :checked="table.isAllSelected(col.key)"
-                        @change="table.toggleSelectAll(col.key)"
-                      />
-                      {{ bm ? 'Pilih Semua' : 'Select All' }}
-                    </label>
-                    <div class="max-h-48 space-y-0.5 overflow-y-auto">
-                      <label
-                        v-for="opt in table.columnOptions[col.key]?.value"
-                        :key="opt"
-                        class="flex items-center gap-2 rounded px-1 py-1 text-xs font-normal text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/60"
-                      >
-                        <input v-model="table.columnFilters[col.key]" type="checkbox" :value="opt" class="h-3.5 w-3.5 rounded border-slate-300 text-[var(--accent-600)] focus:ring-[var(--accent-ring)] dark:border-slate-600" />
-                        {{ opt }}
-                      </label>
-                    </div>
-                  </div>
                 </div>
               </slot>
             </th>
@@ -135,6 +145,40 @@ const table = useSmartTable(() => props.rows, props.columns, { pageSizeOptions: 
         </tbody>
       </table>
     </div>
+
+    <!-- Teleported so overflow-x on the table wrapper does not clip options -->
+    <Teleport to="body">
+      <div
+        v-if="table.openFilterCol && filterPanelStyle"
+        data-col-filter
+        class="fixed z-50 w-56 rounded-md border border-slate-200 bg-white p-2 shadow-lg dark:border-slate-700 dark:bg-slate-800"
+        :style="filterPanelStyle"
+        @click.stop
+      >
+        <label class="mb-1 flex items-center gap-2 rounded border-b border-slate-300 px-1 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800/60">
+          <input
+            type="checkbox"
+            class="h-3.5 w-3.5 rounded border-slate-300 text-[var(--accent-600)] focus:ring-[var(--accent-ring)] dark:border-slate-600"
+            :checked="table.isAllSelected(table.openFilterCol)"
+            @change="table.toggleSelectAll(table.openFilterCol!)"
+          />
+          {{ bm ? 'Pilih Semua' : 'Select All' }}
+        </label>
+        <div class="max-h-48 space-y-0.5 overflow-y-auto">
+          <p v-if="optionsFor(table.openFilterCol).length === 0" class="px-1 py-2 text-xs text-slate-400 dark:text-slate-500">
+            {{ bm ? 'Tiada pilihan.' : 'No options.' }}
+          </p>
+          <label
+            v-for="opt in optionsFor(table.openFilterCol)"
+            :key="opt"
+            class="flex items-center gap-2 rounded px-1 py-1 text-xs font-normal text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/60"
+          >
+            <input v-model="table.columnFilters[table.openFilterCol!]" type="checkbox" :value="opt" class="h-3.5 w-3.5 rounded border-slate-300 text-[var(--accent-600)] focus:ring-[var(--accent-ring)] dark:border-slate-600" />
+            {{ opt }}
+          </label>
+        </div>
+      </div>
+    </Teleport>
 
     <div v-if="table.filtered.length > table.pageSize" class="mt-4 flex items-center justify-between">
       <button

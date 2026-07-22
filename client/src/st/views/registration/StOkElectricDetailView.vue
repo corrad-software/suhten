@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { ArrowLeft, FileText, GitBranch, History, UserCheck } from "lucide-vue-next";
+import { ArrowLeft, GitBranch, History, UserCheck } from "lucide-vue-next";
 
 import { useLocale } from "@/composables/useLocale";
 import { useStRegistrationStore } from "../../stores/registration";
@@ -12,6 +12,7 @@ import {
 } from "../../registration/ok-rules";
 import RegStatusBadge from "../../components/RegStatusBadge.vue";
 import StPageHero from "../../components/StPageHero.vue";
+import SupportingDocumentsList from "../../components/SupportingDocumentsList.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -169,19 +170,11 @@ function back() {
     </div>
 
     <section class="border-t border-slate-200 dark:border-slate-700 pt-6">
-      <h2 class="mb-3 flex items-center gap-2 border-b border-slate-200 pb-2 text-sm font-semibold text-slate-900 dark:border-slate-700 dark:text-slate-100"><FileText class="h-4 w-4 text-slate-400 dark:text-slate-500" /> {{ ts("st.okDetail.documents") }}</h2>
-      <ul v-if="app.detail?.documents?.length">
-        <li
-          v-for="(doc, i) in app.detail.documents"
-          :key="i"
-          class="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 py-2 text-sm last:border-0"
-        >
-          <FileText class="h-4 w-4 text-slate-400 dark:text-slate-500" />
-          <span class="font-medium text-slate-700 dark:text-slate-300">{{ doc.label }}</span>
-          <span class="text-xs text-slate-400 dark:text-slate-500">{{ doc.fileName }}</span>
-        </li>
-      </ul>
-      <p v-else class="text-sm text-slate-400 dark:text-slate-500">—</p>
+      <SupportingDocumentsList
+        :documents="app.detail?.documents ?? []"
+        :title="ts('st.okDetail.documents')"
+        empty-text="—"
+      />
     </section>
   </div>
 </template>

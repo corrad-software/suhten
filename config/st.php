@@ -83,6 +83,10 @@ return [
             'persona_id' => 'p-rizal',
             'mykad' => '870404-10-5512',
         ],
+        'nurul.aina.binti.rosli@email.my' => [
+            'persona_id' => 'p-nurul',
+            'mykad' => '900314-14-5182',
+        ],
     ],
 
 ];
