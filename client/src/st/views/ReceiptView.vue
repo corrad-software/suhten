@@ -108,7 +108,7 @@ function downloadReceipt() {
         :payer-name="app.applicant.fullName"
       />
     </template>
-    <div v-else class="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500 shadow-sm">
+    <div v-else class="py-16 text-center text-sm text-slate-500">
       Tiada resit bayaran untuk permohonan ini.
     </div>
   </div>

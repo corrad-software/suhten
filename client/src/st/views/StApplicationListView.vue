@@ -3,15 +3,21 @@ import { computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { FilePlus2 } from "lucide-vue-next";
 
+import { useLocale } from "@/composables/useLocale";
+import type { StMessageKey } from "@/i18n/st-messages";
+
 import { useStSessionStore } from "../stores/session";
 import { useStWorkflowStore } from "../stores/workflow";
 import { workflowShort } from "../status";
+import type { SmartTableColumn } from "../composables/useSmartTable";
 import StatusBadge from "../components/StatusBadge.vue";
 import StPageHero from "../components/StPageHero.vue";
+import SmartTable from "../components/SmartTable.vue";
 
 const router = useRouter();
 const session = useStSessionStore();
 const workflow = useStWorkflowStore();
+const { ts } = useLocale();
 
 const isEmployer = computed(() => session.role === "employer");
 const isApplicant = computed(() => session.role === "applicant");
@@ -47,6 +53,20 @@ function fmt(iso: string): string {
 function open(id: string) {
   router.push(`/st/applications/${id}`);
 }
+
+type AppRow = (typeof rows.value)[number];
+
+const columns = computed<SmartTableColumn<AppRow>[]>(() => {
+  const cols: SmartTableColumn<AppRow>[] = [{ key: "refNo", label: "No. Rujukan", value: (a) => a.refNo }];
+  if (isEmployer.value) cols.push({ key: "applicant", label: "Pemohon", value: (a) => a.applicant.fullName });
+  cols.push(
+    { key: "type", label: "Jenis", value: (a) => workflowShort(a.workflowType) },
+    { key: "date", label: "Tarikh", value: (a) => fmt(a.createdAt) },
+    { key: "status", label: "Status", value: (a) => ts(`st.status.${a.status}` as StMessageKey) },
+    { key: "action", label: "Tindakan", value: () => "", filterable: false },
+  );
+  return cols;
+});
 </script>
 
 <template>
@@ -73,45 +93,26 @@ function open(id: string) {
       </template>
     </StPageHero>
 
-    <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <p v-if="rows.length === 0" class="px-4 py-12 text-center text-sm text-slate-400">
-        {{ isEmployer ? "Tiada permohonan kontraktor buat masa ini." : "Belum ada permohonan." }}
-      </p>
-      <table v-else class="w-full text-left text-sm">
-        <thead>
-          <tr class="border-b border-slate-100 text-[11px] uppercase tracking-wider text-slate-400">
-            <th class="px-4 py-2 font-medium">No. Rujukan</th>
-            <th v-if="isEmployer" class="px-4 py-2 font-medium">Pemohon / Syarikat</th>
-            <th class="px-4 py-2 font-medium">Jenis</th>
-            <th class="px-4 py-2 font-medium">Tarikh</th>
-            <th class="px-4 py-2 font-medium">Status</th>
-            <th class="px-4 py-2 text-right font-medium">Tindakan</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="a in rows"
-            :key="a.id"
-            class="cursor-pointer border-b border-slate-50 last:border-0 hover:bg-slate-50/60"
-            @click="open(a.id)"
-          >
-            <td class="px-4 py-3 font-mono text-xs text-slate-700">{{ a.refNo }}</td>
-            <td v-if="isEmployer" class="px-4 py-3 text-slate-700">
-              {{ a.workflowType === "CE" ? (a.employer?.name ?? a.applicant.fullName) : a.applicant.fullName }}
-            </td>
-            <td class="px-4 py-3">
-              <span class="rounded bg-slate-100 px-1.5 py-0.5 text-[11px] font-medium text-slate-600">{{ workflowShort(a.workflowType) }}</span>
-            </td>
-            <td class="px-4 py-3 text-slate-500">{{ fmt(a.createdAt) }}</td>
-            <td class="px-4 py-3"><StatusBadge :status="a.status" /></td>
-            <td class="px-4 py-3 text-right">
-              <span class="text-xs font-medium text-[var(--accent-700)]">
-                {{ a.status === "awaiting_final_submit" ? "Hantar →" : "Lihat →" }}
-              </span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <SmartTable
+      :rows="rows"
+      :columns="columns"
+      :row-key="(a) => a.id"
+      clickable-rows
+      :empty-text="isEmployer ? 'Tiada lantikan menunggu pengesahan.' : 'Belum ada permohonan.'"
+      @row-click="(a) => open(a.id)"
+    >
+      <template #cell-refNo="{ row }">
+        <span class="font-mono text-xs text-slate-700">{{ row.refNo }}</span>
+      </template>
+      <template #cell-type="{ row }">
+        <span class="rounded bg-slate-100 px-1.5 py-0.5 text-[11px] font-medium text-slate-600">{{ workflowShort(row.workflowType) }}</span>
+      </template>
+      <template #cell-status="{ row }">
+        <StatusBadge :status="row.status" />
+      </template>
+      <template #cell-action>
+        <span class="text-xs font-medium text-[var(--accent-700)]">Lihat →</span>
+      </template>
+    </SmartTable>
   </div>
 </template>

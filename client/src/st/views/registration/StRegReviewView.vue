@@ -62,7 +62,7 @@ function fmt(iso: string): string {
 </script>
 
 <template>
-  <div v-if="code && def" class="space-y-5">
+  <div v-if="code && def" class="space-y-8">
     <div class="flex items-start gap-3">
       <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--accent-50)]">
         <ClipboardCheck class="h-5 w-5 text-[var(--accent-700)]" />
@@ -90,16 +90,14 @@ function fmt(iso: string): string {
       </span>
     </div>
 
-    <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div class="border-b border-slate-100 px-4 py-3">
-        <h2 class="text-sm font-semibold text-slate-800">{{ ts("st.reg.reviewTitle") }}</h2>
-      </div>
-      <p v-if="rows.length === 0" class="px-4 py-12 text-center text-sm text-slate-400">{{ ts("st.reg.reviewEmpty") }}</p>
-      <div v-else class="divide-y divide-slate-50">
+    <div class="border-t border-slate-200 pt-6">
+      <h2 class="mb-2 text-sm font-semibold text-slate-900">{{ ts("st.reg.reviewTitle") }}</h2>
+      <p v-if="rows.length === 0" class="py-12 text-center text-sm text-slate-400">{{ ts("st.reg.reviewEmpty") }}</p>
+      <div v-else class="divide-y divide-slate-100">
         <article
           v-for="(row, i) in rows"
           :key="row.id"
-          class="flex flex-wrap items-center gap-4 px-4 py-3 hover:bg-slate-50/60"
+          class="flex flex-wrap items-center gap-4 py-3 hover:bg-slate-50/60"
         >
           <span class="flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-500" :title="ts('st.common.fifo')">
             {{ i + 1 }}

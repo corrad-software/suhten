@@ -15,6 +15,8 @@ import {
   WORKFLOW_LOA,
   adminScreenKey,
 } from "../../mock/workspace";
+import type { SmartTableColumn } from "../../composables/useSmartTable";
+import SmartTable from "../../components/SmartTable.vue";
 
 const route = useRoute();
 const { ts, locale } = useLocale();
@@ -61,10 +63,54 @@ function integClass(s: string): string {
   if (s === "planned") return "bg-slate-100 text-slate-600";
   return "bg-amber-100 text-amber-800";
 }
+
+type RefTableRow = (typeof REF_TABLES)[number];
+const refTableColumns = computed<SmartTableColumn<RefTableRow>[]>(() => [
+  { key: "name", label: ts("st.ws.tableName"), value: (t) => (locale.value === "bi" ? t.nameBi : t.nameBm) },
+  { key: "rows", label: ts("st.ws.rows"), value: (t) => String(t.rows) },
+  { key: "updated", label: ts("st.ws.updated"), value: (t) => fmt(t.updatedAt) },
+]);
+
+type FeeRow = (typeof FEE_SCHEDULE)[number];
+const feeColumns = computed<SmartTableColumn<FeeRow>[]>(() => [
+  { key: "code", label: ts("st.common.module"), value: (f) => f.code },
+  { key: "item", label: ts("st.ws.feeItem"), value: (f) => (locale.value === "bi" ? f.itemBi : f.itemBm) },
+  { key: "fee", label: ts("st.common.fee"), value: (f) => money(f.amountRm) },
+]);
+
+type NotifRow = (typeof NOTIF_TEMPLATES)[number];
+const notifColumns = computed<SmartTableColumn<NotifRow>[]>(() => [
+  { key: "code", label: "Kod", value: (n) => n.code },
+  { key: "template", label: ts("st.ws.template"), value: (n) => (locale.value === "bi" ? n.nameBi : n.nameBm) },
+  { key: "channel", label: ts("st.ws.channel"), value: (n) => n.channel },
+]);
+
+type WorkflowRow = (typeof WORKFLOW_LOA)[number];
+const workflowColumns = computed<SmartTableColumn<WorkflowRow>[]>(() => [
+  { key: "module", label: ts("st.common.module"), value: (w) => w.module },
+  { key: "stage", label: ts("st.ws.stage"), value: (w) => (locale.value === "bi" ? w.stageBi : w.stageBm) },
+  { key: "loa", label: "LOA", value: (w) => String(w.loa) },
+  { key: "sla", label: "SLA (jam)", value: (w) => String(w.slaHours) },
+]);
+
+type RoleRow = (typeof RBAC_ROLES)[number];
+const roleColumns = computed<SmartTableColumn<RoleRow>[]>(() => [
+  { key: "name", label: ts("st.ws.role"), value: (r) => r.name },
+  { key: "users", label: ts("st.ws.users"), value: (r) => String(r.users) },
+  { key: "scope", label: ts("st.ws.scope"), value: (r) => r.modules },
+]);
+
+type AuditRow = (typeof AUDIT_EVENTS)[number];
+const auditColumns = computed<SmartTableColumn<AuditRow>[]>(() => [
+  { key: "date", label: ts("st.common.date"), value: (e) => fmtDt(e.at) },
+  { key: "actor", label: ts("st.ws.actor"), value: (e) => e.actor },
+  { key: "action", label: ts("st.ws.action"), value: (e) => `${e.action} ${e.detail}` },
+  { key: "refNo", label: ts("st.common.refNo"), value: (e) => e.refNo },
+]);
 </script>
 
 <template>
-  <div class="space-y-5">
+  <div class="space-y-8">
     <div class="flex items-start gap-3">
       <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--accent-50)]">
         <Settings class="h-5 w-5 text-[var(--accent-700)]" />
@@ -81,156 +127,77 @@ function integClass(s: string): string {
     <p class="text-xs text-slate-400">{{ ts("st.common.mockNote") }}</p>
 
     <template v-if="screen === 'admin-ref-tables'">
-      <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <table class="min-w-full text-left text-sm">
-          <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
-            <tr>
-              <th class="px-4 py-3">{{ ts("st.ws.tableName") }}</th>
-              <th class="px-4 py-3">{{ ts("st.ws.rows") }}</th>
-              <th class="px-4 py-3">{{ ts("st.ws.updated") }}</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100">
-            <tr v-for="t in REF_TABLES" :key="t.id" class="hover:bg-slate-50/80">
-              <td class="px-4 py-3 font-medium">{{ locale === "bi" ? t.nameBi : t.nameBm }}</td>
-              <td class="px-4 py-3">{{ t.rows }}</td>
-              <td class="px-4 py-3 text-slate-500">{{ fmt(t.updatedAt) }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <SmartTable :rows="REF_TABLES" :columns="refTableColumns" :row-key="(t) => t.id" :empty-text="ts('st.common.noResults')" />
     </template>
 
     <template v-else-if="screen === 'admin-fees'">
-      <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <table class="min-w-full text-left text-sm">
-          <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
-            <tr>
-              <th class="px-4 py-3">{{ ts("st.common.module") }}</th>
-              <th class="px-4 py-3">{{ ts("st.ws.feeItem") }}</th>
-              <th class="px-4 py-3">{{ ts("st.common.fee") }}</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100">
-            <tr v-for="(f, i) in FEE_SCHEDULE" :key="i" class="hover:bg-slate-50/80">
-              <td class="px-4 py-3 font-mono text-xs">{{ f.code }}</td>
-              <td class="px-4 py-3">{{ locale === "bi" ? f.itemBi : f.itemBm }}</td>
-              <td class="px-4 py-3 font-semibold">{{ money(f.amountRm) }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <SmartTable :rows="FEE_SCHEDULE" :columns="feeColumns" :row-key="(f) => `${f.code}-${f.itemBm}`" :empty-text="ts('st.common.noResults')">
+        <template #cell-code="{ row }">
+          <span class="font-mono text-xs">{{ row.code }}</span>
+        </template>
+        <template #cell-fee="{ row }">
+          <span class="font-semibold">{{ money(row.amountRm) }}</span>
+        </template>
+      </SmartTable>
     </template>
 
     <template v-else-if="screen === 'admin-notifications'">
-      <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <table class="min-w-full text-left text-sm">
-          <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
-            <tr>
-              <th class="px-4 py-3">Kod</th>
-              <th class="px-4 py-3">{{ ts("st.ws.template") }}</th>
-              <th class="px-4 py-3">{{ ts("st.ws.channel") }}</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100">
-            <tr v-for="n in NOTIF_TEMPLATES" :key="n.id" class="hover:bg-slate-50/80">
-              <td class="px-4 py-3 font-mono text-xs">{{ n.code }}</td>
-              <td class="px-4 py-3 font-medium">{{ locale === "bi" ? n.nameBi : n.nameBm }}</td>
-              <td class="px-4 py-3">{{ n.channel }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <SmartTable :rows="NOTIF_TEMPLATES" :columns="notifColumns" :row-key="(n) => n.id" :empty-text="ts('st.common.noResults')">
+        <template #cell-code="{ row }">
+          <span class="font-mono text-xs">{{ row.code }}</span>
+        </template>
+        <template #cell-template="{ row }">
+          <span class="font-medium">{{ locale === "bi" ? row.nameBi : row.nameBm }}</span>
+        </template>
+      </SmartTable>
     </template>
 
     <template v-else-if="screen === 'admin-workflow'">
-      <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <table class="min-w-full text-left text-sm">
-          <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
-            <tr>
-              <th class="px-4 py-3">{{ ts("st.common.module") }}</th>
-              <th class="px-4 py-3">{{ ts("st.ws.stage") }}</th>
-              <th class="px-4 py-3">LOA</th>
-              <th class="px-4 py-3">SLA (jam)</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100">
-            <tr v-for="w in WORKFLOW_LOA" :key="w.id" class="hover:bg-slate-50/80">
-              <td class="px-4 py-3 font-mono text-xs">{{ w.module }}</td>
-              <td class="px-4 py-3">{{ locale === "bi" ? w.stageBi : w.stageBm }}</td>
-              <td class="px-4 py-3">{{ w.loa }}</td>
-              <td class="px-4 py-3">{{ w.slaHours }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <SmartTable :rows="WORKFLOW_LOA" :columns="workflowColumns" :row-key="(w) => w.id" :empty-text="ts('st.common.noResults')">
+        <template #cell-module="{ row }">
+          <span class="font-mono text-xs">{{ row.module }}</span>
+        </template>
+      </SmartTable>
     </template>
 
     <template v-else-if="screen === 'admin-roles' || screen === 'admin-permissions'">
-      <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <table class="min-w-full text-left text-sm">
-          <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
-            <tr>
-              <th class="px-4 py-3">{{ ts("st.ws.role") }}</th>
-              <th class="px-4 py-3">{{ ts("st.ws.users") }}</th>
-              <th class="px-4 py-3">{{ ts("st.ws.scope") }}</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100">
-            <tr v-for="r in RBAC_ROLES" :key="r.id" class="hover:bg-slate-50/80">
-              <td class="px-4 py-3 font-medium">{{ r.name }}</td>
-              <td class="px-4 py-3">{{ r.users }}</td>
-              <td class="px-4 py-3 text-slate-600">{{ r.modules }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <p v-if="screen === 'admin-permissions'" class="text-sm text-slate-500">{{ ts("st.ws.permsNote") }}</p>
+      <SmartTable :rows="RBAC_ROLES" :columns="roleColumns" :row-key="(r) => r.id" :empty-text="ts('st.common.noResults')">
+        <template #cell-scope="{ row }">
+          <span class="text-slate-600">{{ row.modules }}</span>
+        </template>
+      </SmartTable>
+      <p v-if="screen === 'admin-permissions'" class="mt-3 text-sm text-slate-500">{{ ts("st.ws.permsNote") }}</p>
     </template>
 
     <template v-else-if="screen === 'admin-audit'">
-      <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <table class="min-w-full text-left text-sm">
-          <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
-            <tr>
-              <th class="px-4 py-3">{{ ts("st.common.date") }}</th>
-              <th class="px-4 py-3">{{ ts("st.ws.actor") }}</th>
-              <th class="px-4 py-3">{{ ts("st.ws.action") }}</th>
-              <th class="px-4 py-3">{{ ts("st.common.refNo") }}</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100">
-            <tr v-for="e in AUDIT_EVENTS" :key="e.id">
-              <td class="px-4 py-3 text-slate-600">{{ fmtDt(e.at) }}</td>
-              <td class="px-4 py-3">{{ e.actor }}</td>
-              <td class="px-4 py-3">
-                <p class="font-mono text-xs">{{ e.action }}</p>
-                <p class="text-xs text-slate-400">{{ e.detail }}</p>
-              </td>
-              <td class="px-4 py-3 font-mono text-xs">{{ e.refNo }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <SmartTable :rows="AUDIT_EVENTS" :columns="auditColumns" :row-key="(e) => e.id" :empty-text="ts('st.common.noResults')">
+        <template #cell-action="{ row }">
+          <p class="font-mono text-xs">{{ row.action }}</p>
+          <p class="text-xs text-slate-400">{{ row.detail }}</p>
+        </template>
+        <template #cell-refNo="{ row }">
+          <span class="font-mono text-xs">{{ row.refNo }}</span>
+        </template>
+      </SmartTable>
     </template>
 
     <template v-else>
-      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        <article
+      <div>
+        <div
           v-for="i in INTEGRATIONS"
           :key="i.id"
-          class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+          class="flex items-center justify-between gap-3 border-b border-slate-100 py-3 last:border-0"
         >
-          <div class="flex items-start justify-between gap-2">
+          <div>
             <h2 class="text-sm font-semibold text-slate-800">{{ i.name }}</h2>
-            <span :class="['rounded-full px-2.5 py-0.5 text-xs font-medium', integClass(i.status)]">
-              {{ i.status }}
-            </span>
+            <p class="mt-0.5 text-xs text-slate-500">
+              {{ ts("st.ws.lastSync") }}: {{ i.status === "planned" ? "—" : fmtDt(i.lastSync) }}
+            </p>
           </div>
-          <p class="mt-3 text-xs text-slate-500">
-            {{ ts("st.ws.lastSync") }}: {{ i.status === "planned" ? "—" : fmtDt(i.lastSync) }}
-          </p>
-        </article>
+          <span :class="['rounded-full px-2.5 py-0.5 text-xs font-medium', integClass(i.status)]">
+            {{ i.status }}
+          </span>
+        </div>
       </div>
     </template>
   </div>

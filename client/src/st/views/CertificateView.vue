@@ -102,7 +102,7 @@ function goBack() {
         />
       </div>
     </template>
-    <div v-else class="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500 shadow-sm">
+    <div v-else class="py-16 text-center text-sm text-slate-500">
       Sijil belum dikeluarkan untuk permohonan ini.
     </div>
   </div>

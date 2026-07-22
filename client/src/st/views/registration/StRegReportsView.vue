@@ -57,7 +57,7 @@ const volume = computed(() => apps.value.length);
 </script>
 
 <template>
-  <div v-if="code && def" class="space-y-5">
+  <div v-if="code && def" class="space-y-8">
     <div class="flex items-start gap-3">
       <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--accent-50)]">
         <BarChart3 class="h-5 w-5 text-[var(--accent-700)]" />
@@ -73,8 +73,8 @@ const volume = computed(() => apps.value.length);
 
     <p class="text-xs text-slate-400">{{ ts("st.common.mockNote") }}</p>
 
-    <div class="grid gap-4 lg:grid-cols-3">
-      <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm lg:col-span-1">
+    <div class="grid gap-6 lg:grid-cols-3 lg:divide-x lg:divide-slate-200">
+      <div>
         <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">{{ ts("st.reg.reportVolume") }}</p>
         <p class="mt-2 text-4xl font-bold text-slate-900">{{ volume }}</p>
         <p class="mt-4 text-xs font-semibold uppercase tracking-wider text-slate-400">{{ ts("st.reg.reportSla") }}</p>
@@ -91,7 +91,7 @@ const volume = computed(() => apps.value.length);
         <p class="mt-3 text-sm text-slate-500">{{ sla.greenPct }}% {{ ts("st.inbox.slaGreen").toLowerCase() }}</p>
       </div>
 
-      <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm lg:col-span-1">
+      <div class="lg:pl-6">
         <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">{{ ts("st.reg.reportByType") }}</p>
         <ul class="space-y-2.5">
           <li v-for="row in byType" :key="row.type">
@@ -106,7 +106,7 @@ const volume = computed(() => apps.value.length);
         </ul>
       </div>
 
-      <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm lg:col-span-1">
+      <div class="lg:pl-6">
         <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">{{ ts("st.reg.reportByStatus") }}</p>
         <ul class="space-y-2.5">
           <li v-for="row in byStatus" :key="row.status">

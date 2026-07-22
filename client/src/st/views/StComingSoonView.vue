@@ -21,7 +21,7 @@ const phase = computed(() => route.meta.phase as number | undefined);
       <span v-if="phase === 2" class="rounded-md bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">{{ t('phase.2') }}</span>
     </div>
 
-    <article class="rounded-xl border border-slate-200 bg-white shadow-sm">
+    <article class="border-t border-slate-200">
       <div class="flex flex-col items-center justify-center px-6 py-16 text-center">
         <Construction class="h-10 w-10 text-slate-300" />
         <h2 class="mt-4 text-base font-semibold text-slate-700">{{ t('comingSoon.heading') }}</h2>

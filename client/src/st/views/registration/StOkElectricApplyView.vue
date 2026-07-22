@@ -420,7 +420,7 @@ async function submit() {
       </li>
     </ol>
 
-    <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+    <div class="border-t border-slate-200 pt-6">
       <!-- Profile -->
       <div v-if="step === 0" class="space-y-4">
         <p class="flex items-start gap-2 rounded-lg bg-[var(--accent-50)] px-3 py-2 text-xs text-slate-600">

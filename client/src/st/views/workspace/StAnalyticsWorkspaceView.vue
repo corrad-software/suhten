@@ -11,6 +11,8 @@ import {
   SLA_MODULE_STATS,
   analyticsScreenKey,
 } from "../../mock/workspace";
+import type { SmartTableColumn } from "../../composables/useSmartTable";
+import SmartTable from "../../components/SmartTable.vue";
 
 const route = useRoute();
 const { ts, locale } = useLocale();
@@ -42,10 +44,28 @@ function fmt(iso: string): string {
     minute: "2-digit",
   });
 }
+
+type SlaModuleRow = (typeof SLA_MODULE_STATS)[number];
+const slaColumns = computed<SmartTableColumn<SlaModuleRow>[]>(() => [
+  { key: "module", label: ts("st.common.module"), value: (row) => row.module },
+  { key: "green", label: ts("st.inbox.slaGreen"), value: (row) => `${row.green}%` },
+  { key: "yellow", label: ts("st.inbox.slaYellow"), value: (row) => `${row.yellow}%` },
+  { key: "red", label: ts("st.inbox.slaRed"), value: (row) => `${row.red}%` },
+  { key: "distribution", label: ts("st.ws.distribution"), value: () => "", filterable: false },
+]);
+
+type AuditRow = (typeof AUDIT_EVENTS)[number];
+const auditColumns = computed<SmartTableColumn<AuditRow>[]>(() => [
+  { key: "date", label: ts("st.common.date"), value: (e) => fmt(e.at) },
+  { key: "actor", label: ts("st.ws.actor"), value: (e) => e.actor },
+  { key: "action", label: ts("st.ws.action"), value: (e) => `${e.action} ${e.detail}` },
+  { key: "refNo", label: ts("st.common.refNo"), value: (e) => e.refNo },
+  { key: "module", label: ts("st.common.module"), value: (e) => e.moduleCode },
+]);
 </script>
 
 <template>
-  <div class="space-y-5">
+  <div class="space-y-8">
     <div class="flex items-start gap-3">
       <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--accent-50)]">
         <component :is="icon" class="h-5 w-5 text-[var(--accent-700)]" />
@@ -59,11 +79,11 @@ function fmt(iso: string): string {
     <p class="text-xs text-slate-400">{{ ts("st.common.mockNote") }}</p>
 
     <template v-if="screen === 'reports-airr'">
-      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="grid grid-cols-2 gap-y-5 sm:grid-cols-4 sm:divide-x sm:divide-slate-200">
         <div
           v-for="(s, i) in AIRR_STATS"
           :key="i"
-          class="rounded-xl border border-slate-200 bg-white px-4 py-4 shadow-sm"
+          class="px-0 sm:px-5 sm:first:pl-0"
         >
           <p class="text-xs text-slate-500">{{ locale === "bi" ? s.labelBi : s.labelBm }}</p>
           <p class="mt-1 text-3xl font-bold text-slate-900">{{ s.value.toLocaleString() }}</p>
@@ -72,41 +92,36 @@ function fmt(iso: string): string {
           </p>
         </div>
       </div>
-      <article class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <article class="border-t border-slate-200 pt-6">
         <h2 class="text-sm font-semibold text-slate-800">{{ ts("st.ws.airrNote") }}</h2>
         <p class="mt-2 text-sm text-slate-600">{{ ts("st.ws.airrBody") }}</p>
       </article>
     </template>
 
     <template v-else-if="screen === 'reports-sla'">
-      <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <table class="min-w-full text-left text-sm">
-          <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
-            <tr>
-              <th class="px-4 py-3">{{ ts("st.common.module") }}</th>
-              <th class="px-4 py-3">{{ ts("st.inbox.slaGreen") }}</th>
-              <th class="px-4 py-3">{{ ts("st.inbox.slaYellow") }}</th>
-              <th class="px-4 py-3">{{ ts("st.inbox.slaRed") }}</th>
-              <th class="px-4 py-3">{{ ts("st.ws.distribution") }}</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100">
-            <tr v-for="row in SLA_MODULE_STATS" :key="row.module">
-              <td class="px-4 py-3 font-mono text-xs font-semibold">{{ row.module }}</td>
-              <td class="px-4 py-3 text-emerald-700">{{ row.green }}%</td>
-              <td class="px-4 py-3 text-amber-700">{{ row.yellow }}%</td>
-              <td class="px-4 py-3 text-rose-700">{{ row.red }}%</td>
-              <td class="px-4 py-3 w-48">
-                <div class="flex h-2.5 overflow-hidden rounded-full bg-slate-100">
-                  <div class="bg-emerald-500" :style="{ width: `${row.green}%` }" />
-                  <div class="bg-amber-400" :style="{ width: `${row.yellow}%` }" />
-                  <div class="bg-rose-500" :style="{ width: `${row.red}%` }" />
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <SmartTable :rows="SLA_MODULE_STATS" :columns="slaColumns" :row-key="(row) => row.module">
+        <template #cell-module="{ row }">
+          <span class="font-mono text-xs font-semibold">{{ row.module }}</span>
+        </template>
+        <template #cell-green="{ row }">
+          <span class="text-emerald-700">{{ row.green }}%</span>
+        </template>
+        <template #cell-yellow="{ row }">
+          <span class="text-amber-700">{{ row.yellow }}%</span>
+        </template>
+        <template #cell-red="{ row }">
+          <span class="text-rose-700">{{ row.red }}%</span>
+        </template>
+        <template #cell-distribution="{ row }">
+          <div class="w-48">
+            <div class="flex h-2.5 overflow-hidden rounded-full bg-slate-100">
+              <div class="bg-emerald-500" :style="{ width: `${row.green}%` }" />
+              <div class="bg-amber-400" :style="{ width: `${row.yellow}%` }" />
+              <div class="bg-rose-500" :style="{ width: `${row.red}%` }" />
+            </div>
+          </div>
+        </template>
+      </SmartTable>
     </template>
 
     <template v-else-if="screen === 'reports-export'">
@@ -134,31 +149,21 @@ function fmt(iso: string): string {
     </template>
 
     <template v-else>
-      <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <table class="min-w-full text-left text-sm">
-          <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
-            <tr>
-              <th class="px-4 py-3">{{ ts("st.common.date") }}</th>
-              <th class="px-4 py-3">{{ ts("st.ws.actor") }}</th>
-              <th class="px-4 py-3">{{ ts("st.ws.action") }}</th>
-              <th class="px-4 py-3">{{ ts("st.common.refNo") }}</th>
-              <th class="px-4 py-3">{{ ts("st.common.module") }}</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100">
-            <tr v-for="e in AUDIT_EVENTS" :key="e.id" class="hover:bg-slate-50/80">
-              <td class="px-4 py-3 text-slate-600">{{ fmt(e.at) }}</td>
-              <td class="px-4 py-3 font-medium">{{ e.actor }}</td>
-              <td class="px-4 py-3">
-                <p class="font-mono text-xs text-slate-700">{{ e.action }}</p>
-                <p class="text-xs text-slate-400">{{ e.detail }}</p>
-              </td>
-              <td class="px-4 py-3 font-mono text-xs">{{ e.refNo }}</td>
-              <td class="px-4 py-3">{{ e.moduleCode }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <SmartTable :rows="AUDIT_EVENTS" :columns="auditColumns" :row-key="(e) => e.id">
+        <template #cell-date="{ row }">
+          <span class="text-slate-600">{{ fmt(row.at) }}</span>
+        </template>
+        <template #cell-actor="{ row }">
+          <span class="font-medium">{{ row.actor }}</span>
+        </template>
+        <template #cell-action="{ row }">
+          <p class="font-mono text-xs text-slate-700">{{ row.action }}</p>
+          <p class="text-xs text-slate-400">{{ row.detail }}</p>
+        </template>
+        <template #cell-refNo="{ row }">
+          <span class="font-mono text-xs">{{ row.refNo }}</span>
+        </template>
+      </SmartTable>
     </template>
   </div>
 </template>

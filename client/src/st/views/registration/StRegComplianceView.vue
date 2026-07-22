@@ -3,10 +3,13 @@ import { computed, ref } from "vue";
 import { ShieldAlert } from "lucide-vue-next";
 
 import { useLocale } from "@/composables/useLocale";
+import type { StMessageKey } from "@/i18n/st-messages";
 import type { ComplianceStatus } from "../../mock/registration";
 import { useStRegistrationStore } from "../../stores/registration";
 import { useRegistrationModule } from "../../composables/useRegistrationModule";
+import type { SmartTableColumn } from "../../composables/useSmartTable";
 import ComplianceBadge from "../../components/ComplianceBadge.vue";
+import SmartTable from "../../components/SmartTable.vue";
 
 const { ts, locale } = useLocale();
 const regStore = useStRegistrationStore();
@@ -48,10 +51,21 @@ const FILTERS: Array<{ key: ComplianceStatus | ""; labelKey: "st.common.filterAl
   { key: "expired", labelKey: "st.reg.complianceExpired" },
   { key: "suspended", labelKey: "st.reg.complianceSuspended" },
 ];
+
+type ComplianceRow = (typeof rows.value)[number];
+
+const columns = computed<SmartTableColumn<ComplianceRow>[]>(() => [
+  { key: "certificate", label: ts("st.common.certificate"), value: (row) => row.certificateNo },
+  { key: "applicant", label: ts("st.common.applicant"), value: (row) => row.holderName },
+  { key: "category", label: categoryLabel.value, value: (row) => row.categoryOrClass },
+  { key: "cdp", label: ts("st.common.cdp"), value: (row) => String(row.cdpPoints) },
+  { key: "expires", label: ts("st.common.expires"), value: (row) => fmt(row.expiresAt) },
+  { key: "status", label: ts("st.common.status"), value: (row) => ts(`st.compliance.${row.compliance}` as StMessageKey) },
+]);
 </script>
 
 <template>
-  <div v-if="code && def" class="space-y-5">
+  <div v-if="code && def" class="space-y-8">
     <div class="flex items-start gap-3">
       <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--accent-50)]">
         <ShieldAlert class="h-5 w-5 text-[var(--accent-700)]" />
@@ -67,38 +81,22 @@ const FILTERS: Array<{ key: ComplianceStatus | ""; labelKey: "st.common.filterAl
 
     <p class="text-xs text-slate-400">{{ ts("st.common.mockNote") }}</p>
 
-    <div class="grid gap-3 sm:grid-cols-4">
-      <button
-        type="button"
-        class="rounded-xl border border-emerald-200 bg-emerald-50/80 px-4 py-3 text-left shadow-sm"
-        @click="filter = 'active'"
-      >
-        <p class="text-2xl font-bold text-emerald-700">{{ counts.active }}</p>
-        <p class="text-xs text-emerald-800/80">{{ ts("st.reg.complianceActive") }}</p>
+    <div class="grid grid-cols-2 gap-y-4 sm:grid-cols-4 sm:divide-x sm:divide-slate-200">
+      <button type="button" class="px-0 text-left transition-opacity hover:opacity-70 sm:px-5 sm:first:pl-0" @click="filter = 'active'">
+        <p class="text-2xl font-bold text-emerald-600">{{ counts.active }}</p>
+        <p class="text-xs text-slate-500">{{ ts("st.reg.complianceActive") }}</p>
       </button>
-      <button
-        type="button"
-        class="rounded-xl border border-amber-200 bg-amber-50/80 px-4 py-3 text-left shadow-sm"
-        @click="filter = 'expiring_soon'"
-      >
-        <p class="text-2xl font-bold text-amber-700">{{ counts.expiring_soon }}</p>
-        <p class="text-xs text-amber-800/80">{{ ts("st.reg.complianceExpiring") }}</p>
+      <button type="button" class="px-0 text-left transition-opacity hover:opacity-70 sm:px-5" @click="filter = 'expiring_soon'">
+        <p class="text-2xl font-bold text-amber-600">{{ counts.expiring_soon }}</p>
+        <p class="text-xs text-slate-500">{{ ts("st.reg.complianceExpiring") }}</p>
       </button>
-      <button
-        type="button"
-        class="rounded-xl border border-rose-200 bg-rose-50/80 px-4 py-3 text-left shadow-sm"
-        @click="filter = 'expired'"
-      >
-        <p class="text-2xl font-bold text-rose-700">{{ counts.expired }}</p>
-        <p class="text-xs text-rose-800/80">{{ ts("st.reg.complianceExpired") }}</p>
+      <button type="button" class="px-0 text-left transition-opacity hover:opacity-70 sm:px-5" @click="filter = 'expired'">
+        <p class="text-2xl font-bold text-rose-600">{{ counts.expired }}</p>
+        <p class="text-xs text-slate-500">{{ ts("st.reg.complianceExpired") }}</p>
       </button>
-      <button
-        type="button"
-        class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-left shadow-sm"
-        @click="filter = 'suspended'"
-      >
+      <button type="button" class="px-0 text-left transition-opacity hover:opacity-70 sm:px-5" @click="filter = 'suspended'">
         <p class="text-2xl font-bold text-slate-700">{{ counts.suspended }}</p>
-        <p class="text-xs text-slate-600">{{ ts("st.reg.complianceSuspended") }}</p>
+        <p class="text-xs text-slate-500">{{ ts("st.reg.complianceSuspended") }}</p>
       </button>
     </div>
 
@@ -117,41 +115,23 @@ const FILTERS: Array<{ key: ComplianceStatus | ""; labelKey: "st.common.filterAl
       </button>
     </div>
 
-    <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div class="border-b border-slate-100 px-4 py-3">
-        <h2 class="text-sm font-semibold text-slate-800">{{ ts("st.reg.complianceTitle") }}</h2>
-      </div>
-      <p v-if="rows.length === 0" class="px-4 py-12 text-center text-sm text-slate-400">{{ ts("st.common.noResults") }}</p>
-      <div v-else class="overflow-x-auto">
-        <table class="w-full min-w-[700px] text-left text-sm">
-          <thead>
-            <tr class="border-b border-slate-100 text-[11px] uppercase tracking-wider text-slate-400">
-              <th class="px-4 py-2 font-medium">{{ ts("st.common.certificate") }}</th>
-              <th class="px-4 py-2 font-medium">{{ ts("st.common.applicant") }}</th>
-              <th class="px-4 py-2 font-medium">{{ categoryLabel }}</th>
-              <th class="px-4 py-2 font-medium">{{ ts("st.common.cdp") }}</th>
-              <th class="px-4 py-2 font-medium">{{ ts("st.common.expires") }}</th>
-              <th class="px-4 py-2 font-medium">{{ ts("st.common.status") }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="row in rows" :key="row.id" class="border-b border-slate-50 last:border-0 hover:bg-slate-50/60">
-              <td class="px-4 py-3 font-mono text-xs text-slate-700">{{ row.certificateNo }}</td>
-              <td class="px-4 py-3">
-                <p class="font-medium text-slate-800">{{ row.holderName }}</p>
-                <p class="text-xs text-slate-400">{{ row.identityNo }}</p>
-                <p v-if="row.employerName && row.employerName !== '—'" class="text-xs text-slate-500">
-                  {{ ts("st.common.employer") }}: {{ row.employerName }}
-                </p>
-              </td>
-              <td class="px-4 py-3 font-medium text-slate-700">{{ row.categoryOrClass }}</td>
-              <td class="px-4 py-3 text-slate-600">{{ row.cdpPoints }}</td>
-              <td class="px-4 py-3 text-slate-500">{{ fmt(row.expiresAt) }}</td>
-              <td class="px-4 py-3"><ComplianceBadge :status="row.compliance" /></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+    <div class="border-t border-slate-200 pt-6">
+      <h2 class="mb-2 text-sm font-semibold text-slate-900">{{ ts("st.reg.complianceTitle") }}</h2>
+      <SmartTable :rows="rows" :columns="columns" :row-key="(row) => row.id" :empty-text="ts('st.common.noResults')">
+        <template #cell-certificate="{ row }">
+          <span class="font-mono text-xs text-slate-700">{{ row.certificateNo }}</span>
+        </template>
+        <template #cell-applicant="{ row }">
+          <p class="font-medium text-slate-800">{{ row.holderName }}</p>
+          <p class="text-xs text-slate-400">{{ row.identityNo }}</p>
+          <p v-if="row.employerName && row.employerName !== '—'" class="text-xs text-slate-500">
+            {{ ts("st.common.employer") }}: {{ row.employerName }}
+          </p>
+        </template>
+        <template #cell-status="{ row }">
+          <ComplianceBadge :status="row.compliance" />
+        </template>
+      </SmartTable>
     </div>
   </div>
 </template>

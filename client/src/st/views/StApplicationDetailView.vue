@@ -248,13 +248,16 @@ const portalBase = computed(() => (route.path.startsWith("/admin/st") ? "/admin/
 </script>
 
 <template>
-  <div v-if="app" class="space-y-5">
-    <button class="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800" @click="router.back()">
+  <div v-if="app" class="space-y-10">
+    <button
+      class="flex items-center gap-1.5 rounded-md border border-black px-3 py-1.5 text-sm font-medium text-black transition-colors hover:bg-black/5"
+      @click="router.back()"
+    >
       <ArrowLeft class="h-4 w-4" /> Kembali
     </button>
 
     <!-- Header -->
-    <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div class="border-b border-slate-200 pb-4">
       <div class="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p class="font-mono text-xs text-slate-500">{{ app.refNo }}</p>
@@ -275,10 +278,12 @@ const portalBase = computed(() => (route.path.startsWith("/admin/st") ? "/admin/
     </div>
 
     <!-- Action bar -->
-    <div class="rounded-xl border border-[var(--accent-200)] bg-[var(--accent-50)] p-4">
-      <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--accent-700)]">Tindakan</p>
-      <ApplicationActionBar :application="app" />
-      <p class="mt-1 text-xs text-slate-500" v-if="app.status === 'certificate_issued'">Permohonan selesai. Sijil digital telah dikeluarkan.</p>
+    <div class="rounded-xl border border-rose-200 bg-rose-50 p-4">
+      <div class="flex flex-wrap items-center justify-end gap-3">
+        <p class="text-xs font-semibold uppercase tracking-wider text-rose-700">Tindakan</p>
+        <ApplicationActionBar :application="app" />
+      </div>
+      <p class="mt-2 text-right text-xs text-slate-500" v-if="app.status === 'certificate_issued'">Permohonan selesai. Sijil digital telah dikeluarkan.</p>
     </div>
 
     <!-- CE: contractor company detail (same fields as modul Permohonan) -->
@@ -465,11 +470,11 @@ const portalBase = computed(() => (route.path.startsWith("/admin/st") ? "/admin/
     </template>
 
     <!-- Documents -->
-    <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700"><FileText class="h-4 w-4 text-slate-400" /> Dokumen Sokongan</h2>
+    <div>
+      <h2 class="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-900"><FileText class="h-4 w-4 text-slate-400" /> Dokumen Sokongan</h2>
       <p v-if="app.documents.length === 0" class="text-sm text-slate-400">Tiada dokumen dimuat naik.</p>
-      <ul v-else class="space-y-1.5">
-        <li v-for="d in app.documents" :key="d.id" class="flex items-center justify-between rounded-md border border-slate-100 px-3 py-2 text-sm">
+      <ul v-else>
+        <li v-for="d in app.documents" :key="d.id" class="flex items-center justify-between border-b border-slate-100 py-2 text-sm last:border-0">
           <span class="text-slate-700">{{ d.label }}</span>
           <span class="font-mono text-xs text-slate-500">{{ d.fileName }} · {{ d.sizeKb }} KB</span>
         </li>
@@ -477,10 +482,10 @@ const portalBase = computed(() => (route.path.startsWith("/admin/st") ? "/admin/
     </div>
 
     <!-- Payments -->
-    <div v-if="app.payments.length" class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700"><Receipt class="h-4 w-4 text-slate-400" /> Pembayaran</h2>
-      <ul class="space-y-1.5">
-        <li v-for="p in app.payments" :key="p.id" class="flex items-center justify-between rounded-md border border-slate-100 px-3 py-2 text-sm">
+    <div v-if="app.payments.length">
+      <h2 class="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-900"><Receipt class="h-4 w-4 text-slate-400" /> Pembayaran</h2>
+      <ul>
+        <li v-for="p in app.payments" :key="p.id" class="flex items-center justify-between border-b border-slate-100 py-2 text-sm last:border-0">
           <span class="text-slate-700">{{ p.kind === 'processing' ? 'Yuran Pemprosesan' : 'Yuran Pendaftaran' }} <span class="text-xs text-slate-400">· {{ p.receiptNo }}</span></span>
           <span class="font-medium text-slate-800">RM {{ p.amount.toFixed(2) }}</span>
         </li>
@@ -520,9 +525,9 @@ const portalBase = computed(() => (route.path.startsWith("/admin/st") ? "/admin/
       </button>
     </div>
 
-    <!-- Audit trail (OK only — CE already shows jejak proses above) -->
-    <div v-if="!isCe" class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 class="mb-4 text-sm font-semibold text-slate-700">Jejak Audit</h2>
+    <!-- Audit trail -->
+    <div>
+      <h2 class="mb-4 text-sm font-semibold text-slate-900">Jejak Audit</h2>
       <AuditTrailTimeline :entries="app.auditTrail" />
     </div>
   </div>

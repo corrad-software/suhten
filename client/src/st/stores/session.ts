@@ -14,6 +14,7 @@ function homeRouteForRole(role: PersonaRole): string {
     // Pemohon → OK Elektrik; Majikan → Kontraktor Elektrik (filtered in landing view).
     case "applicant":
     case "employer":
+      return "/st/dashboard";
       return "/st/perkhidmatan-saya";
     case "admin":
       return "/st/dashboard";

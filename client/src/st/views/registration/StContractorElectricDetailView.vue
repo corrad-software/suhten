@@ -190,9 +190,9 @@ const companyAddressLine = computed(() => {
 
     <p class="text-xs text-slate-400">{{ ts("st.common.mockNote") }}</p>
 
-    <div class="grid gap-4 lg:grid-cols-2">
-      <section class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-        <h2 class="mb-3 text-sm font-semibold text-slate-800">{{ ts("st.ceApply.stepA") }} / {{ ts("st.ceApply.stepB") }}</h2>
+    <div class="grid gap-6 lg:grid-cols-2 lg:divide-x lg:divide-slate-200">
+      <section>
+        <h2 class="mb-3 text-sm font-semibold text-slate-900">{{ ts("st.ceApply.stepA") }} / {{ ts("st.ceApply.stepB") }}</h2>
         <dl class="grid gap-2 text-sm sm:grid-cols-2">
           <div><dt class="text-xs text-slate-400">{{ ts("st.ceApply.kind") }}</dt><dd>{{ kindLabel(ce.contractorKind) }}</dd></div>
           <div><dt class="text-xs text-slate-400">{{ ts("st.ceApply.class") }}</dt><dd>{{ ce.contractorClass ?? "—" }}</dd></div>
@@ -212,8 +212,8 @@ const companyAddressLine = computed(() => {
         </dl>
       </section>
 
-      <section class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-        <h2 class="mb-3 text-sm font-semibold text-slate-800">{{ ts("st.okDetail.timeline") }}</h2>
+      <section class="lg:pl-6">
+        <h2 class="mb-3 text-sm font-semibold text-slate-900">{{ ts("st.okDetail.timeline") }}</h2>
         <ol class="space-y-3">
           <li v-for="(ev, i) in app.detail?.timeline ?? []" :key="i" class="border-l-2 border-slate-200 pl-3">
             <p class="text-sm font-medium text-slate-800">{{ ev.label }}</p>
@@ -223,9 +223,9 @@ const companyAddressLine = computed(() => {
       </section>
     </div>
 
-    <section class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-      <h2 class="mb-3 text-sm font-semibold text-slate-800">{{ ts("st.ceApply.directors") }}</h2>
-      <ul class="divide-y divide-slate-50 text-sm">
+    <section class="border-t border-slate-200 pt-6">
+      <h2 class="mb-2 text-sm font-semibold text-slate-900">{{ ts("st.ceApply.directors") }}</h2>
+      <ul class="divide-y divide-slate-100 text-sm">
         <li v-for="(d, i) in directors" :key="i" class="py-2">
           <span class="font-medium">{{ d.name }}</span>
           <span class="ml-2 font-mono text-xs text-slate-500">{{ d.icNumber }}</span>
@@ -236,42 +236,42 @@ const companyAddressLine = computed(() => {
       </ul>
     </section>
 
-    <div class="grid gap-4 lg:grid-cols-2">
-      <section class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-        <h2 class="mb-3 text-sm font-semibold text-slate-800">{{ ts("st.ceApply.stepC") }}</h2>
-        <ul class="space-y-2 text-sm">
-          <li v-for="(o, i) in oks" :key="'ok'+i" class="rounded-md border border-slate-100 px-3 py-2">
+    <div class="grid gap-6 border-t border-slate-200 pt-6 lg:grid-cols-2 lg:divide-x lg:divide-slate-200">
+      <section>
+        <h2 class="mb-3 text-sm font-semibold text-slate-900">{{ ts("st.ceApply.stepC") }}</h2>
+        <ul class="divide-y divide-slate-100 text-sm">
+          <li v-for="(o, i) in oks" :key="'ok'+i" class="py-2">
             <p class="font-medium">{{ o.name }} <span class="text-xs text-slate-500">({{ o.wirerType }})</span></p>
             <p class="font-mono text-xs text-slate-500">{{ o.mykad }} · {{ o.certificateNo }} · {{ o.periodYears }}y</p>
           </li>
-          <li v-for="(s, i) in skilled" :key="'sk'+i" class="rounded-md border border-slate-100 px-3 py-2">
+          <li v-for="(s, i) in skilled" :key="'sk'+i" class="py-2">
             <p class="font-medium">{{ s.name }}</p>
             <p class="text-xs text-slate-500">{{ s.qualification }} · {{ s.field }}</p>
           </li>
-          <li v-for="(e, i) in engineers" :key="'pe'+i" class="rounded-md border border-slate-100 px-3 py-2">
+          <li v-for="(e, i) in engineers" :key="'pe'+i" class="py-2">
             <p class="font-medium">{{ e.name }}</p>
             <p class="text-xs text-slate-500">{{ e.registrationNo }} · {{ e.icNumber }}</p>
           </li>
-          <li v-if="!oks.length && !skilled.length && !engineers.length" class="text-slate-400">—</li>
+          <li v-if="!oks.length && !skilled.length && !engineers.length" class="py-2 text-slate-400">—</li>
         </ul>
       </section>
 
-      <section class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-        <h2 class="mb-3 text-sm font-semibold text-slate-800">{{ ts("st.ceApply.equipment") }}</h2>
-        <ul class="space-y-2 text-sm">
-          <li v-for="(eq, i) in equipment" :key="i" class="rounded-md border border-slate-100 px-3 py-2">
+      <section class="lg:pl-6">
+        <h2 class="mb-3 text-sm font-semibold text-slate-900">{{ ts("st.ceApply.equipment") }}</h2>
+        <ul class="divide-y divide-slate-100 text-sm">
+          <li v-for="(eq, i) in equipment" :key="i" class="py-2">
             <p class="font-medium">{{ eq.equipmentType }} · {{ eq.brand }}</p>
             <p class="text-xs text-slate-500">{{ eq.model }} · S/N {{ eq.serialNo }}</p>
           </li>
-          <li v-if="!equipment.length" class="text-slate-400">—</li>
+          <li v-if="!equipment.length" class="py-2 text-slate-400">—</li>
         </ul>
       </section>
     </div>
 
-    <section class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-      <h2 class="mb-3 text-sm font-semibold text-slate-800">{{ ts("st.okDetail.documents") }}</h2>
-      <ul v-if="app.detail?.documents?.length" class="space-y-2">
-        <li v-for="(doc, i) in app.detail.documents" :key="i" class="flex items-center gap-2 rounded-md border border-slate-100 px-3 py-2 text-sm">
+    <section class="border-t border-slate-200 pt-6">
+      <h2 class="mb-2 text-sm font-semibold text-slate-900">{{ ts("st.okDetail.documents") }}</h2>
+      <ul v-if="app.detail?.documents?.length">
+        <li v-for="(doc, i) in app.detail.documents" :key="i" class="flex items-center gap-2 border-b border-slate-100 py-2 text-sm last:border-0">
           <FileText class="h-4 w-4 text-slate-400" />
           <span class="font-medium text-slate-700">{{ doc.label }}</span>
           <span class="text-xs text-slate-400">{{ doc.fileName }}</span>

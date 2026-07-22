@@ -28,8 +28,12 @@ function state(i: number): "done" | "active" | "pending" {
 
     <template v-else>
       <!-- Desktop: horizontal stepper -->
-      <ol class="hidden flex-wrap items-center gap-y-3 sm:flex">
-        <li v-for="(step, i) in WORKFLOW_STEPS" :key="step.key" class="flex items-center">
+      <ol class="hidden w-full items-start sm:flex">
+        <li
+          v-for="(step, i) in WORKFLOW_STEPS"
+          :key="step.key"
+          :class="['flex items-center', i < WORKFLOW_STEPS.length - 1 ? 'flex-1' : '']"
+        >
           <div class="flex flex-col items-center text-center" style="width: 84px">
             <span
               :class="[
@@ -48,7 +52,7 @@ function state(i: number): "done" | "active" | "pending" {
           </div>
           <span
             v-if="i < WORKFLOW_STEPS.length - 1"
-            :class="['mx-0.5 h-0.5 w-6 rounded -translate-y-2', i < currentIndex ? 'bg-emerald-500' : 'bg-slate-200']"
+            :class="['mx-1 h-0.5 flex-1 rounded -translate-y-2', i < currentIndex ? 'bg-emerald-500' : 'bg-slate-200']"
           />
         </li>
       </ol>

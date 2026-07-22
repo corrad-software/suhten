@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
-import { Building2, ImageUp, Save, Trash2, UserCog } from "lucide-vue-next";
+import { Building2, ImageUp, Save, Trash2 } from "lucide-vue-next";
 
 import { useToast } from "@/composables/useToast";
 import { useLocale } from "@/composables/useLocale";
@@ -9,12 +9,14 @@ import type { AppDocument, GeoPoint } from "../types";
 import { formatAddress, isAddressComplete, parseAddress, type StAddress } from "../address";
 import { useStEmployerStore } from "../stores/employer";
 import { useStWorkflowStore } from "../stores/workflow";
-import { workflowShort } from "../status";
+import { STATUS_META, workflowShort } from "../status";
+import type { SmartTableColumn } from "../composables/useSmartTable";
 import StPageHero from "../components/StPageHero.vue";
 import AddressFieldset from "../components/AddressFieldset.vue";
 import StLocationMap from "../components/StLocationMap.vue";
 import DocumentUploadField from "../components/DocumentUploadField.vue";
 import StatusBadge from "../components/StatusBadge.vue";
+import SmartTable from "../components/SmartTable.vue";
 
 const toast = useToast();
 const { locale } = useLocale();
@@ -113,6 +115,27 @@ function save() {
 
 const INPUT =
   "w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-[var(--accent-500)] focus:outline-hidden focus:ring-2 focus:ring-[var(--accent-ring)]/30";
+
+type ProfileTab = "company" | "address" | "oks" | "documents";
+const activeTab = ref<ProfileTab>("company");
+const TABS = computed<Array<{ key: ProfileTab; label: string }>>(() => [
+  { key: "company", label: bm.value ? "Maklumat Syarikat" : "Company Information" },
+  { key: "address", label: bm.value ? "Alamat Operasi" : "Operating Address" },
+  { key: "oks", label: bm.value ? "Orang Kompeten Di Bawah Syarikat" : "Competent Persons" },
+  { key: "documents", label: bm.value ? "Dokumen Syarikat" : "Company Documents" },
+]);
+
+// ── Orang Kompeten tab: SmartTable column definitions ───────────────────────
+function statusLabel(status: string): string {
+  return STATUS_META[status as keyof typeof STATUS_META]?.label ?? status;
+}
+
+const okColumns = computed<SmartTableColumn<(typeof registeredOks.value)[number]>[]>(() => [
+  { key: "refNo", label: bm.value ? "No. Rujukan" : "Ref No.", value: (a) => a.refNo },
+  { key: "name", label: bm.value ? "Nama" : "Name", value: (a) => a.applicant.fullName },
+  { key: "type", label: bm.value ? "Jenis" : "Type", value: (a) => workflowShort(a.workflowType) },
+  { key: "status", label: bm.value ? "Status" : "Status", value: (a) => statusLabel(a.status) },
+]);
 </script>
 
 <template>
@@ -123,7 +146,7 @@ const INPUT =
     >
       <template #action>
         <button
-          class="flex shrink-0 items-center gap-1.5 rounded-md bg-white px-4 py-2 text-sm font-medium text-[var(--accent-700)] transition-colors hover:bg-white/90 disabled:opacity-60"
+          class="flex shrink-0 items-center gap-1.5 rounded-md bg-[var(--accent-600)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--accent-700)] disabled:opacity-60"
           :disabled="!employer"
           @click="save"
         >
@@ -132,19 +155,27 @@ const INPUT =
       </template>
     </StPageHero>
 
-    <div v-if="!employer" class="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500 shadow-sm">
+    <div v-if="!employer" class="py-16 text-center text-sm text-slate-500">
       {{ bm ? 'Tiada syarikat majikan dikaitkan dengan akaun ini.' : 'No employer company is linked to this account.' }}
     </div>
 
     <template v-else>
-      <!-- Maklumat Syarikat -->
-      <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h2 class="flex items-center gap-2 text-sm font-semibold text-slate-900">
-          <Building2 class="h-4 w-4 text-[var(--accent-600)]" />
-          {{ bm ? 'Maklumat Syarikat' : 'Company Information' }}
-        </h2>
+      <div class="flex gap-1 border-b border-slate-200">
+        <button
+          v-for="t in TABS"
+          :key="t.key"
+          type="button"
+          class="border-b-2 px-3 pb-2 text-sm font-medium transition-colors"
+          :class="activeTab === t.key ? 'border-[var(--accent-600)] text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-900'"
+          @click="activeTab = t.key"
+        >
+          {{ t.label }}
+        </button>
+      </div>
 
-        <div class="mt-4 grid gap-4 sm:grid-cols-2">
+      <!-- Maklumat Syarikat -->
+      <div v-if="activeTab === 'company'" class="pt-6">
+        <div class="grid gap-4 sm:grid-cols-2">
           <label class="sm:col-span-2">
             <span class="mb-1 block text-sm font-medium text-slate-700">
               {{ bm ? 'Nama Syarikat' : 'Company Name' }} <span class="text-rose-500">*</span>
@@ -200,11 +231,8 @@ const INPUT =
       </div>
 
       <!-- Alamat + Peta -->
-      <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h2 class="text-sm font-semibold text-slate-900">{{ bm ? 'Alamat Operasi' : 'Operating Address' }}</h2>
-        <div class="mt-4">
-          <AddressFieldset v-model="addressForm" :show-errors="showErrors" />
-        </div>
+      <div v-else-if="activeTab === 'address'" class="pt-6">
+        <AddressFieldset v-model="addressForm" :show-errors="showErrors" />
 
         <div class="mt-5 border-t border-slate-100 pt-4">
           <p class="mb-1 text-sm font-medium text-slate-700">{{ bm ? 'Lokasi Premis (Peta)' : 'Premises Location (Map)' }}</p>
@@ -217,36 +245,27 @@ const INPUT =
         </div>
       </div>
 
+      <!-- Orang Kompeten berdaftar (read-only, search + pagination) -->
+      <div v-else-if="activeTab === 'oks'" class="pt-6">
+        <SmartTable
+          :rows="registeredOks"
+          :columns="okColumns"
+          :row-key="(a) => a.id"
+          :search-placeholder="bm ? 'Cari nama, no. rujukan atau status...' : 'Search name, ref no. or status...'"
+          :empty-text="bm ? 'Tiada Orang Kompeten dikaitkan dengan syarikat ini.' : 'No Competent Persons linked to this company.'"
+        >
+          <template #cell-status="{ row }">
+            <StatusBadge :status="row.status" />
+          </template>
+        </SmartTable>
+      </div>
+
       <!-- Dokumen Syarikat -->
-      <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h2 class="text-sm font-semibold text-slate-900">{{ bm ? 'Dokumen Syarikat' : 'Company Documents' }}</h2>
-        <p class="mt-0.5 mb-3 text-xs text-slate-500">
+      <div v-else-if="activeTab === 'documents'" class="pt-6">
+        <p class="mb-3 text-xs text-slate-500">
           {{ bm ? 'Dokumen sokongan syarikat untuk semakan ST.' : 'Supporting company documents for ST review.' }}
         </p>
         <DocumentUploadField v-model="documents" :labels="COMPANY_DOC_LABELS" />
-      </div>
-
-      <!-- Orang Kompeten berdaftar (read-only) -->
-      <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div class="flex items-center gap-2 border-b border-slate-100 px-5 py-3">
-          <UserCog class="h-4 w-4 text-[var(--accent-600)]" />
-          <h2 class="text-sm font-semibold text-slate-900">{{ bm ? 'Orang Kompeten Di Bawah Syarikat' : 'Competent Persons Under Company' }}</h2>
-          <span class="ml-auto rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">{{ registeredOks.length }}</span>
-        </div>
-        <p v-if="registeredOks.length === 0" class="px-5 py-8 text-center text-sm text-slate-400">
-          {{ bm ? 'Tiada Orang Kompeten dikaitkan dengan syarikat ini.' : 'No Competent Persons linked to this company.' }}
-        </p>
-        <div
-          v-for="a in registeredOks"
-          :key="a.id"
-          class="flex items-center justify-between gap-3 border-b border-slate-50 px-5 py-3 last:border-0"
-        >
-          <div class="min-w-0">
-            <p class="truncate text-sm font-medium text-slate-800">{{ a.applicant.fullName }}</p>
-            <p class="font-mono text-xs text-slate-500">{{ a.refNo }} · {{ workflowShort(a.workflowType) }}</p>
-          </div>
-          <StatusBadge :status="a.status" />
-        </div>
       </div>
     </template>
   </div>

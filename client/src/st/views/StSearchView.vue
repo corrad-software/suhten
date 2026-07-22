@@ -128,17 +128,17 @@ const quick = computed(() => [
         {{ ts("st.search.noHit") }}
       </p>
 
-      <div v-else class="grid gap-4 lg:grid-cols-2">
-        <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div class="border-b border-slate-100 px-4 py-3">
-            <h3 class="text-sm font-semibold text-slate-800">
+      <div v-else class="grid gap-6 lg:grid-cols-2 lg:divide-x lg:divide-slate-200">
+        <section>
+          <div class="border-b border-slate-200 pb-2">
+            <h3 class="text-sm font-semibold text-slate-900">
               {{ ts("st.search.applications") }}
               <span class="text-slate-400">({{ apps.length }})</span>
             </h3>
           </div>
-          <p v-if="apps.length === 0" class="px-4 py-8 text-center text-sm text-slate-400">{{ ts("st.common.noResults") }}</p>
-          <ul v-else class="divide-y divide-slate-50">
-            <li v-for="hit in apps" :key="hit.id" class="px-4 py-3 hover:bg-slate-50/60">
+          <p v-if="apps.length === 0" class="py-8 text-center text-sm text-slate-400">{{ ts("st.common.noResults") }}</p>
+          <ul v-else class="divide-y divide-slate-100">
+            <li v-for="hit in apps" :key="hit.id" class="py-3 hover:bg-slate-50/60">
               <div class="flex flex-wrap items-center gap-2">
                 <span class="rounded bg-[var(--accent-50)] px-1.5 py-0.5 text-[10px] font-semibold uppercase text-[var(--accent-700)]">
                   {{ ts("st.search.kindApp") }}
@@ -155,16 +155,16 @@ const quick = computed(() => [
           </ul>
         </section>
 
-        <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div class="border-b border-slate-100 px-4 py-3">
-            <h3 class="text-sm font-semibold text-slate-800">
+        <section class="lg:pl-6">
+          <div class="border-b border-slate-200 pb-2">
+            <h3 class="text-sm font-semibold text-slate-900">
               {{ ts("st.search.registrations") }}
               <span class="text-slate-400">({{ regs.length }})</span>
             </h3>
           </div>
-          <p v-if="regs.length === 0" class="px-4 py-8 text-center text-sm text-slate-400">{{ ts("st.common.noResults") }}</p>
-          <ul v-else class="divide-y divide-slate-50">
-            <li v-for="hit in regs" :key="hit.id" class="px-4 py-3 hover:bg-slate-50/60">
+          <p v-if="regs.length === 0" class="py-8 text-center text-sm text-slate-400">{{ ts("st.common.noResults") }}</p>
+          <ul v-else class="divide-y divide-slate-100">
+            <li v-for="hit in regs" :key="hit.id" class="py-3 hover:bg-slate-50/60">
               <div class="flex flex-wrap items-center gap-2">
                 <span class="rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-emerald-700">
                   {{ ts("st.search.kindReg") }}

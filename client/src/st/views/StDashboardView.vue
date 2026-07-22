@@ -3,7 +3,7 @@ import { computed, type Component } from "vue";
 import { useRouter } from "vue-router";
 import {
   FilePlus2, FileText, Inbox, ShieldCheck, Clock, AlertCircle, BadgeCheck,
-  Building2, UserCog, Timer, ListChecks, Activity, ArrowRight, User,
+  Building2, UserCog, Timer, ListChecks, ArrowRight,
 } from "lucide-vue-next";
 
 import type { PersonaRole } from "../types";
@@ -16,6 +16,7 @@ import { SLA_TARGET_HOURS } from "../mock/charter";
 import { useServiceCatalog } from "../composables/useServiceCatalog";
 import StatusBadge from "../components/StatusBadge.vue";
 import SlaIndicator from "../components/SlaIndicator.vue";
+import StPageHero from "../components/StPageHero.vue";
 
 // Other ST services offered (same catalogue as /st/perkhidmatan).
 const { otherGroups } = useServiceCatalog();
@@ -38,21 +39,18 @@ const greeting = computed(() => {
 const todayLabel = computed(() =>
   new Date(workflow.now).toLocaleDateString("ms-MY", { weekday: "long", day: "numeric", month: "long", year: "numeric" }),
 );
-const initials = computed(() =>
-  (persona.value?.name ?? "ST").split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2),
-);
-
 type Tone = "accent" | "amber" | "rose" | "emerald" | "blue" | "slate";
 interface StatCard { icon: Component; value: number | string; label: string; caption: string; tone: Tone }
 
-function toneGradient(tone: Tone): string {
+// Semantic dot colour per tone — kept separate from the single ST accent hue.
+function toneDot(tone: Tone): string {
   return {
-    accent: "bg-gradient-to-br from-[var(--accent-500)] to-[var(--accent-700)]",
-    amber: "bg-gradient-to-br from-amber-500 to-orange-600",
-    rose: "bg-gradient-to-br from-rose-500 to-rose-600",
-    emerald: "bg-gradient-to-br from-emerald-500 to-emerald-600",
-    blue: "bg-gradient-to-br from-blue-500 to-blue-600",
-    slate: "bg-gradient-to-br from-slate-700 to-slate-800",
+    accent: "bg-[var(--accent-600)]",
+    amber: "bg-amber-500",
+    rose: "bg-rose-500",
+    emerald: "bg-emerald-500",
+    blue: "bg-[var(--accent-600)]",
+    slate: "bg-slate-500",
   }[tone];
 }
 
@@ -135,49 +133,35 @@ function open(id: string) {
 </script>
 
 <template>
-  <div class="space-y-5">
-    <!-- Hero header (flush under the top nav for external users, à la Portal Pemohon) -->
-    <div
-      class="st-brand-gradient p-6 text-white shadow-sm sm:p-7"
-      :class="session.isKakitangan ? 'rounded-2xl' : '-mt-5 rounded-b-2xl md:-mt-6'"
-    >
-      <div class="flex items-center justify-between gap-4">
-        <div class="min-w-0">
-          <p class="text-xs font-semibold uppercase tracking-[0.16em] text-white/70">{{ greeting }} 👋</p>
-          <h1 class="mt-2 truncate text-2xl font-bold sm:text-3xl">{{ persona?.name }}</h1>
-          <p class="mt-1.5 flex items-center gap-1.5 text-sm text-white/80">
-            <ShieldCheck class="h-4 w-4 shrink-0" />
-            <span class="truncate">{{ persona?.title }}</span>
-          </p>
+  <div class="space-y-8">
+    <StPageHero :title="persona?.name ?? ''" :eyebrow="`${greeting} 👋`">
+      <template #action>
+        <div class="text-right text-xs text-slate-500">
+          <p class="capitalize">{{ todayLabel }}</p>
+          <p class="mt-0.5">{{ roleLabel }}</p>
         </div>
-        <div class="hidden h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-white/15 text-xl font-bold ring-1 ring-white/25 sm:flex">
-          {{ initials }}
-        </div>
-      </div>
-      <div class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-white/15 pt-3 text-xs text-white/80">
-        <span class="capitalize">{{ todayLabel }}</span>
-        <span class="flex items-center gap-1"><User class="h-3.5 w-3.5" /> {{ roleLabel }}</span>
-      </div>
-    </div>
+      </template>
+      <p class="mt-1 flex items-center gap-1.5 text-sm text-slate-500">
+        <ShieldCheck class="h-4 w-4 shrink-0 text-slate-400" />
+        <span class="truncate">{{ persona?.title }}</span>
+      </p>
+    </StPageHero>
 
     <!-- APPLICANT -->
     <template v-if="role === 'applicant'">
-      <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <div
-          v-for="(s, i) in applicantStats"
-          :key="i"
-          class="rounded-xl p-5 shadow-sm transition-shadow hover:shadow-md"
-          :class="toneGradient(s.tone)"
-        >
-          <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-white/15">
-            <component :is="s.icon" class="h-5 w-5 text-white" />
-          </div>
-          <p class="mt-3 text-3xl font-bold text-white">{{ s.value }}</p>
-          <p class="mt-1 text-xs font-medium text-white/90">{{ s.label }}</p>
-          <p class="mt-2 text-[11px] text-white/70">{{ s.caption }}</p>
+      <div class="grid grid-cols-2 gap-y-5 sm:grid-cols-4 sm:divide-x sm:divide-slate-200">
+        <div v-for="(s, i) in applicantStats" :key="i" class="px-0 sm:px-5 sm:first:pl-0">
+          <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">{{ s.label }}</p>
+          <p class="mt-1.5 text-2xl font-semibold tracking-tight text-slate-900">{{ s.value }}</p>
+          <p class="mt-1 flex items-center gap-1.5 text-xs text-slate-500">
+            <span :class="['h-1.5 w-1.5 shrink-0 rounded-full', toneDot(s.tone)]" />
+            {{ s.caption }}
+          </p>
         </div>
       </div>
 
+      <!-- Tindakan Pantas -->
+      <div>
       <!-- Tindakan Pantas — Pemohon: Orang Kompeten only -->
       <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
         <h2 class="text-sm font-semibold text-slate-900">Tindakan Pantas</h2>
@@ -205,6 +189,9 @@ function open(id: string) {
         </div>
       </div>
 
+      <div>
+        <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+          <h2 class="text-sm font-semibold text-slate-900">Permohonan Terkini</h2>
       <div
         v-if="okConfirmations.length"
         class="rounded-xl border border-amber-200 bg-amber-50/40 shadow-sm"
@@ -232,11 +219,11 @@ function open(id: string) {
           <h2 class="text-sm font-semibold text-slate-700">Permohonan Terkini</h2>
           <button class="text-xs font-medium text-[var(--accent-700)] hover:underline" @click="router.push('/st/applications')">Lihat semua</button>
         </div>
-        <p v-if="myApps.length === 0" class="px-4 py-8 text-center text-sm text-slate-400">Belum ada permohonan. Mulakan satu di atas.</p>
+        <p v-if="myApps.length === 0" class="py-8 text-center text-sm text-slate-400">Belum ada permohonan. Mulakan satu di atas.</p>
         <button
           v-for="a in myApps.slice(0, 5)"
           :key="a.id"
-          class="flex w-full items-center justify-between gap-3 border-b border-slate-50 px-4 py-3 text-left last:border-0 hover:bg-slate-50"
+          class="flex w-full items-center justify-between gap-3 border-b border-slate-100 py-3 text-left last:border-0 hover:bg-slate-50/60"
           @click="open(a.id)"
         >
           <div class="min-w-0">
@@ -248,7 +235,7 @@ function open(id: string) {
       </div>
 
       <!-- Perkhidmatan lain yang ditawarkan (same catalogue as /st/perkhidmatan) -->
-      <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div>
         <div class="flex items-center justify-between gap-3">
           <div>
             <h2 class="text-sm font-semibold text-slate-900">Perkhidmatan Lain Yang Ditawarkan</h2>
@@ -289,22 +276,20 @@ function open(id: string) {
 
     <!-- EMPLOYER / MAJIKAN — Kontraktor Elektrik + pengesahan lantikan OK -->
     <template v-else-if="role === 'employer'">
-      <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <div
-          v-for="(s, i) in employerStats"
-          :key="i"
-          class="rounded-xl p-5 shadow-sm transition-shadow hover:shadow-md"
-          :class="toneGradient(s.tone)"
-        >
-          <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-white/15">
-            <component :is="s.icon" class="h-5 w-5 text-white" />
-          </div>
-          <p class="mt-3 text-3xl font-bold text-white">{{ s.value }}</p>
-          <p class="mt-1 text-xs font-medium text-white/90">{{ s.label }}</p>
-          <p class="mt-2 text-[11px] text-white/70">{{ s.caption }}</p>
+      <div class="grid grid-cols-2 gap-y-5 sm:grid-cols-4 sm:divide-x sm:divide-slate-200">
+        <div v-for="(s, i) in employerStats" :key="i" class="px-0 sm:px-5 sm:first:pl-0">
+          <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">{{ s.label }}</p>
+          <p class="mt-1.5 text-2xl font-semibold tracking-tight text-slate-900">{{ s.value }}</p>
+          <p class="mt-1 flex items-center gap-1.5 text-xs text-slate-500">
+            <span :class="['h-1.5 w-1.5 shrink-0 rounded-full', toneDot(s.tone)]" />
+            {{ s.caption }}
+          </p>
         </div>
       </div>
 
+      <div>
+        <div class="border-b border-slate-200 pb-2">
+          <h2 class="text-sm font-semibold text-slate-900">Pengesahan Lantikan Diperlukan</h2>
       <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
         <h2 class="text-sm font-semibold text-slate-900">Tindakan Pantas</h2>
         <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -361,11 +346,11 @@ function open(id: string) {
           <h2 class="text-sm font-semibold text-slate-700">Pengesahan Lantikan Diperlukan</h2>
           <button class="text-xs font-medium text-[var(--accent-700)] hover:underline" @click="router.push('/st/applications')">Lihat semua</button>
         </div>
-        <p v-if="confirmations.length === 0" class="px-4 py-8 text-center text-sm text-slate-400">Tiada lantikan menunggu pengesahan.</p>
+        <p v-if="confirmations.length === 0" class="py-8 text-center text-sm text-slate-400">Tiada lantikan menunggu pengesahan.</p>
         <button
           v-for="a in confirmations"
           :key="a.id"
-          class="flex w-full items-center justify-between gap-3 border-b border-slate-50 px-4 py-3 text-left last:border-0 hover:bg-slate-50"
+          class="flex w-full items-center justify-between gap-3 border-b border-slate-100 py-3 text-left last:border-0 hover:bg-slate-50/60"
           @click="open(a.id)"
         >
           <div class="min-w-0">
@@ -379,45 +364,37 @@ function open(id: string) {
 
     <!-- BACK-OFFICE (sos / technical / approver) -->
     <template v-else-if="role">
-      <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <div
-          v-for="(s, i) in backStats"
-          :key="i"
-          class="rounded-xl p-5 shadow-sm transition-shadow hover:shadow-md"
-          :class="toneGradient(s.tone)"
-        >
-          <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-white/15">
-            <component :is="s.icon" class="h-5 w-5 text-white" />
-          </div>
-          <p class="mt-3 text-3xl font-bold text-white">{{ s.value }}</p>
-          <p class="mt-1 text-xs font-medium text-white/90">{{ s.label }}</p>
-          <p class="mt-2 text-[11px] text-white/70">{{ s.caption }}</p>
+      <div class="grid grid-cols-2 gap-y-5 sm:grid-cols-4 sm:divide-x sm:divide-slate-200">
+        <div v-for="(s, i) in backStats" :key="i" class="px-0 sm:px-5 sm:first:pl-0">
+          <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">{{ s.label }}</p>
+          <p class="mt-1.5 text-2xl font-semibold tracking-tight text-slate-900">{{ s.value }}</p>
+          <p class="mt-1 flex items-center gap-1.5 text-xs text-slate-500">
+            <span :class="['h-1.5 w-1.5 shrink-0 rounded-full', toneDot(s.tone)]" />
+            {{ s.caption }}
+          </p>
         </div>
         <!-- SLA breakdown -->
-        <div class="rounded-xl p-5 shadow-sm transition-shadow hover:shadow-md" :class="toneGradient('slate')">
-          <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-white/15">
-            <Activity class="h-5 w-5 text-white" />
+        <div class="px-0 sm:px-5">
+          <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Status SLA Giliran</p>
+          <div class="mt-1.5 flex items-center gap-3">
+            <span class="flex items-center gap-1.5 text-xl font-semibold text-slate-900"><span class="h-1.5 w-1.5 rounded-full bg-emerald-500" />{{ slaBreakdown.green }}</span>
+            <span class="flex items-center gap-1.5 text-xl font-semibold text-slate-900"><span class="h-1.5 w-1.5 rounded-full bg-amber-500" />{{ slaBreakdown.yellow }}</span>
+            <span class="flex items-center gap-1.5 text-xl font-semibold text-slate-900"><span class="h-1.5 w-1.5 rounded-full bg-rose-500" />{{ slaBreakdown.red }}</span>
           </div>
-          <div class="mt-3 flex items-center gap-3">
-            <span class="flex items-center gap-1 text-2xl font-bold text-white"><span class="h-2.5 w-2.5 rounded-full bg-emerald-400" />{{ slaBreakdown.green }}</span>
-            <span class="flex items-center gap-1 text-2xl font-bold text-white"><span class="h-2.5 w-2.5 rounded-full bg-amber-400" />{{ slaBreakdown.yellow }}</span>
-            <span class="flex items-center gap-1 text-2xl font-bold text-white"><span class="h-2.5 w-2.5 rounded-full bg-rose-400" />{{ slaBreakdown.red }}</span>
-          </div>
-          <p class="mt-1 text-xs font-medium text-white/90">Status SLA Giliran</p>
-          <p class="mt-2 text-[11px] text-white/70">Hijau · Kuning · Merah</p>
+          <p class="mt-1 text-xs text-slate-500">Hijau · Kuning · Merah</p>
         </div>
       </div>
 
-      <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
-          <h2 class="text-sm font-semibold text-slate-700">Giliran Terkini (FIFO)</h2>
+      <div>
+        <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+          <h2 class="text-sm font-semibold text-slate-900">Giliran Terkini (FIFO)</h2>
           <button class="text-xs font-medium text-[var(--accent-700)] hover:underline" @click="router.push('/st/inbox')">Buka peti tugasan</button>
         </div>
-        <p v-if="queue.length === 0" class="px-4 py-8 text-center text-sm text-slate-400">Tiada tugasan dalam giliran.</p>
+        <p v-if="queue.length === 0" class="py-8 text-center text-sm text-slate-400">Tiada tugasan dalam giliran.</p>
         <button
           v-for="(it, i) in queue.slice(0, 5)"
           :key="it.applicationId"
-          class="flex w-full items-center justify-between gap-3 border-b border-slate-50 px-4 py-3 text-left last:border-0 hover:bg-slate-50"
+          class="flex w-full items-center justify-between gap-3 border-b border-slate-100 py-3 text-left last:border-0 hover:bg-slate-50/60"
           @click="open(it.applicationId)"
         >
           <div class="flex min-w-0 items-center gap-2">
