@@ -97,7 +97,7 @@ async function onPaid(bank: string) {
         class="w-full rounded-md bg-[var(--accent-600)] px-4 py-2.5 text-sm font-medium text-white hover:bg-[var(--accent-700)]"
         @click="
           kind === 'registration'
-            ? router.push(`${portalBase}/applications/${app.id}/certificate`)
+            ? router.push(`${portalBase}/applications/${app!.id}/certificate`)
             : backToApp()
         "
       >

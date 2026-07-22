@@ -160,10 +160,8 @@ function open(id: string) {
         </div>
       </div>
 
-      <!-- Tindakan Pantas -->
-      <div>
       <!-- Tindakan Pantas — Pemohon: Orang Kompeten only -->
-      <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div>
         <h2 class="text-sm font-semibold text-slate-900">Tindakan Pantas</h2>
         <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
           <router-link
@@ -189,21 +187,16 @@ function open(id: string) {
         </div>
       </div>
 
-      <div>
-        <div class="flex items-center justify-between border-b border-slate-200 pb-2">
-          <h2 class="text-sm font-semibold text-slate-900">Permohonan Terkini</h2>
-      <div
-        v-if="okConfirmations.length"
-        class="rounded-xl border border-amber-200 bg-amber-50/40 shadow-sm"
-      >
-        <div class="border-b border-amber-100 px-4 py-3">
+      <!-- Penerimaan Pelantikan (CE NA-03) -->
+      <div v-if="okConfirmations.length" class="border-t border-slate-200 pt-8">
+        <div class="border-b border-amber-200 pb-2">
           <h2 class="text-sm font-semibold text-amber-900">Penerimaan Pelantikan (PFD-RG-CE-NA-03)</h2>
           <p class="mt-0.5 text-xs text-amber-800/80">Sahkan atau tolak pelantikan sebagai OK bagi permohonan kontraktor.</p>
         </div>
         <button
           v-for="a in okConfirmations"
           :key="a.id"
-          class="flex w-full items-center justify-between gap-3 border-b border-amber-100/80 px-4 py-3 text-left last:border-0 hover:bg-amber-50"
+          class="flex w-full items-center justify-between gap-3 border-b border-amber-100 py-3 text-left last:border-0 hover:bg-amber-50/60"
           @click="open(a.id)"
         >
           <div class="min-w-0">
@@ -214,9 +207,9 @@ function open(id: string) {
         </button>
       </div>
 
-      <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
-          <h2 class="text-sm font-semibold text-slate-700">Permohonan Terkini</h2>
+      <div class="border-t border-slate-200 pt-8">
+        <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+          <h2 class="text-sm font-semibold text-slate-900">Permohonan Terkini</h2>
           <button class="text-xs font-medium text-[var(--accent-700)] hover:underline" @click="router.push('/st/applications')">Lihat semua</button>
         </div>
         <p v-if="myApps.length === 0" class="py-8 text-center text-sm text-slate-400">Belum ada permohonan. Mulakan satu di atas.</p>
@@ -235,7 +228,7 @@ function open(id: string) {
       </div>
 
       <!-- Perkhidmatan lain yang ditawarkan (same catalogue as /st/perkhidmatan) -->
-      <div>
+      <div class="border-t border-slate-200 pt-8">
         <div class="flex items-center justify-between gap-3">
           <div>
             <h2 class="text-sm font-semibold text-slate-900">Perkhidmatan Lain Yang Ditawarkan</h2>
@@ -287,10 +280,8 @@ function open(id: string) {
         </div>
       </div>
 
+      <!-- Tindakan Pantas -->
       <div>
-        <div class="border-b border-slate-200 pb-2">
-          <h2 class="text-sm font-semibold text-slate-900">Pengesahan Lantikan Diperlukan</h2>
-      <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
         <h2 class="text-sm font-semibold text-slate-900">Tindakan Pantas</h2>
         <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
           <router-link
@@ -316,18 +307,16 @@ function open(id: string) {
         </div>
       </div>
 
-      <div
-        v-if="ceActionNeeded.length"
-        class="rounded-xl border border-amber-200 bg-amber-50/40 shadow-sm"
-      >
-        <div class="border-b border-amber-100 px-4 py-3">
+      <!-- Hantar Permohonan / Bayaran (CE NA-04/05) -->
+      <div v-if="ceActionNeeded.length" class="border-t border-slate-200 pt-8">
+        <div class="border-b border-amber-200 pb-2">
           <h2 class="text-sm font-semibold text-amber-900">Hantar Permohonan / Bayaran (PFD-RG-CE-NA-04 / NA-05)</h2>
           <p class="mt-0.5 text-xs text-amber-800/80">OK telah menerima pelantikan — sila hantar permohonan dan bayar fi proses.</p>
         </div>
         <button
           v-for="a in ceActionNeeded"
           :key="a.id"
-          class="flex w-full items-center justify-between gap-3 border-b border-amber-100/80 px-4 py-3 text-left last:border-0 hover:bg-amber-50"
+          class="flex w-full items-center justify-between gap-3 border-b border-amber-100 py-3 text-left last:border-0 hover:bg-amber-50/60"
           @click="open(a.id)"
         >
           <div class="min-w-0">
@@ -341,9 +330,9 @@ function open(id: string) {
         </button>
       </div>
 
-      <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
-          <h2 class="text-sm font-semibold text-slate-700">Pengesahan Lantikan Diperlukan</h2>
+      <div class="border-t border-slate-200 pt-8">
+        <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+          <h2 class="text-sm font-semibold text-slate-900">Pengesahan Lantikan Diperlukan</h2>
           <button class="text-xs font-medium text-[var(--accent-700)] hover:underline" @click="router.push('/st/applications')">Lihat semua</button>
         </div>
         <p v-if="confirmations.length === 0" class="py-8 text-center text-sm text-slate-400">Tiada lantikan menunggu pengesahan.</p>
