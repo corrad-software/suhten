@@ -51,6 +51,18 @@ function fmt(iso: string): string {
 }
 
 function open(id: string) {
+  const app = workflow.byId(id);
+  // Drafts live in the apply wizard (localStorage form) — not the detail page.
+  if (app?.status === "draft") {
+    if (app.workflowType === "CE") {
+      router.push("/st/registration/contractor-electric/applications/new");
+      return;
+    }
+    if (app.workflowType === "OK") {
+      router.push("/st/registration/ok-electric/applications/new");
+      return;
+    }
+  }
   router.push(`/st/applications/${id}`);
 }
 

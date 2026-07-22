@@ -221,6 +221,9 @@ export interface AppointedOk {
   competencyCategory?: CompetencyCategory;
   confirmed: boolean;
   confirmedAt?: string;
+  /** D11 CDP gate snapshot */
+  isFirstRegistration?: boolean;
+  cdpPoints?: number;
 }
 
 /** Competency certificate declared on an OK registration application (not the issued digital sijil). */
@@ -264,6 +267,10 @@ export interface Application {
   identityCheck?: IdentityCheck;
   certificate?: Certificate; // primary cert (OK holder, or CE contractor)
   okCertificates?: Certificate[]; // CE: one Perakuan OK per appointed OK
+  /** D11 CDP snapshot / balance on the OK profile for this application. */
+  cdpPoints?: number;
+  /** D11: first lifetime registration → skip CDP gate; award +2 on perakuan. */
+  isFirstRegistration?: boolean;
   createdAt: string;
   updatedAt: string;
 }

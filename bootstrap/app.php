@@ -30,6 +30,17 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->statefulApi();
 
+        // SPA has no named `login` web route. Default redirectGuestsTo(route('login'))
+        // throws RouteNotFoundException on every unauthenticated API call, which
+        // balloons laravel.log and makes /api/auth/me (login page bootstrap) take many seconds.
+        $middleware->redirectGuestsTo(function (Request $request) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return null;
+            }
+
+            return '/st/login';
+        });
+
         $middleware->alias([
             'permission' => CheckPermission::class,
             'user_chat_access' => \App\Http\Middleware\EnsureUserChatAccess::class,
@@ -97,6 +108,20 @@ return Application::configure(basePath: dirname(__DIR__))
                         'message' => 'Too many requests. Please try again later.',
                     ],
                 ], 429);
+            }
+        });
+
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\HttpException $e, Request $request) {
+            if ($e->getStatusCode() !== 419) {
+                return null;
+            }
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json([
+                    'error' => [
+                        'code' => 'CSRF_TOKEN_MISMATCH',
+                        'message' => 'CSRF token mismatch.',
+                    ],
+                ], 419);
             }
         });
 

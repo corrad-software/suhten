@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
-import { X } from "lucide-vue-next";
+import { Loader2, X } from "lucide-vue-next";
 
 import posDigicertLogo from "../assets/pos-digicert-logo.png";
 import { DEMO_SIGNATURE_PIN } from "../stores/workflow";
 
-const props = defineProps<{ open: boolean }>();
+const props = defineProps<{ open: boolean; busy?: boolean }>();
 const emit = defineEmits<{ (e: "confirm", pin: string): void; (e: "cancel"): void }>();
 
 const pin = ref("");
@@ -22,10 +22,12 @@ watch(
 );
 
 function confirm() {
+  if (props.busy) return;
   if (pin.value.length < 4) {
     error.value = "Sila masukkan PIN 4 digit.";
     return;
   }
+  error.value = "";
   emit("confirm", pin.value);
 }
 </script>
@@ -43,7 +45,13 @@ function confirm() {
           <h3 class="text-base font-semibold text-slate-900 dark:text-slate-100">Tandatangan Digital</h3>
           <p class="mt-0.5 text-[11px] text-slate-400 dark:text-slate-500">Dikuasakan oleh Pos Digicert</p>
         </div>
-        <button class="shrink-0 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300" @click="emit('cancel')"><X class="h-5 w-5" /></button>
+        <button
+          class="shrink-0 text-slate-400 hover:text-slate-600 disabled:opacity-50 dark:text-slate-500 dark:hover:text-slate-300"
+          :disabled="busy"
+          @click="emit('cancel')"
+        >
+          <X class="h-5 w-5" />
+        </button>
       </div>
 
       <p class="mb-4 text-sm text-slate-500 dark:text-slate-400">
@@ -56,7 +64,8 @@ function confirm() {
         inputmode="numeric"
         maxlength="6"
         placeholder="• • • •"
-        class="w-full rounded-md border border-slate-300 px-3 py-2.5 text-center text-lg tracking-[0.5em] focus:border-[var(--accent-500)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]/30 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+        :disabled="busy"
+        class="w-full rounded-md border border-slate-300 px-3 py-2.5 text-center text-lg tracking-[0.5em] focus:border-[var(--accent-500)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]/30 disabled:opacity-60 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
         @keyup.enter="confirm"
       />
       <p v-if="error" class="mt-2 text-xs text-rose-600">{{ error }}</p>
@@ -64,15 +73,18 @@ function confirm() {
 
       <div class="mt-5 flex gap-2">
         <button
-          class="flex-1 rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
+          class="flex-1 rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
+          :disabled="busy"
           @click="emit('cancel')"
         >
           Batal
         </button>
         <button
-          class="flex-1 rounded-md bg-[var(--accent-600)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--accent-700)]"
+          class="inline-flex flex-1 items-center justify-center gap-2 rounded-md bg-[var(--accent-600)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--accent-700)] disabled:opacity-70"
+          :disabled="busy"
           @click="confirm"
         >
+          <Loader2 v-if="busy" class="h-4 w-4 animate-spin" />
           Tandatangan & Lulus
         </button>
       </div>

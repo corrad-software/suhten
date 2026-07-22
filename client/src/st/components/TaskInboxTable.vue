@@ -55,22 +55,21 @@ const JENIS_OPTIONS = computed(() => [
   { key: "CE" as JenisFilter, label: workflowShort("CE") },
 ]);
 
-// Pull DB registration apps (seeded + online) then heal from staff-task notify cache.
-async function healFromServerNotifies() {
+// Pull DB registration apps for Peti. Staff-notify API is disabled (mock notifications only).
+async function refreshInboxApps() {
   if (!isStaffOfficerRole(props.role)) return;
   await workflow.syncFromApi();
-  await workflow.syncInboxFromStaffNotifies(props.role);
 }
 
 onMounted(() => {
-  void healFromServerNotifies();
+  void refreshInboxApps();
 });
 
 watch(
   () => props.role,
   (role) => {
     if (role !== "approver") jenisFilter.value = "all";
-    void healFromServerNotifies();
+    void refreshInboxApps();
   },
 );
 
@@ -81,15 +80,24 @@ const signOpen = ref(false);
 
 watch([tab, () => props.role, jenisFilter], () => (selectedIds.value = []));
 
+/** Bulk approve only on tasks already claimed by this Pelulus (FIFO / max-3 still apply). */
+function canBulkSelect(applicationId: string): boolean {
+  return isTaken(applicationId);
+}
+
 function toggleSelect(id: string) {
+  if (!canBulkSelect(id)) return;
   const i = selectedIds.value.indexOf(id);
   if (i >= 0) selectedIds.value.splice(i, 1);
   else selectedIds.value.push(id);
 }
 
-const allSelected = computed(() => items.value.length > 0 && selectedIds.value.length === items.value.length);
+const selectableIds = computed(() => items.value.filter((it) => canBulkSelect(it.applicationId)).map((it) => it.applicationId));
+const allSelected = computed(
+  () => selectableIds.value.length > 0 && selectableIds.value.every((id) => selectedIds.value.includes(id)),
+);
 function toggleSelectAll() {
-  selectedIds.value = allSelected.value ? [] : items.value.map((it) => it.applicationId);
+  selectedIds.value = allSelected.value ? [] : [...selectableIds.value];
 }
 
 function countFor(key: TaskTab) {
@@ -144,10 +152,8 @@ function isTaken(applicationId: string): boolean {
 type NewAction = "open" | "take" | "limit" | "wait" | "claimed";
 
 function newActionFor(applicationId: string): NewAction {
-  // Pelulus can open any item and approve in batch — no FIFO claim gate.
-  if (props.role === "approver") return "open";
   // Already claimed by me → Buka (officer can work their 3 active tasks even at capacity).
-  // Applies to SOS + Technical (+ CE stream roles) alike.
+  // Applies to SOS + Technical + Pelulus (+ CE stream roles) alike — D11 FIFO / max-3.
   if (isTaken(applicationId)) return "open";
   // Claimed by another officer — Telah Dituntut (not the same as Menunggu giliran).
   const app = workflow.byId(applicationId);
@@ -317,7 +323,9 @@ const columns = computed<SmartTableColumn<InboxItem>[]>(() => {
         <input
           type="checkbox"
           :checked="selectedIds.includes(row.applicationId)"
-          class="h-4 w-4 rounded border-slate-300 text-[var(--accent-600)] focus:ring-[var(--accent-ring)] dark:border-slate-600"
+          :disabled="!canBulkSelect(row.applicationId)"
+          :title="canBulkSelect(row.applicationId) ? undefined : ts('st.inbox.bulkClaimFirst')"
+          class="h-4 w-4 rounded border-slate-300 text-[var(--accent-600)] focus:ring-[var(--accent-ring)] disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-600"
           @change="toggleSelect(row.applicationId)"
         />
       </template>

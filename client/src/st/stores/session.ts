@@ -62,20 +62,19 @@ export const useStSessionStore = defineStore("st-session", () => {
     await auth.signIn(email, password);
     syncFromAuth();
     if (!currentPersonaId.value) {
-      void auth.signOut();
+      auth.signOut();
       throw new Error("ST_UNAUTHORIZED");
     }
-    // Hydrate Peti data in the background — do not block navigation to home/inbox.
-    void import("./workflow").then(({ useStWorkflowStore }) => {
-      void useStWorkflowStore().syncFromApi();
-    });
+    // Inbox/dashboard hydrate from the destination view — do not start a competing
+    // list fetch here (blocks `php artisan serve` and makes re-login feel >5s).
   }
 
-  async function logout() {
+  function logout() {
     const auth = useAuthStore();
-    // Drop portal persona immediately; server logout can finish in the background.
+    // Clear persona immediately; server logout runs in the background.
+    // Login page awaits waitForLogout() before CSRF warm-up to avoid races.
     currentPersonaId.value = null;
-    void auth.signOut();
+    auth.signOut();
   }
 
   function homeRoute(): string {

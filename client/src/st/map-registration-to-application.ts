@@ -175,9 +175,24 @@ function mapAppointedOks(detail: Record<string, unknown> | undefined, status: Ap
       name: detailString(row, "name") ?? "Orang Kompeten",
       mykad,
       wirerType: (detailString(row, "wirerType", "wirer_type") as WirerType | undefined) ?? "PW4",
-      competencyCategory: "PW" as CompetencyCategory,
+      competencyCategory:
+        (detailString(row, "competencyCategory", "competency_category") as CompetencyCategory | undefined) ??
+        okById(registeredOkId)?.competencyCategory ??
+        "PW",
       confirmed,
       confirmedAt: confirmed ? detailString(row, "confirmedAt", "confirmed_at") : undefined,
+      isFirstRegistration:
+        typeof row.isFirstRegistration === "boolean"
+          ? row.isFirstRegistration
+          : typeof row.is_first_registration === "boolean"
+            ? row.is_first_registration
+            : okById(registeredOkId)?.isFirstRegistration,
+      cdpPoints:
+        typeof row.cdpPoints === "number"
+          ? row.cdpPoints
+          : typeof row.cdp_points === "number"
+            ? row.cdp_points
+            : okById(registeredOkId)?.cdpPoints,
     };
   });
 }
@@ -430,6 +445,8 @@ export function mapRegistrationDtoToApplication(dto: StRegistrationApplicationDt
     createdAt: submittedAt,
     updatedAt: dto.updatedAt ?? stageEnteredAt,
     certificate,
+    cdpPoints: dto.cdpPoints ?? undefined,
+    isFirstRegistration: Boolean(detail.isFirstRegistration ?? detail.is_first_registration),
   };
 
   if (certificate && workflowType === "OK") {

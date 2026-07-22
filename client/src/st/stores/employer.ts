@@ -5,7 +5,7 @@ import type { EmployerRef } from "../types";
 import { EMPLOYERS } from "../mock/employers";
 import { useStSessionStore } from "./session";
 
-const STORAGE_KEY = "st.employers.v1";
+const STORAGE_KEY = "st.employers.v2";
 
 /**
  * Employer profiles (Kemaskini Maklumat Majikan).
@@ -45,8 +45,7 @@ export const useStEmployerStore = defineStore("st-employer", () => {
 
   /**
    * The employer company the signed-in persona maintains.
-   * Rahman confirms for two seeded companies, so prefer the one matching his
-   * persona `organisation`, then fall back to the first he confirms for.
+   * Prefer the company matching persona `organisation`, else the first they confirm for.
    */
   const myEmployer = computed<EmployerRef | undefined>(() => {
     const session = useStSessionStore();

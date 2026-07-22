@@ -2,6 +2,7 @@ import { createRouter } from "vue-router";
 import type { RouteLocationGeneric, RouteRecordRaw } from "vue-router";
 
 import { createAppHistory, persistMaskedRoute } from "@/router/history";
+import { isLogoutInFlight } from "@/api/client";
 
 import DashboardView from "@/views/DashboardView.vue";
 import MainDashboardView from "@/views/MainDashboardView.vue";
@@ -323,6 +324,9 @@ function adminWorkspaceRoutes(prefix: "st" | "admin-st"): RouteRecordRaw[] {
 // landing; deep links (e.g. /st/dashboard) still route through login.
 async function stAuthGuard(to: RouteLocationGeneric) {
   const auth = useAuthStore();
+  if (isLogoutInFlight()) {
+    return { path: "/st/login" };
+  }
   await auth.initialize();
   const session = useStSessionStore();
   session.syncFromAuth();
@@ -669,7 +673,13 @@ function safeInternalRedirect(raw: unknown): string | null {
 
 router.beforeEach(async (to) => {
   const auth = useAuthStore();
-  await auth.initialize();
+  // Skip /me during logout — otherwise navigation to login stalls behind /api/auth/logout.
+  if (!isLogoutInFlight()) {
+    await auth.initialize();
+  } else if (!auth.initialized) {
+    auth.initialized = true;
+    auth.user = null;
+  }
 
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
     return {

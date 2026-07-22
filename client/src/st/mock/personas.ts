@@ -53,6 +53,14 @@ export const PERSONAS: Persona[] = [
     title: "Pemohon (Orang Kompeten) — akaun kosong",
   },
   {
+    id: "p-nurul",
+    name: "Nurul Aina binti Rosli",
+    email: "nurul.aina.binti.rosli@email.my",
+    role: "applicant",
+    icNumber: "900314-14-5182",
+    title: "Pemohon (Orang Kompeten)",
+  },
+  {
     id: "p-rahman",
     name: "Rahman bin Abdullah",
     email: "rahman@tenagamurni.com.my",

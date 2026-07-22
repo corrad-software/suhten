@@ -36,9 +36,11 @@ function resolvePostLoginPath(): string {
   return "/admin";
 }
 
-onMounted(() => {
-  void ensureCsrfCookie();
-  if (!site.initialized) site.load();
+onMounted(async () => {
+  await Promise.all([
+    ensureCsrfCookie(),
+    site.initialized ? Promise.resolve() : site.load(),
+  ]);
 });
 
 async function submit() {

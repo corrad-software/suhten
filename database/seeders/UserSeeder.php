@@ -61,6 +61,11 @@ class UserSeeder extends Seeder
                 'role' => 'applicant',
             ],
             [
+                'email' => 'nurul.aina.binti.rosli@email.my',
+                'name' => 'Nurul Aina binti Rosli',
+                'role' => 'applicant',
+            ],
+            [
                 'email' => 'rahman@tenagamurni.com.my',
                 'name' => 'Rahman bin Abdullah',
                 'role' => 'employer',

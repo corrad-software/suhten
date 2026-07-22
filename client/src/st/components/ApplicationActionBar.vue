@@ -37,6 +37,7 @@ const { ts } = useLocale();
 const portalBase = computed(() => (route.path.startsWith("/admin/st") ? "/admin/st" : "/st"));
 
 const signOpen = ref(false);
+const signing = ref(false);
 const notePrompt = ref<{ action: ActionKey; label: string } | null>(null);
 const noteText = ref("");
 
@@ -102,7 +103,12 @@ const actions = computed<ActionBtn[]>(() => {
     list.push({ key: "raise_query", label: "Pertanyaan", variant: "outline", needsNote: true });
     list.push({ key: "reject", label: "Tolak", variant: "danger", needsNote: true });
   }
-  if (role === "approver" && status === "pending_approval") {
+  // Pelulus: only after FIFO claim (same max-3 active rule as SOS / Teknikal).
+  if (
+    role === "approver" &&
+    status === "pending_approval" &&
+    props.application.assigneePersonaId === session.currentPersonaId
+  ) {
     list.push({ key: "approve_sign", label: "Lulus & Tandatangan", variant: "primary" });
     list.push({ key: "reject", label: "Tolak", variant: "danger", needsNote: true });
   }
@@ -154,6 +160,17 @@ const idleHint = computed(() => {
         default:
           return `Lantikan anda sebagai Orang Kompeten bagi ${company} telah disahkan. Tiada tindakan lanjut diperlukan daripada anda pada masa ini.`;
       }
+    }
+  }
+
+  // Pelulus opened detail before claiming — point them back to Peti (Ambil & Buka).
+  if (session.role === "approver" && status === "pending_approval") {
+    const mine = props.application.assigneePersonaId === session.currentPersonaId;
+    if (!props.application.assigneePersonaId) {
+      return "Tugasan belum dituntut. Sila kembali ke Peti Tugasan dan klik Ambil & Buka (mengikut giliran FIFO).";
+    }
+    if (!mine) {
+      return "Tugasan ini telah dituntut oleh pegawai lain.";
     }
   }
 
@@ -254,12 +271,16 @@ async function submitConfirm() {
 }
 
 async function onSigned(pin: string) {
+  signing.value = true;
   try {
     await workflow.transition(props.application.id, "approve_sign", { pin });
     signOpen.value = false;
     toast.success("Diluluskan", "Permohonan diluluskan & ditandatangani.");
+    void router.replace(inboxRoute());
   } catch (e) {
     toast.error("Gagal", e instanceof Error ? e.message : "PIN tidak sah.");
+  } finally {
+    signing.value = false;
   }
 }
 
@@ -303,7 +324,7 @@ async function doTransition(action: ActionKey, payload: { note?: string } = {}) 
     {{ idleHint }}
   </p>
 
-  <DigitalSignatureModal :open="signOpen" @confirm="onSigned" @cancel="signOpen = false" />
+  <DigitalSignatureModal :open="signOpen" :busy="signing" @confirm="onSigned" @cancel="signOpen = false" />
 
   <!-- Employer confirmation: attach EPF/SOCSO -->
   <div v-if="confirmOpen" class="fixed inset-0 z-[90] flex items-center justify-center bg-slate-900/40 px-4 backdrop-blur-sm">

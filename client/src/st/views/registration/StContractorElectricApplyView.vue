@@ -9,12 +9,13 @@ import type { AppDocument, ContractorClass, Gender, RegistrationPeriod } from ".
 import { isAddressComplete, parseAddress, type StAddress } from "../../address";
 import AddressFieldset from "../../components/AddressFieldset.vue";
 import { CONTRACTOR_CLASSES } from "../../mock/competencies";
-import { searchOks, type RegisteredOk } from "../../mock/competent-persons";
+import { searchOks, okById, type RegisteredOk } from "../../mock/competent-persons";
 import { useStSessionStore } from "../../stores/session";
 import { useStEmployerStore } from "../../stores/employer";
 import { useStRegistrationStore } from "../../stores/registration";
 import { useStReferenceSettingsStore } from "../../stores/reference-settings";
-import { DEMO_SUBMIT_PIN } from "../../stores/workflow";
+import { DEMO_SUBMIT_PIN, useStWorkflowStore } from "../../stores/workflow";
+import { employerById } from "../../mock/employers";
 import DocumentUploadField from "../../components/DocumentUploadField.vue";
 import StPageHero from "../../components/StPageHero.vue";
 import {
@@ -35,9 +36,9 @@ import {
   type SkilledPerson,
   type TestEquipment,
 } from "../../registration/ce-rules";
+import { evaluateCdpGate } from "../../registration/cdp-rules";
 
 const DRAFT_KEY_PREFIX = "st.rg-ce.apply.draft.v1";
-const CDP_BONUS = 20;
 
 const route = useRoute();
 const router = useRouter();
@@ -46,6 +47,7 @@ const { ts, locale } = useLocale();
 const session = useStSessionStore();
 const employerStore = useStEmployerStore();
 const regStore = useStRegistrationStore();
+const workflow = useStWorkflowStore();
 const refSettings = useStReferenceSettingsStore();
 const portalBase = computed(() => (route.path.startsWith("/admin/st") ? "/admin/st" : "/st"));
 
@@ -115,6 +117,22 @@ const okValidation = computed(() =>
       )
     : { items: [], valid: appointedOks.value.length > 0 || kindMeta.value.needsSkilledPersons || kindMeta.value.needsProfessionalEngineers },
 );
+
+/** D11: each appointed OK must pass first-reg skip or renewal CDP table for their period. */
+const appointedCdpRows = computed(() =>
+  appointedOks.value.map((a) => {
+    const ok = okById(a.okId);
+    const category = a.competencyCategory ?? ok?.competencyCategory ?? "PW";
+    const gate = evaluateCdpGate({
+      isFirstRegistration: a.isFirstRegistration ?? ok?.isFirstRegistration ?? false,
+      category,
+      periodYears: a.periodYears,
+      availablePoints: a.cdpPoints ?? ok?.cdpPoints ?? 0,
+    });
+    return { okId: a.okId, name: a.name, category, gate };
+  }),
+);
+const appointedCdpOk = computed(() => appointedCdpRows.value.every((r) => r.gate.allowed));
 
 const DOC_LABELS = computed(() =>
   refSettings.documentLabels("RG-CE", locale.value === "bi" ? "bi" : "bm", false),
@@ -216,8 +234,58 @@ function persistDraft() {
   );
 }
 
+/** Mirror draft into workflow so it appears under Permohonan & Pengesahan. */
+function syncDraftToList() {
+  const personaId = session.currentPersonaId;
+  if (!personaId) return;
+  const employer = employerStore.myEmployer ?? employerById("emp-tenaga-murni");
+  const org = form.companyName || session.currentPersona?.organisation || employer?.name || "—";
+  workflow.upsertLocalDraft({
+    workflowType: "CE",
+    applicantPersonaId: personaId,
+    applicant: {
+      fullName: form.representativeName || session.currentPersona?.name || org,
+      icNumber: form.representativeIc || session.currentPersona?.icNumber || "",
+      dob: "",
+      age: 0,
+      address: form.companyAddress || employer?.address || "",
+      phone: form.representativePhone || form.companyPhone || "",
+      email: form.representativeEmail || session.currentPersona?.email || "",
+      gender: form.representativeGender,
+    },
+    contractorClass: kindMeta.value.needsClass ? form.contractorClass : undefined,
+    contractorKind: form.contractorKind,
+    registrationPeriodYears: form.periodYears,
+    employer: employer
+      ? { ...employer, name: org || employer.name }
+      : {
+          id: "emp-draft",
+          name: org,
+          registrationNo: form.companyRegNo || "",
+          address: form.companyAddress || "",
+          contactPerson: form.representativeName || "",
+          confirmerPersonaId: personaId,
+          category: "kontraktor",
+          status: "active",
+        },
+    appointedOks: appointedOks.value.map((a) => ({
+      registeredOkId: a.okId,
+      personaId: okById(a.okId)?.linkedPersonaId,
+      name: a.name,
+      mykad: a.mykad,
+      wirerType: a.wirerType,
+      competencyCategory: a.competencyCategory,
+      confirmed: false,
+      isFirstRegistration: a.isFirstRegistration,
+      cdpPoints: a.cdpPoints,
+    })),
+    documents: documents.value,
+  });
+}
+
 function saveDraft(showToast = true) {
   persistDraft();
+  syncDraftToList();
   if (showToast) {
     toast.info(ts("st.okApply.saveDraft"), ts("st.okApply.draftSaved"));
   }
@@ -248,12 +316,17 @@ onMounted(() => {
     postcode: form.postcode || parseAddress(form.companyAddress).postcode,
     state: form.state || parseAddress(form.companyAddress).state,
   };
+  // Existing device draft → ensure it also shows in Permohonan list.
+  if (restored) syncDraftToList();
 });
 
 watch(
   [form, directors, appointedOks, skilledPersons, professionalEngineers, equipment, confirmationChecks, documents],
   () => {
-    window.setTimeout(persistDraft, 600);
+    window.setTimeout(() => {
+      persistDraft();
+      syncDraftToList();
+    }, 600);
   },
   { deep: true },
 );
@@ -283,6 +356,9 @@ function toggleOk(ok: RegisteredOk) {
     certificateNo: ok.certificateNo,
     periodYears: form.periodYears,
     employedElsewhere: ok.employedElsewhere,
+    competencyCategory: ok.competencyCategory,
+    isFirstRegistration: ok.isFirstRegistration ?? false,
+    cdpPoints: ok.cdpPoints ?? 0,
   });
 }
 
@@ -333,7 +409,7 @@ function canProceed(): boolean {
           directors.value.every((d) => d.name && d.icNumber),
       );
     case 2: {
-      if (kindMeta.value.needsClass) return okValidation.value.valid;
+      if (kindMeta.value.needsClass) return okValidation.value.valid && appointedCdpOk.value;
       if (kindMeta.value.needsSkilledPersons) {
         return skilledPersons.value.length > 0 && skilledPersons.value.every((s) => s.name && s.icNumber);
       }
@@ -343,7 +419,10 @@ function canProceed(): boolean {
           professionalEngineers.value.every((e) => e.name && e.registrationNo)
         );
       }
-      return appointedOks.value.length > 0 || skilledPersons.value.length > 0 || professionalEngineers.value.length > 0;
+      return (
+        (appointedOks.value.length > 0 || skilledPersons.value.length > 0 || professionalEngineers.value.length > 0) &&
+        (appointedOks.value.length === 0 || appointedCdpOk.value)
+      );
     }
     case 3:
       return equipment.value.length > 0 && equipment.value.every((e) => e.serialNo && e.model);
@@ -358,7 +437,12 @@ function canProceed(): boolean {
 }
 
 const canSubmit = computed(
-  () => declarations.truthful && declarations.terms && declarations.consent && submitPin.value.length >= 4,
+  () =>
+    declarations.truthful &&
+    declarations.terms &&
+    declarations.consent &&
+    submitPin.value.length >= 4 &&
+    (appointedOks.value.length === 0 || appointedCdpOk.value),
 );
 
 function next() {
@@ -421,12 +505,14 @@ async function submit() {
     equipment: equipment.value,
     confirmationChecks: confirmationChecks.value,
     documents: documents.value.map((d) => ({ label: d.label, fileName: d.fileName })),
-    cdpPoints: CDP_BONUS,
   });
 
   const app = regStore.byId(id);
   localStorage.removeItem(draftStorageKey());
   localStorage.removeItem(DRAFT_KEY_PREFIX);
+  if (session.currentPersonaId) {
+    workflow.discardLocalDraft("CE", session.currentPersonaId);
+  }
   toast.success(ts("st.ceApply.title"), ts("st.ceApply.submitted", { n: app?.refNo ?? id }));
   router.push(`${portalBase.value}/registration/contractor-electric/applications/${id}`);
 }
@@ -651,14 +737,32 @@ async function submit() {
 
           <div v-if="appointedOks.length" class="space-y-2">
             <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{{ appointedOks.length }} OK</p>
-            <div v-for="a in appointedOks" :key="a.okId" class="flex flex-wrap items-center gap-3 rounded-md border border-slate-200 dark:border-slate-700 px-3 py-2 text-sm">
-              <span class="font-medium text-slate-800 dark:text-slate-200">{{ a.name }}</span>
-              <label class="ml-auto flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
-                {{ ts("st.ceApply.okPeriod") }}
-                <select v-model.number="a.periodYears" class="rounded border border-slate-300 dark:border-slate-600 px-2 py-1">
-                  <option v-for="p in PERIODS" :key="p" :value="p">{{ p }}</option>
-                </select>
-              </label>
+            <div v-for="a in appointedOks" :key="a.okId" class="space-y-1.5 rounded-md border border-slate-200 dark:border-slate-700 px-3 py-2 text-sm">
+              <div class="flex flex-wrap items-center gap-3">
+                <span class="font-medium text-slate-800 dark:text-slate-200">{{ a.name }}</span>
+                <label class="ml-auto flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+                  {{ ts("st.ceApply.okPeriod") }}
+                  <select v-model.number="a.periodYears" class="rounded border border-slate-300 dark:border-slate-600 px-2 py-1">
+                    <option v-for="p in PERIODS" :key="p" :value="p">{{ p }}</option>
+                  </select>
+                </label>
+              </div>
+              <p
+                v-for="row in appointedCdpRows.filter((r) => r.okId === a.okId)"
+                :key="`${a.okId}-cdp`"
+                :class="[
+                  'text-[11px]',
+                  row.gate.isFirstRegistration
+                    ? 'text-emerald-700 dark:text-emerald-400'
+                    : row.gate.allowed
+                      ? 'text-slate-500 dark:text-slate-400'
+                      : 'font-medium text-rose-600 dark:text-rose-400',
+                ]"
+              >
+                <span v-if="row.gate.isFirstRegistration">{{ ts("st.ceApply.cdpFirst") }}</span>
+                <span v-else-if="row.gate.allowed">{{ ts("st.ceApply.cdpOk", { have: row.gate.available, need: row.gate.required }) }}</span>
+                <span v-else>{{ ts("st.ceApply.cdpFail", { have: row.gate.available, need: row.gate.required }) }}</span>
+              </p>
             </div>
           </div>
         </template>

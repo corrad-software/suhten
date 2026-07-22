@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { Check, LogOut, Menu as MenuIcon, Moon, Settings, Sun, X } from "lucide-vue-next";
+import { Check, ChevronDown, LogOut, Menu as MenuIcon, Moon, Settings, Sun, X } from "lucide-vue-next";
 
 import { useLocale } from "@/composables/useLocale";
 import { useToast } from "@/composables/useToast";
@@ -34,6 +34,17 @@ watch(
     sidebarOpen.value = false;
   },
 );
+
+// Desktop sidebar collapse (kakitangan only; separate key from admin CMS).
+const SIDEBAR_COLLAPSED_KEY = "st-kakitangan-sidebar-collapsed";
+const sidebarCollapsed = ref(localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "true");
+watch(sidebarCollapsed, (val) => {
+  localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(val));
+});
+
+function toggleSidebarCollapsed() {
+  sidebarCollapsed.value = !sidebarCollapsed.value;
+}
 
 const menu = computed(() => portalMenuFor(session.role));
 
@@ -75,8 +86,11 @@ const initials = computed(() =>
 
 function logout() {
   toast.info("Log keluar", "Anda telah log keluar.");
-  void router.replace("/st/login");
-  void session.logout();
+  // Clear local session first, then leave the portal shell immediately.
+  session.logout();
+  void router.replace({ name: "st-login" }).catch(() => {
+    window.location.assign("/st/login");
+  });
 }
 
 const handleDocumentClick = (event: MouseEvent) => {
@@ -248,12 +262,29 @@ onBeforeUnmount(() => {
         />
         <aside
           :class="[
-            'fixed bottom-0 left-0 top-12 z-50 w-72 max-w-[80%] overflow-y-auto border-r border-slate-200 bg-white transition-transform duration-200 ease-in-out dark:border-slate-800 dark:bg-slate-900',
-            'md:static md:z-auto md:w-64 md:max-w-none md:min-h-[calc(100vh-48px)] md:translate-x-0',
+            'relative fixed bottom-0 left-0 top-12 z-50 w-56 max-w-[80%] border-r border-[#1a3278] bg-[#1e3a8a] transition-[width,transform] duration-200 ease-in-out dark:border-[#1a2d5c] dark:bg-[#16213f]',
+            'md:static md:z-auto md:max-w-none md:min-h-[calc(100vh-48px)] md:translate-x-0',
+            sidebarCollapsed ? 'overflow-y-auto md:w-14 md:overflow-visible' : 'overflow-y-auto md:w-52',
             sidebarOpen ? 'translate-x-0 shadow-xl' : '-translate-x-full md:shadow-none',
           ]"
         >
-          <StSidebarNav :menu="menu" />
+          <button
+            type="button"
+            class="absolute -right-3 top-3 z-40 hidden h-6 w-6 items-center justify-center rounded-full border border-[#1a3278] bg-white text-[#1e3a8a] shadow-md transition-all hover:bg-[var(--accent-50)] hover:shadow-lg md:flex"
+            :aria-label="sidebarCollapsed ? 'Kembangkan menu' : 'Runtuhkan menu'"
+            :title="sidebarCollapsed ? 'Kembangkan menu' : 'Runtuhkan menu'"
+            @click="toggleSidebarCollapsed"
+          >
+            <ChevronDown
+              class="h-3.5 w-3.5 transition-transform duration-200"
+              :class="sidebarCollapsed ? '-rotate-90' : 'rotate-90'"
+            />
+          </button>
+          <StSidebarNav
+            :menu="menu"
+            :collapsed="sidebarCollapsed"
+            @expand="sidebarCollapsed = false"
+          />
         </aside>
       </template>
 

@@ -26,10 +26,14 @@ import {
   type PlaceRestriction,
   type VoltageRestriction,
 } from "../../registration/ok-rules";
+import {
+  CDP_FIRST_REGISTRATION_BONUS,
+  evaluateCdpGate,
+  resolveOkRegistrationHistory,
+} from "../../registration/cdp-rules";
 import { useStReferenceSettingsStore } from "../../stores/reference-settings";
 
 const DRAFT_KEY_PREFIX = "st.rg-ke.apply.draft.v1";
-const CDP_BONUS = 12;
 
 const route = useRoute();
 const router = useRouter();
@@ -106,6 +110,19 @@ const eligibility = computed(() => {
   if (!form.certificateActive) return { ok: false, key: "st.okApply.eligibilityFailCert" as const };
   return { ok: true, key: "st.okApply.eligibilityOk" as const };
 });
+
+/** D11: first lifetime ST registration skips CDP; renewal uses category × years table. */
+const registrationHistory = computed(() =>
+  resolveOkRegistrationHistory(form.icNumber, regStore.entities),
+);
+const cdpGate = computed(() =>
+  evaluateCdpGate({
+    isFirstRegistration: registrationHistory.value.isFirstRegistration,
+    category: form.competencyCategory,
+    periodYears: form.periodYears,
+    availablePoints: registrationHistory.value.availablePoints,
+  }),
+);
 
 watch(
   () => [form.age, form.competencyCategory] as const,
@@ -234,6 +251,7 @@ onMounted(() => {
     router.replace(session.homeRoute());
     return;
   }
+  void regStore.fetchFromApi();
   // Always start from the signed-in persona; only overlay a matching draft.
   prefill();
   const restored = loadDraft();
@@ -271,6 +289,7 @@ function canProceed(): boolean {
     case 1:
       return (
         eligibility.value.ok &&
+        cdpGate.value.allowed &&
         Boolean(form.certificateNo) &&
         periods.value.includes(form.periodYears) &&
         (!needsOsh.value || form.oshUploaded)
@@ -291,7 +310,8 @@ const canSubmit = computed(
     declarations.terms &&
     declarations.consent &&
     submitPin.value.length >= 4 &&
-    eligibility.value.ok,
+    eligibility.value.ok &&
+    cdpGate.value.allowed,
 );
 
 function next() {
@@ -363,7 +383,9 @@ async function submit() {
     periodYears: form.periodYears,
     employerCategory: form.employerCategory,
     employerId: form.employerId || undefined,
-    cdpPoints: CDP_BONUS,
+    cdpPoints: registrationHistory.value.availablePoints,
+    isFirstRegistration: registrationHistory.value.isFirstRegistration,
+    appType: registrationHistory.value.isFirstRegistration ? "new_registration" : "renewal",
     oshRequired: needsOsh.value,
     oshUploaded: form.oshUploaded,
     documents: documents.value.map((d) => ({ label: d.label, fileName: d.fileName })),
@@ -518,7 +540,26 @@ async function submit() {
           <span class="mt-1 block text-xs text-slate-400 dark:text-slate-500">{{ ts("st.okApply.periodHint", { n: maxPeriod }) }}</span>
         </label>
 
-        <p class="text-xs text-slate-500 dark:text-slate-400">{{ ts("st.okApply.cdpBonus", { n: CDP_BONUS }) }}</p>
+        <p
+          :class="[
+            'rounded-lg border px-3 py-2.5 text-xs',
+            cdpGate.isFirstRegistration
+              ? 'border-emerald-200 bg-emerald-50/80 text-emerald-900 dark:border-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300'
+              : cdpGate.allowed
+                ? 'border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300'
+                : 'border-rose-200 bg-rose-50 text-rose-900 dark:border-rose-800 dark:bg-rose-500/15 dark:text-rose-300',
+          ]"
+        >
+          <span v-if="cdpGate.isFirstRegistration">
+            {{ ts("st.okApply.cdpFirst", { n: CDP_FIRST_REGISTRATION_BONUS }) }}
+          </span>
+          <span v-else-if="cdpGate.allowed">
+            {{ ts("st.okApply.cdpOk", { have: cdpGate.available, need: cdpGate.required }) }}
+          </span>
+          <span v-else>
+            {{ ts("st.okApply.cdpFail", { have: cdpGate.available, need: cdpGate.required, short: cdpGate.shortfall }) }}
+          </span>
+        </p>
 
         <div v-if="needsOsh" class="space-y-3 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50/80 dark:bg-amber-500/15 p-4">
           <p class="flex items-start gap-2 text-sm text-amber-900 dark:text-amber-400">
@@ -619,6 +660,10 @@ async function submit() {
           <div class="flex justify-between gap-4 py-2"><dt class="text-slate-500 dark:text-slate-400">{{ ts("st.okApply.voltage") }}</dt><dd class="text-slate-800 dark:text-slate-200">{{ voltageLabel(form.voltageRestriction) }}</dd></div>
           <div class="flex justify-between gap-4 py-2"><dt class="text-slate-500 dark:text-slate-400">{{ ts("st.okApply.place") }}</dt><dd class="text-slate-800 dark:text-slate-200">{{ placeLabel(form.placeRestriction) }}</dd></div>
           <div class="flex justify-between gap-4 py-2"><dt class="text-slate-500 dark:text-slate-400">{{ ts("st.okApply.period") }}</dt><dd class="text-slate-800 dark:text-slate-200">{{ ts("st.okApply.periodYear", { n: form.periodYears }) }}</dd></div>
+          <div class="flex justify-between gap-4 py-2"><dt class="text-slate-500 dark:text-slate-400">{{ ts("st.common.cdp") }}</dt><dd class="text-right text-slate-800 dark:text-slate-200">
+            <span v-if="cdpGate.isFirstRegistration">{{ ts("st.okApply.cdpFirst", { n: CDP_FIRST_REGISTRATION_BONUS }) }}</span>
+            <span v-else>{{ cdpGate.available }} / {{ cdpGate.required }}</span>
+          </dd></div>
           <div class="flex justify-between gap-4 py-2">
             <dt class="text-slate-500 dark:text-slate-400">{{ ts("st.common.employer") }}</dt>
             <dd class="text-right text-slate-800 dark:text-slate-200">

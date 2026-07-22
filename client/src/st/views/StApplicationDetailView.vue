@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { ArrowLeft, Award, BadgeCheck, Building2, FileText, History, Receipt, ShieldCheck, UserCheck, Wrench } from "lucide-vue-next";
+import { ArrowLeft, Award, BadgeCheck, Building2, History, Receipt, ShieldCheck, UserCheck, Wrench } from "lucide-vue-next";
 
-import { getStaffTaskNotifyState } from "@/api/st-registration";
 import { useLocale } from "@/composables/useLocale";
 import { useStWorkflowStore } from "../stores/workflow";
 import { useStRegistrationStore } from "../stores/registration";
@@ -17,6 +16,7 @@ import WorkflowStepper from "../components/WorkflowStepper.vue";
 import StPageHero from "../components/StPageHero.vue";
 import AuditTrailTimeline from "../components/AuditTrailTimeline.vue";
 import ApplicationActionBar from "../components/ApplicationActionBar.vue";
+import SupportingDocumentsList from "../components/SupportingDocumentsList.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -57,15 +57,7 @@ function placeLabel(code?: string): string {
   return locale.value === "bi" ? row.bi : row.bm;
 }
 
-const STAGE_BY_ROLE: Record<string, string> = {
-  sos: "sos_review",
-  sos_ce: "sos_review",
-  technical: "technical_review",
-  technical_ce: "technical_review",
-  approver: "pending_approval",
-};
-
-/** Heal mock status from email deep-link (?stage=) or last server notify. */
+/** Heal mock status from email deep-link (?stage=) only — staff-notify API disabled. */
 async function applyEmailStageSync() {
   const id = String(route.params.id ?? "");
   if (!id) return;
@@ -74,16 +66,6 @@ async function applyEmailStageSync() {
   if (stageFromQuery) {
     // Heal stale mock stage only — claim stays in Peti Tugasan (FIFO).
     workflow.syncFromEmailStage(id, stageFromQuery);
-    return;
-  }
-
-  try {
-    const res = await getStaffTaskNotifyState(id);
-    const role = res.data?.role;
-    const stage = role ? STAGE_BY_ROLE[role] : undefined;
-    if (stage) workflow.syncFromEmailStage(id, stage);
-  } catch {
-    // Optional — ignore if unauthenticated or no notify recorded.
   }
 }
 
@@ -481,17 +463,8 @@ const portalBase = computed(() => (route.path.startsWith("/admin/st") ? "/admin/
       </div>
     </template>
 
-    <!-- Documents -->
-    <div>
-      <h2 class="mb-3 flex items-center gap-2 border-b border-slate-200 pb-2 text-sm font-semibold text-slate-900 dark:border-slate-700 dark:text-slate-100"><FileText class="h-4 w-4 text-slate-400 dark:text-slate-500" /> Dokumen Sokongan</h2>
-      <p v-if="app.documents.length === 0" class="text-sm text-slate-400 dark:text-slate-500">Tiada dokumen dimuat naik.</p>
-      <ul v-else>
-        <li v-for="d in app.documents" :key="d.id" class="flex items-center justify-between border-b border-slate-100 py-2 text-sm last:border-0 dark:border-slate-800">
-          <span class="text-slate-700 dark:text-slate-300">{{ d.label }}</span>
-          <span class="font-mono text-xs text-slate-500 dark:text-slate-400">{{ d.fileName }} · {{ d.sizeKb }} KB</span>
-        </li>
-      </ul>
-    </div>
+    <!-- Documents (SOS / Technical / Employer / Pelulus can preview) -->
+    <SupportingDocumentsList :documents="app.documents" />
 
     <!-- Payments -->
     <div v-if="app.payments.length">
