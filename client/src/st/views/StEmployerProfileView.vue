@@ -114,7 +114,7 @@ function save() {
 }
 
 const INPUT =
-  "w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-[var(--accent-500)] focus:outline-hidden focus:ring-2 focus:ring-[var(--accent-ring)]/30";
+  "w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-[var(--accent-500)] focus:outline-hidden focus:ring-2 focus:ring-[var(--accent-ring)]/30 dark:border-slate-600";
 
 type ProfileTab = "company" | "address" | "oks" | "documents";
 const activeTab = ref<ProfileTab>("company");
@@ -155,18 +155,18 @@ const okColumns = computed<SmartTableColumn<(typeof registeredOks.value)[number]
       </template>
     </StPageHero>
 
-    <div v-if="!employer" class="py-16 text-center text-sm text-slate-500">
+    <div v-if="!employer" class="py-16 text-center text-sm text-slate-500 dark:text-slate-400">
       {{ bm ? 'Tiada syarikat majikan dikaitkan dengan akaun ini.' : 'No employer company is linked to this account.' }}
     </div>
 
     <template v-else>
-      <div class="flex gap-1 border-b border-slate-200">
+      <div class="flex gap-1 border-b border-slate-200 dark:border-slate-700">
         <button
           v-for="t in TABS"
           :key="t.key"
           type="button"
           class="border-b-2 px-3 pb-2 text-sm font-medium transition-colors"
-          :class="activeTab === t.key ? 'border-[var(--accent-600)] text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-900'"
+          :class="activeTab === t.key ? 'border-[var(--accent-600)] text-slate-900 dark:text-slate-100' : 'border-transparent text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100'"
           @click="activeTab = t.key"
         >
           {{ t.label }}
@@ -177,54 +177,54 @@ const okColumns = computed<SmartTableColumn<(typeof registeredOks.value)[number]
       <div v-if="activeTab === 'company'" class="pt-6">
         <div class="grid gap-4 sm:grid-cols-2">
           <label class="sm:col-span-2">
-            <span class="mb-1 block text-sm font-medium text-slate-700">
-              {{ bm ? 'Nama Syarikat' : 'Company Name' }} <span class="text-rose-500">*</span>
+            <span class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
+              {{ bm ? 'Nama Syarikat' : 'Company Name' }} <span class="text-rose-500 dark:text-rose-400">*</span>
             </span>
             <input v-model="form.name" :class="INPUT" />
           </label>
           <label>
-            <span class="mb-1 block text-sm font-medium text-slate-700">
-              {{ bm ? 'No. Pendaftaran SSM' : 'SSM Registration No.' }} <span class="text-rose-500">*</span>
+            <span class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
+              {{ bm ? 'No. Pendaftaran SSM' : 'SSM Registration No.' }} <span class="text-rose-500 dark:text-rose-400">*</span>
             </span>
             <input v-model="form.registrationNo" :class="INPUT" />
           </label>
           <label>
-            <span class="mb-1 block text-sm font-medium text-slate-700">
-              {{ bm ? 'Orang Hubungan' : 'Contact Person' }} <span class="text-rose-500">*</span>
+            <span class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
+              {{ bm ? 'Orang Hubungan' : 'Contact Person' }} <span class="text-rose-500 dark:text-rose-400">*</span>
             </span>
             <input v-model="form.contactPerson" :class="INPUT" />
           </label>
           <label>
-            <span class="mb-1 block text-sm font-medium text-slate-700">{{ bm ? 'No. Telefon' : 'Phone No.' }}</span>
+            <span class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ bm ? 'No. Telefon' : 'Phone No.' }}</span>
             <input v-model="form.phone" :class="INPUT" placeholder="03-1234 5678" />
           </label>
           <label>
-            <span class="mb-1 block text-sm font-medium text-slate-700">{{ bm ? 'E-mel' : 'Email' }}</span>
+            <span class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ bm ? 'E-mel' : 'Email' }}</span>
             <input v-model="form.email" type="email" :class="INPUT" />
           </label>
         </div>
 
         <!-- Logo -->
-        <div class="mt-5 border-t border-slate-100 pt-4">
-          <p class="mb-2 text-sm font-medium text-slate-700">{{ bm ? 'Logo Syarikat' : 'Company Logo' }}</p>
+        <div class="mt-5 border-t border-slate-100 pt-4 dark:border-slate-800">
+          <p class="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">{{ bm ? 'Logo Syarikat' : 'Company Logo' }}</p>
           <div class="flex items-center gap-4">
-            <div class="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+            <div class="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/60">
               <img v-if="logoUrl" :src="logoUrl" alt="Logo" class="h-full w-full object-contain" />
-              <Building2 v-else class="h-6 w-6 text-slate-300" />
+              <Building2 v-else class="h-6 w-6 text-slate-300 dark:text-slate-600" />
             </div>
             <div class="flex flex-wrap items-center gap-2">
-              <label class="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50">
+              <label class="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800/60">
                 <ImageUp class="h-3.5 w-3.5" /> {{ bm ? 'Muat Naik Logo' : 'Upload Logo' }}
                 <input type="file" accept="image/*" class="hidden" @change="onLogo" />
               </label>
               <button
                 v-if="logoUrl"
-                class="inline-flex items-center gap-1.5 rounded-md border border-rose-200 px-3 py-1.5 text-xs font-medium text-rose-600 transition-colors hover:bg-rose-50"
+                class="inline-flex items-center gap-1.5 rounded-md border border-rose-200 px-3 py-1.5 text-xs font-medium text-rose-600 transition-colors hover:bg-rose-50 dark:border-rose-800 dark:text-rose-400 dark:hover:bg-rose-500/10"
                 @click="logoUrl = ''"
               >
                 <Trash2 class="h-3.5 w-3.5" /> {{ bm ? 'Buang' : 'Remove' }}
               </button>
-              <span class="text-xs text-slate-400">PNG / JPG, {{ bm ? 'maksimum' : 'max' }} 1MB</span>
+              <span class="text-xs text-slate-400 dark:text-slate-500">PNG / JPG, {{ bm ? 'maksimum' : 'max' }} 1MB</span>
             </div>
           </div>
         </div>
@@ -234,9 +234,9 @@ const okColumns = computed<SmartTableColumn<(typeof registeredOks.value)[number]
       <div v-else-if="activeTab === 'address'" class="pt-6">
         <AddressFieldset v-model="addressForm" :show-errors="showErrors" />
 
-        <div class="mt-5 border-t border-slate-100 pt-4">
-          <p class="mb-1 text-sm font-medium text-slate-700">{{ bm ? 'Lokasi Premis (Peta)' : 'Premises Location (Map)' }}</p>
-          <p class="mb-3 text-xs text-slate-500">
+        <div class="mt-5 border-t border-slate-100 pt-4 dark:border-slate-800">
+          <p class="mb-1 text-sm font-medium text-slate-700 dark:text-slate-300">{{ bm ? 'Lokasi Premis (Peta)' : 'Premises Location (Map)' }}</p>
+          <p class="mb-3 text-xs text-slate-500 dark:text-slate-400">
             {{ bm
               ? 'Tandakan lokasi premis operasi anda untuk memudahkan lawatan tapak / pemeriksaan ST.'
               : 'Pin your operating premises to assist ST site visits / inspections.' }}
@@ -262,7 +262,7 @@ const okColumns = computed<SmartTableColumn<(typeof registeredOks.value)[number]
 
       <!-- Dokumen Syarikat -->
       <div v-else-if="activeTab === 'documents'" class="pt-6">
-        <p class="mb-3 text-xs text-slate-500">
+        <p class="mb-3 text-xs text-slate-500 dark:text-slate-400">
           {{ bm ? 'Dokumen sokongan syarikat untuk semakan ST.' : 'Supporting company documents for ST review.' }}
         </p>
         <DocumentUploadField v-model="documents" :labels="COMPANY_DOC_LABELS" />

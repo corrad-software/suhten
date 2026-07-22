@@ -48,7 +48,7 @@ function open(applyPath: string, available: boolean) {
       <button
         v-for="s in services"
         :key="s.code"
-        class="group flex items-start gap-4 rounded-xl border border-slate-200 bg-white p-5 text-left shadow-sm transition-all"
+        class="group flex items-start gap-4 rounded-xl border border-slate-200 bg-white p-5 text-left shadow-sm transition-all dark:border-slate-700 dark:bg-slate-800"
         :class="s.available ? 'hover:border-[var(--accent-ring)] hover:shadow-md' : 'cursor-not-allowed opacity-75'"
         :disabled="!s.available"
         @click="open(s.applyPath, s.available)"
@@ -58,13 +58,13 @@ function open(applyPath: string, available: boolean) {
         </div>
         <div class="min-w-0 flex-1">
           <div class="flex items-center gap-2">
-            <p class="font-semibold text-slate-900">{{ s.title }}</p>
+            <p class="font-semibold text-slate-900 dark:text-slate-100">{{ s.title }}</p>
             <span
               v-if="!s.available"
-              class="rounded bg-amber-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-amber-700"
+              class="rounded bg-amber-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-amber-700 dark:bg-amber-500/15 dark:text-amber-400"
             >{{ locale === 'bm' ? 'Akan Datang' : 'Soon' }}</span>
           </div>
-          <p class="mt-1 text-xs leading-relaxed text-slate-500">{{ s.actRef[locale] }}</p>
+          <p class="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">{{ s.actRef[locale] }}</p>
           <span
             v-if="s.available"
             class="mt-3 inline-flex items-center gap-1 text-sm font-medium text-[var(--accent-700)]"
@@ -76,7 +76,7 @@ function open(applyPath: string, available: boolean) {
       </button>
     </div>
 
-    <div class="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-500 shadow-sm">
+    <div class="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-500 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
       <template v-if="session.role === 'employer'">
         {{ locale === 'bm'
           ? 'Permohonan kontraktor anda yang sedia ada boleh dilihat di menu “Permohonan Kontraktor”.'

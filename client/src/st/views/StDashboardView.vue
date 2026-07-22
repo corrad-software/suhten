@@ -136,24 +136,24 @@ function open(id: string) {
   <div class="space-y-8">
     <StPageHero :title="persona?.name ?? ''" :eyebrow="`${greeting} 👋`">
       <template #action>
-        <div class="text-right text-xs text-slate-500">
+        <div class="text-right text-xs text-slate-500 dark:text-slate-400">
           <p class="capitalize">{{ todayLabel }}</p>
           <p class="mt-0.5">{{ roleLabel }}</p>
         </div>
       </template>
-      <p class="mt-1 flex items-center gap-1.5 text-sm text-slate-500">
-        <ShieldCheck class="h-4 w-4 shrink-0 text-slate-400" />
+      <p class="mt-1 flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400">
+        <ShieldCheck class="h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500" />
         <span class="truncate">{{ persona?.title }}</span>
       </p>
     </StPageHero>
 
     <!-- APPLICANT -->
     <template v-if="role === 'applicant'">
-      <div class="grid grid-cols-2 gap-y-5 sm:grid-cols-4 sm:divide-x sm:divide-slate-200">
+      <div class="grid grid-cols-2 gap-y-5 sm:grid-cols-4 sm:divide-x sm:divide-slate-200 dark:sm:divide-slate-700">
         <div v-for="(s, i) in applicantStats" :key="i" class="px-0 sm:px-5 sm:first:pl-0">
-          <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">{{ s.label }}</p>
-          <p class="mt-1.5 text-2xl font-semibold tracking-tight text-slate-900">{{ s.value }}</p>
-          <p class="mt-1 flex items-center gap-1.5 text-xs text-slate-500">
+          <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{{ s.label }}</p>
+          <p class="mt-1.5 text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">{{ s.value }}</p>
+          <p class="mt-1 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
             <span :class="['h-1.5 w-1.5 shrink-0 rounded-full', toneDot(s.tone)]" />
             {{ s.caption }}
           </p>
@@ -162,7 +162,7 @@ function open(id: string) {
 
       <!-- Tindakan Pantas — Pemohon: Orang Kompeten only -->
       <div>
-        <h2 class="text-sm font-semibold text-slate-900">Tindakan Pantas</h2>
+        <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Tindakan Pantas</h2>
         <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
           <router-link
             to="/st/registration/ok-electric/applications/new"
@@ -176,63 +176,63 @@ function open(id: string) {
           </router-link>
           <router-link
             to="/st/applications"
-            class="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-4 transition-colors hover:bg-slate-100"
+            class="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-4 transition-colors hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800/60 dark:hover:bg-slate-700"
           >
             <div class="flex items-center gap-3">
-              <FileText class="h-5 w-5 text-slate-600" />
-              <span class="text-sm font-medium text-slate-900">Permohonan Saya</span>
+              <FileText class="h-5 w-5 text-slate-600 dark:text-slate-400" />
+              <span class="text-sm font-medium text-slate-900 dark:text-slate-100">Permohonan Saya</span>
             </div>
-            <ArrowRight class="h-4 w-4 text-slate-500" />
+            <ArrowRight class="h-4 w-4 text-slate-500 dark:text-slate-400" />
           </router-link>
         </div>
       </div>
 
       <!-- Penerimaan Pelantikan (CE NA-03) -->
-      <div v-if="okConfirmations.length" class="border-t border-slate-200 pt-8">
-        <div class="border-b border-amber-200 pb-2">
-          <h2 class="text-sm font-semibold text-amber-900">Penerimaan Pelantikan (PFD-RG-CE-NA-03)</h2>
-          <p class="mt-0.5 text-xs text-amber-800/80">Sahkan atau tolak pelantikan sebagai OK bagi permohonan kontraktor.</p>
+      <div v-if="okConfirmations.length" class="border-t border-slate-200 pt-8 dark:border-slate-700">
+        <div class="border-b border-amber-200 pb-2 dark:border-amber-800">
+          <h2 class="text-sm font-semibold text-amber-900 dark:text-amber-400">Penerimaan Pelantikan (PFD-RG-CE-NA-03)</h2>
+          <p class="mt-0.5 text-xs text-amber-800/80 dark:text-amber-400/80">Sahkan atau tolak pelantikan sebagai OK bagi permohonan kontraktor.</p>
         </div>
         <button
           v-for="a in okConfirmations"
           :key="a.id"
-          class="flex w-full items-center justify-between gap-3 border-b border-amber-100 py-3 text-left last:border-0 hover:bg-amber-50/60"
+          class="flex w-full items-center justify-between gap-3 border-b border-amber-100 py-3 text-left last:border-0 hover:bg-amber-50/60 dark:border-amber-900 dark:hover:bg-amber-500/10"
           @click="open(a.id)"
         >
           <div class="min-w-0">
-            <p class="font-mono text-xs text-slate-500">{{ a.refNo }}</p>
-            <p class="text-sm font-medium text-slate-800">{{ a.employer?.name ?? a.applicant.fullName }} · {{ workflowShort(a.workflowType) }}</p>
+            <p class="font-mono text-xs text-slate-500 dark:text-slate-400">{{ a.refNo }}</p>
+            <p class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ a.employer?.name ?? a.applicant.fullName }} · {{ workflowShort(a.workflowType) }}</p>
           </div>
           <StatusBadge :status="a.status" />
         </button>
       </div>
 
-      <div class="border-t border-slate-200 pt-8">
-        <div class="flex items-center justify-between border-b border-slate-200 pb-2">
-          <h2 class="text-sm font-semibold text-slate-900">Permohonan Terkini</h2>
+      <div class="border-t border-slate-200 pt-8 dark:border-slate-700">
+        <div class="flex items-center justify-between border-b border-slate-200 pb-2 dark:border-slate-700">
+          <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Permohonan Terkini</h2>
           <button class="text-xs font-medium text-[var(--accent-700)] hover:underline" @click="router.push('/st/applications')">Lihat semua</button>
         </div>
-        <p v-if="myApps.length === 0" class="py-8 text-center text-sm text-slate-400">Belum ada permohonan. Mulakan satu di atas.</p>
+        <p v-if="myApps.length === 0" class="py-8 text-center text-sm text-slate-400 dark:text-slate-500">Belum ada permohonan. Mulakan satu di atas.</p>
         <button
           v-for="a in myApps.slice(0, 5)"
           :key="a.id"
-          class="flex w-full items-center justify-between gap-3 border-b border-slate-100 py-3 text-left last:border-0 hover:bg-slate-50/60"
+          class="flex w-full items-center justify-between gap-3 border-b border-slate-100 py-3 text-left last:border-0 hover:bg-slate-50/60 dark:border-slate-800 dark:hover:bg-slate-800/60"
           @click="open(a.id)"
         >
           <div class="min-w-0">
-            <p class="font-mono text-xs text-slate-500">{{ a.refNo }}</p>
-            <p class="text-sm font-medium text-slate-800">{{ workflowShort(a.workflowType) }}</p>
+            <p class="font-mono text-xs text-slate-500 dark:text-slate-400">{{ a.refNo }}</p>
+            <p class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ workflowShort(a.workflowType) }}</p>
           </div>
           <StatusBadge :status="a.status" />
         </button>
       </div>
 
       <!-- Perkhidmatan lain yang ditawarkan (same catalogue as /st/perkhidmatan) -->
-      <div class="border-t border-slate-200 pt-8">
+      <div class="border-t border-slate-200 pt-8 dark:border-slate-700">
         <div class="flex items-center justify-between gap-3">
           <div>
-            <h2 class="text-sm font-semibold text-slate-900">Perkhidmatan Lain Yang Ditawarkan</h2>
-            <p class="mt-0.5 text-xs text-slate-500">Perkhidmatan Suruhanjaya Tenaga selain pendaftaran.</p>
+            <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Perkhidmatan Lain Yang Ditawarkan</h2>
+            <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Perkhidmatan Suruhanjaya Tenaga selain pendaftaran.</p>
           </div>
           <router-link to="/st/perkhidmatan" class="shrink-0 text-xs font-medium text-[var(--accent-700)] hover:underline">
             Lihat semua
@@ -240,26 +240,26 @@ function open(id: string) {
         </div>
 
         <div v-for="group in otherGroups" :key="group.id" class="mt-5">
-          <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">{{ group.title }}</p>
+          <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{{ group.title }}</p>
           <div class="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <div
               v-for="tile in group.tiles"
               :key="tile.code"
-              class="flex items-start gap-3 rounded-lg border border-slate-200 p-3 transition-colors"
-              :class="tile.available ? 'hover:border-[var(--accent-ring)] hover:bg-slate-50' : 'opacity-75'"
+              class="flex items-start gap-3 rounded-lg border border-slate-200 p-3 transition-colors dark:border-slate-700"
+              :class="tile.available ? 'hover:border-[var(--accent-ring)] hover:bg-slate-50 dark:hover:bg-slate-800/60' : 'opacity-75'"
             >
               <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--accent-50)] text-[var(--accent-700)]">
                 <component :is="tile.icon" class="h-4.5 w-4.5" />
               </div>
               <div class="min-w-0 flex-1">
                 <div class="flex items-center gap-1.5">
-                  <p class="truncate text-sm font-medium text-slate-900">{{ tile.title }}</p>
+                  <p class="truncate text-sm font-medium text-slate-900 dark:text-slate-100">{{ tile.title }}</p>
                   <span
                     class="shrink-0 rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide"
-                    :class="tile.available ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-100 text-amber-700'"
+                    :class="tile.available ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400'"
                   >{{ tile.available ? 'Tersedia' : 'Akan Datang' }}</span>
                 </div>
-                <p class="mt-0.5 truncate text-[11px] text-slate-500">{{ tile.actRef }}</p>
+                <p class="mt-0.5 truncate text-[11px] text-slate-500 dark:text-slate-400">{{ tile.actRef }}</p>
               </div>
             </div>
           </div>
@@ -269,11 +269,11 @@ function open(id: string) {
 
     <!-- EMPLOYER / MAJIKAN — Kontraktor Elektrik + pengesahan lantikan OK -->
     <template v-else-if="role === 'employer'">
-      <div class="grid grid-cols-2 gap-y-5 sm:grid-cols-4 sm:divide-x sm:divide-slate-200">
+      <div class="grid grid-cols-2 gap-y-5 sm:grid-cols-4 sm:divide-x sm:divide-slate-200 dark:sm:divide-slate-700">
         <div v-for="(s, i) in employerStats" :key="i" class="px-0 sm:px-5 sm:first:pl-0">
-          <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">{{ s.label }}</p>
-          <p class="mt-1.5 text-2xl font-semibold tracking-tight text-slate-900">{{ s.value }}</p>
-          <p class="mt-1 flex items-center gap-1.5 text-xs text-slate-500">
+          <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{{ s.label }}</p>
+          <p class="mt-1.5 text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">{{ s.value }}</p>
+          <p class="mt-1 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
             <span :class="['h-1.5 w-1.5 shrink-0 rounded-full', toneDot(s.tone)]" />
             {{ s.caption }}
           </p>
@@ -282,7 +282,7 @@ function open(id: string) {
 
       <!-- Tindakan Pantas -->
       <div>
-        <h2 class="text-sm font-semibold text-slate-900">Tindakan Pantas</h2>
+        <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Tindakan Pantas</h2>
         <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
           <router-link
             to="/st/registration/contractor-electric/applications/new"
@@ -296,32 +296,32 @@ function open(id: string) {
           </router-link>
           <router-link
             to="/st/registration/contractor-electric/applications"
-            class="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-4 transition-colors hover:bg-slate-100"
+            class="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-4 transition-colors hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800/60 dark:hover:bg-slate-700"
           >
             <div class="flex items-center gap-3">
-              <Building2 class="h-5 w-5 text-slate-600" />
-              <span class="text-sm font-medium text-slate-900">Permohonan Kontraktor</span>
+              <Building2 class="h-5 w-5 text-slate-600 dark:text-slate-400" />
+              <span class="text-sm font-medium text-slate-900 dark:text-slate-100">Permohonan Kontraktor</span>
             </div>
-            <ArrowRight class="h-4 w-4 text-slate-500" />
+            <ArrowRight class="h-4 w-4 text-slate-500 dark:text-slate-400" />
           </router-link>
         </div>
       </div>
 
       <!-- Hantar Permohonan / Bayaran (CE NA-04/05) -->
-      <div v-if="ceActionNeeded.length" class="border-t border-slate-200 pt-8">
-        <div class="border-b border-amber-200 pb-2">
-          <h2 class="text-sm font-semibold text-amber-900">Hantar Permohonan / Bayaran (PFD-RG-CE-NA-04 / NA-05)</h2>
-          <p class="mt-0.5 text-xs text-amber-800/80">OK telah menerima pelantikan — sila hantar permohonan dan bayar fi proses.</p>
+      <div v-if="ceActionNeeded.length" class="border-t border-slate-200 pt-8 dark:border-slate-700">
+        <div class="border-b border-amber-200 pb-2 dark:border-amber-800">
+          <h2 class="text-sm font-semibold text-amber-900 dark:text-amber-400">Hantar Permohonan / Bayaran (PFD-RG-CE-NA-04 / NA-05)</h2>
+          <p class="mt-0.5 text-xs text-amber-800/80 dark:text-amber-400/80">OK telah menerima pelantikan — sila hantar permohonan dan bayar fi proses.</p>
         </div>
         <button
           v-for="a in ceActionNeeded"
           :key="a.id"
-          class="flex w-full items-center justify-between gap-3 border-b border-amber-100 py-3 text-left last:border-0 hover:bg-amber-50/60"
+          class="flex w-full items-center justify-between gap-3 border-b border-amber-100 py-3 text-left last:border-0 hover:bg-amber-50/60 dark:border-amber-900 dark:hover:bg-amber-500/10"
           @click="open(a.id)"
         >
           <div class="min-w-0">
-            <p class="font-mono text-xs text-slate-500">{{ a.refNo }}</p>
-            <p class="text-sm font-medium text-slate-800">
+            <p class="font-mono text-xs text-slate-500 dark:text-slate-400">{{ a.refNo }}</p>
+            <p class="text-sm font-medium text-slate-800 dark:text-slate-200">
               {{ a.employer?.name ?? a.applicant.fullName }} ·
               {{ a.status === "awaiting_final_submit" ? "Hantar Permohonan" : workflowShort(a.workflowType) }}
             </p>
@@ -330,21 +330,21 @@ function open(id: string) {
         </button>
       </div>
 
-      <div class="border-t border-slate-200 pt-8">
-        <div class="flex items-center justify-between border-b border-slate-200 pb-2">
-          <h2 class="text-sm font-semibold text-slate-900">Pengesahan Lantikan Diperlukan</h2>
+      <div class="border-t border-slate-200 pt-8 dark:border-slate-700">
+        <div class="flex items-center justify-between border-b border-slate-200 pb-2 dark:border-slate-700">
+          <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Pengesahan Lantikan Diperlukan</h2>
           <button class="text-xs font-medium text-[var(--accent-700)] hover:underline" @click="router.push('/st/applications')">Lihat semua</button>
         </div>
-        <p v-if="confirmations.length === 0" class="py-8 text-center text-sm text-slate-400">Tiada lantikan menunggu pengesahan.</p>
+        <p v-if="confirmations.length === 0" class="py-8 text-center text-sm text-slate-400 dark:text-slate-500">Tiada lantikan menunggu pengesahan.</p>
         <button
           v-for="a in confirmations"
           :key="a.id"
-          class="flex w-full items-center justify-between gap-3 border-b border-slate-100 py-3 text-left last:border-0 hover:bg-slate-50/60"
+          class="flex w-full items-center justify-between gap-3 border-b border-slate-100 py-3 text-left last:border-0 hover:bg-slate-50/60 dark:border-slate-800 dark:hover:bg-slate-800/60"
           @click="open(a.id)"
         >
           <div class="min-w-0">
-            <p class="font-mono text-xs text-slate-500">{{ a.refNo }}</p>
-            <p class="text-sm font-medium text-slate-800">{{ a.applicant.fullName }} · {{ workflowShort(a.workflowType) }}</p>
+            <p class="font-mono text-xs text-slate-500 dark:text-slate-400">{{ a.refNo }}</p>
+            <p class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ a.applicant.fullName }} · {{ workflowShort(a.workflowType) }}</p>
           </div>
           <StatusBadge :status="a.status" />
         </button>
@@ -353,44 +353,44 @@ function open(id: string) {
 
     <!-- BACK-OFFICE (sos / technical / approver) -->
     <template v-else-if="role">
-      <div class="grid grid-cols-2 gap-y-5 sm:grid-cols-4 sm:divide-x sm:divide-slate-200">
+      <div class="grid grid-cols-2 gap-y-5 sm:grid-cols-4 sm:divide-x sm:divide-slate-200 dark:sm:divide-slate-700">
         <div v-for="(s, i) in backStats" :key="i" class="px-0 sm:px-5 sm:first:pl-0">
-          <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">{{ s.label }}</p>
-          <p class="mt-1.5 text-2xl font-semibold tracking-tight text-slate-900">{{ s.value }}</p>
-          <p class="mt-1 flex items-center gap-1.5 text-xs text-slate-500">
+          <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{{ s.label }}</p>
+          <p class="mt-1.5 text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">{{ s.value }}</p>
+          <p class="mt-1 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
             <span :class="['h-1.5 w-1.5 shrink-0 rounded-full', toneDot(s.tone)]" />
             {{ s.caption }}
           </p>
         </div>
         <!-- SLA breakdown -->
         <div class="px-0 sm:px-5">
-          <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Status SLA Giliran</p>
+          <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Status SLA Giliran</p>
           <div class="mt-1.5 flex items-center gap-3">
-            <span class="flex items-center gap-1.5 text-xl font-semibold text-slate-900"><span class="h-1.5 w-1.5 rounded-full bg-emerald-500" />{{ slaBreakdown.green }}</span>
-            <span class="flex items-center gap-1.5 text-xl font-semibold text-slate-900"><span class="h-1.5 w-1.5 rounded-full bg-amber-500" />{{ slaBreakdown.yellow }}</span>
-            <span class="flex items-center gap-1.5 text-xl font-semibold text-slate-900"><span class="h-1.5 w-1.5 rounded-full bg-rose-500" />{{ slaBreakdown.red }}</span>
+            <span class="flex items-center gap-1.5 text-xl font-semibold text-slate-900 dark:text-slate-100"><span class="h-1.5 w-1.5 rounded-full bg-emerald-500" />{{ slaBreakdown.green }}</span>
+            <span class="flex items-center gap-1.5 text-xl font-semibold text-slate-900 dark:text-slate-100"><span class="h-1.5 w-1.5 rounded-full bg-amber-500" />{{ slaBreakdown.yellow }}</span>
+            <span class="flex items-center gap-1.5 text-xl font-semibold text-slate-900 dark:text-slate-100"><span class="h-1.5 w-1.5 rounded-full bg-rose-500" />{{ slaBreakdown.red }}</span>
           </div>
-          <p class="mt-1 text-xs text-slate-500">Hijau · Kuning · Merah</p>
+          <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Hijau · Kuning · Merah</p>
         </div>
       </div>
 
       <div>
-        <div class="flex items-center justify-between border-b border-slate-200 pb-2">
-          <h2 class="text-sm font-semibold text-slate-900">Giliran Terkini (FIFO)</h2>
+        <div class="flex items-center justify-between border-b border-slate-200 pb-2 dark:border-slate-700">
+          <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Giliran Terkini (FIFO)</h2>
           <button class="text-xs font-medium text-[var(--accent-700)] hover:underline" @click="router.push('/st/inbox')">Buka peti tugasan</button>
         </div>
-        <p v-if="queue.length === 0" class="py-8 text-center text-sm text-slate-400">Tiada tugasan dalam giliran.</p>
+        <p v-if="queue.length === 0" class="py-8 text-center text-sm text-slate-400 dark:text-slate-500">Tiada tugasan dalam giliran.</p>
         <button
           v-for="(it, i) in queue.slice(0, 5)"
           :key="it.applicationId"
-          class="flex w-full items-center justify-between gap-3 border-b border-slate-100 py-3 text-left last:border-0 hover:bg-slate-50/60"
+          class="flex w-full items-center justify-between gap-3 border-b border-slate-100 py-3 text-left last:border-0 hover:bg-slate-50/60 dark:border-slate-800 dark:hover:bg-slate-800/60"
           @click="open(it.applicationId)"
         >
           <div class="flex min-w-0 items-center gap-2">
-            <span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-slate-100 px-1 text-[10px] font-semibold text-slate-500">{{ i + 1 }}</span>
+            <span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-slate-100 px-1 text-[10px] font-semibold text-slate-500 dark:bg-slate-700 dark:text-slate-400">{{ i + 1 }}</span>
             <div>
-              <p class="font-mono text-xs text-slate-500">{{ it.refNo }}</p>
-              <p class="text-sm font-medium text-slate-800">{{ it.applicantName }}</p>
+              <p class="font-mono text-xs text-slate-500 dark:text-slate-400">{{ it.refNo }}</p>
+              <p class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ it.applicantName }}</p>
             </div>
           </div>
           <SlaIndicator :stage-entered-at="it.stageEnteredAt" :target-hours="it.slaTargetHours" />

@@ -16,6 +16,7 @@ import {
 } from "../../mock/workspace";
 import type { SmartTableColumn } from "../../composables/useSmartTable";
 import SmartTable from "../../components/SmartTable.vue";
+import StPageHero from "../../components/StPageHero.vue";
 
 const route = useRoute();
 const { ts, locale } = useLocale();
@@ -92,22 +93,22 @@ function money(n: number): string {
 
 function statusClass(s: string): string {
   const map: Record<string, string> = {
-    active: "bg-emerald-100 text-emerald-800",
-    pending: "bg-amber-100 text-amber-800",
-    suspended: "bg-rose-100 text-rose-800",
-    inactive: "bg-slate-100 text-slate-600",
-    success: "bg-emerald-100 text-emerald-800",
-    failed: "bg-rose-100 text-rose-800",
-    scheduled: "bg-sky-100 text-sky-800",
-    in_progress: "bg-amber-100 text-amber-800",
-    completed: "bg-emerald-100 text-emerald-800",
-    cancelled: "bg-slate-100 text-slate-600",
-    queued: "bg-sky-100 text-sky-800",
-    deferred: "bg-amber-100 text-amber-800",
-    approved: "bg-emerald-100 text-emerald-800",
-    rejected: "bg-rose-100 text-rose-800",
+    active: "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-400",
+    pending: "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-400",
+    suspended: "bg-rose-100 text-rose-800 dark:bg-rose-500/15 dark:text-rose-400",
+    inactive: "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400",
+    success: "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-400",
+    failed: "bg-rose-100 text-rose-800 dark:bg-rose-500/15 dark:text-rose-400",
+    scheduled: "bg-sky-100 text-sky-800 dark:bg-sky-500/15 dark:text-sky-400",
+    in_progress: "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-400",
+    completed: "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-400",
+    cancelled: "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400",
+    queued: "bg-sky-100 text-sky-800 dark:bg-sky-500/15 dark:text-sky-400",
+    deferred: "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-400",
+    approved: "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-400",
+    rejected: "bg-rose-100 text-rose-800 dark:bg-rose-500/15 dark:text-rose-400",
   };
-  return map[s] ?? "bg-slate-100 text-slate-700";
+  return map[s] ?? "bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300";
 }
 
 type IdentityUserRow = (typeof PUBLIC_USERS)[number];
@@ -187,21 +188,14 @@ const committeeColumns = computed<SmartTableColumn<CommitteeRow>[]>(() => [
 
 <template>
   <div v-if="code && def" class="space-y-8">
-    <div class="flex items-start gap-3">
-      <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--accent-50)]">
-        <component :is="def.icon" class="h-5 w-5 text-[var(--accent-700)]" />
+    <StPageHero :title="screenTitle" :subtitle="title">
+      <div class="mt-2 flex flex-wrap items-center gap-2">
+        <span class="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs text-slate-600 dark:bg-slate-700 dark:text-slate-400">{{ code }}</span>
+        <span class="text-xs text-slate-400 dark:text-slate-500">{{ actRef }}</span>
       </div>
-      <div>
-        <div class="flex flex-wrap items-center gap-2">
-          <h1 class="text-xl font-semibold text-slate-900">{{ screenTitle }}</h1>
-          <span class="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs text-slate-600">{{ code }}</span>
-        </div>
-        <p class="mt-0.5 text-sm text-slate-500">{{ title }}</p>
-        <p class="mt-1 text-xs text-slate-400">{{ actRef }}</p>
-      </div>
-    </div>
+    </StPageHero>
 
-    <p class="text-xs text-slate-400">{{ ts("st.common.mockNote") }}</p>
+    <p class="text-xs text-slate-400 dark:text-slate-500">{{ ts("st.common.mockNote") }}</p>
 
     <!-- PE-ID: public users -->
     <template v-if="screen === 'public-users'">
@@ -210,13 +204,13 @@ const committeeColumns = computed<SmartTableColumn<CommitteeRow>[]>(() => [
           <span class="font-mono text-xs">{{ row.identityNo }}</span>
         </template>
         <template #cell-email="{ row }">
-          <span class="text-slate-600">{{ row.email }}</span>
+          <span class="text-slate-600 dark:text-slate-400">{{ row.email }}</span>
         </template>
         <template #cell-status="{ row }">
           <span :class="['rounded-full px-2.5 py-0.5 text-xs font-medium', statusClass(row.status)]">{{ row.status }}</span>
         </template>
         <template #cell-lastLogin="{ row }">
-          <span class="text-slate-500">{{ fmt(row.lastLoginAt) }}</span>
+          <span class="text-slate-500 dark:text-slate-400">{{ fmt(row.lastLoginAt) }}</span>
         </template>
       </SmartTable>
     </template>
@@ -228,7 +222,7 @@ const committeeColumns = computed<SmartTableColumn<CommitteeRow>[]>(() => [
           <span class="font-mono text-xs">{{ row.identityNo }}</span>
         </template>
         <template #cell-email="{ row }">
-          <span class="text-slate-600">{{ row.email }}</span>
+          <span class="text-slate-600 dark:text-slate-400">{{ row.email }}</span>
         </template>
         <template #cell-status="{ row }">
           <span :class="['rounded-full px-2.5 py-0.5 text-xs font-medium', statusClass(row.status)]">{{ row.status }}</span>
@@ -241,7 +235,7 @@ const committeeColumns = computed<SmartTableColumn<CommitteeRow>[]>(() => [
       <SmartTable :rows="ORGANISATIONS" :columns="organisationColumns" :row-key="(o) => o.id">
         <template #cell-name="{ row }">
           <p class="font-medium">{{ row.name }}</p>
-          <p class="text-xs text-slate-400">{{ row.contactEmail }}</p>
+          <p class="text-xs text-slate-400 dark:text-slate-500">{{ row.contactEmail }}</p>
         </template>
         <template #cell-regNo="{ row }">
           <span class="font-mono text-xs">{{ row.regNo }}</span>
@@ -254,22 +248,22 @@ const committeeColumns = computed<SmartTableColumn<CommitteeRow>[]>(() => [
 
     <!-- PE-ID: access -->
     <template v-else-if="screen === 'access'">
-      <div class="grid gap-6 md:grid-cols-2 md:divide-x md:divide-slate-200">
+      <div class="grid gap-6 md:grid-cols-2 md:divide-x md:divide-slate-200 dark:md:divide-slate-700">
         <div>
-          <h2 class="text-sm font-semibold text-slate-800">{{ ts("st.ws.accessMatrix") }}</h2>
-          <p class="mt-1 text-sm text-slate-500">{{ ts("st.ws.accessBody") }}</p>
+          <h2 class="text-sm font-semibold text-slate-800 dark:text-slate-200">{{ ts("st.ws.accessMatrix") }}</h2>
+          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ ts("st.ws.accessBody") }}</p>
           <ul class="mt-4 space-y-2 text-sm">
-            <li class="flex justify-between border-b border-slate-100 py-2"><span>SOS</span><span class="text-slate-500">Inbox · Semakan awal</span></li>
-            <li class="flex justify-between border-b border-slate-100 py-2"><span>Teknikal</span><span class="text-slate-500">Semakan domain</span></li>
-            <li class="flex justify-between border-b border-slate-100 py-2"><span>Pelulus</span><span class="text-slate-500">Kelulusan · Tandatangan</span></li>
-            <li class="flex justify-between py-2"><span>Admin</span><span class="text-slate-500">Konfigurasi · RBAC</span></li>
+            <li class="flex justify-between border-b border-slate-100 py-2 dark:border-slate-800"><span>SOS</span><span class="text-slate-500 dark:text-slate-400">Inbox · Semakan awal</span></li>
+            <li class="flex justify-between border-b border-slate-100 py-2 dark:border-slate-800"><span>Teknikal</span><span class="text-slate-500 dark:text-slate-400">Semakan domain</span></li>
+            <li class="flex justify-between border-b border-slate-100 py-2 dark:border-slate-800"><span>Pelulus</span><span class="text-slate-500 dark:text-slate-400">Kelulusan · Tandatangan</span></li>
+            <li class="flex justify-between py-2"><span>Admin</span><span class="text-slate-500 dark:text-slate-400">Konfigurasi · RBAC</span></li>
           </ul>
         </div>
         <div class="md:pl-6">
-          <h2 class="text-sm font-semibold text-slate-800">{{ ts("st.ws.accessRequests") }}</h2>
+          <h2 class="text-sm font-semibold text-slate-800 dark:text-slate-200">{{ ts("st.ws.accessRequests") }}</h2>
           <ul class="mt-3 space-y-3 text-sm">
-            <li class="rounded-lg bg-amber-50 px-3 py-2 text-amber-900">Razak — naik taraf LOA LC-LE (menunggu)</li>
-            <li class="rounded-lg bg-slate-50 px-3 py-2 text-slate-700">Aina — akses PE-SV (diluluskan)</li>
+            <li class="rounded-lg bg-amber-50 px-3 py-2 text-amber-900 dark:bg-amber-500/15 dark:text-amber-400">Razak — naik taraf LOA LC-LE (menunggu)</li>
+            <li class="rounded-lg bg-slate-50 px-3 py-2 text-slate-700 dark:bg-slate-800/60 dark:text-slate-300">Aina — akses PE-SV (diluluskan)</li>
           </ul>
         </div>
       </div>
@@ -277,21 +271,21 @@ const committeeColumns = computed<SmartTableColumn<CommitteeRow>[]>(() => [
 
     <!-- PE-RV: payments -->
     <template v-else-if="screen === 'payments'">
-      <div class="grid grid-cols-3 gap-y-4 sm:divide-x sm:divide-slate-200">
+      <div class="grid grid-cols-3 gap-y-4 sm:divide-x sm:divide-slate-200 dark:sm:divide-slate-700">
         <div class="px-0 sm:px-5 sm:first:pl-0">
-          <p class="text-2xl font-bold text-slate-900">{{ money(paymentTotals.amount) }}</p>
-          <p class="text-xs text-slate-500">{{ ts("st.ws.collected") }}</p>
+          <p class="text-2xl font-bold text-slate-900 dark:text-slate-100">{{ money(paymentTotals.amount) }}</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400">{{ ts("st.ws.collected") }}</p>
         </div>
         <div class="px-0 sm:px-5">
-          <p class="text-2xl font-bold text-amber-700">{{ paymentTotals.pending }}</p>
-          <p class="text-xs text-slate-500">{{ ts("st.ws.pendingPay") }}</p>
+          <p class="text-2xl font-bold text-amber-700 dark:text-amber-400">{{ paymentTotals.pending }}</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400">{{ ts("st.ws.pendingPay") }}</p>
         </div>
         <div class="px-0 sm:px-5">
-          <p class="text-2xl font-bold text-rose-700">{{ paymentTotals.failed }}</p>
-          <p class="text-xs text-slate-500">{{ ts("st.ws.failedPay") }}</p>
+          <p class="text-2xl font-bold text-rose-700 dark:text-rose-400">{{ paymentTotals.failed }}</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400">{{ ts("st.ws.failedPay") }}</p>
         </div>
       </div>
-      <div class="border-t border-slate-200 pt-6">
+      <div class="border-t border-slate-200 pt-6 dark:border-slate-700">
         <SmartTable :rows="PAYMENTS" :columns="paymentColumns" :row-key="(p) => p.id">
           <template #cell-receipt="{ row }">
             <span class="font-mono text-xs">{{ row.receiptNo }}</span>
@@ -314,20 +308,20 @@ const committeeColumns = computed<SmartTableColumn<CommitteeRow>[]>(() => [
 
     <!-- PE-RV: reconciliation / reports -->
     <template v-else-if="screen === 'reconciliation' || screen === 'revenue-reports'">
-      <div class="grid gap-6 lg:grid-cols-2 lg:divide-x lg:divide-slate-200">
+      <div class="grid gap-6 lg:grid-cols-2 lg:divide-x lg:divide-slate-200 dark:lg:divide-slate-700">
         <div>
           <h2 class="text-sm font-semibold">{{ ts("st.ws.reconTitle") }}</h2>
-          <p class="mt-1 text-sm text-slate-500">{{ ts("st.ws.reconBody") }}</p>
+          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ ts("st.ws.reconBody") }}</p>
           <dl class="mt-4 space-y-2 text-sm">
             <div class="flex justify-between"><dt>{{ ts("st.ws.fpxTotal") }}</dt><dd class="font-semibold">{{ money(paymentTotals.amount) }}</dd></div>
             <div class="flex justify-between"><dt>{{ ts("st.ws.ledgerTotal") }}</dt><dd class="font-semibold">{{ money(paymentTotals.amount) }}</dd></div>
-            <div class="flex justify-between text-emerald-700"><dt>{{ ts("st.ws.variance") }}</dt><dd class="font-semibold">{{ money(0) }}</dd></div>
+            <div class="flex justify-between text-emerald-700 dark:text-emerald-400"><dt>{{ ts("st.ws.variance") }}</dt><dd class="font-semibold">{{ money(0) }}</dd></div>
           </dl>
         </div>
         <div class="lg:pl-6">
           <h2 class="text-sm font-semibold">{{ ts("st.ws.byModule") }}</h2>
           <ul class="mt-3 space-y-2 text-sm">
-            <li v-for="mod in ['RG-KE', 'RG-CE', 'LC-LE', 'CC-XE']" :key="mod" class="flex justify-between border-b border-slate-50 py-2">
+            <li v-for="mod in ['RG-KE', 'RG-CE', 'LC-LE', 'CC-XE']" :key="mod" class="flex justify-between border-b border-slate-50 py-2 dark:border-slate-800">
               <span>{{ mod }}</span>
               <span class="font-medium">{{ money(PAYMENTS.filter((p) => p.moduleCode === mod && p.status === "success").reduce((s, p) => s + p.amountRm, 0)) }}</span>
             </li>
@@ -339,31 +333,31 @@ const committeeColumns = computed<SmartTableColumn<CommitteeRow>[]>(() => [
     <!-- PE-SV -->
     <template v-else-if="screen === 'schedule' || screen === 'inspections' || screen === 'visit-reports'">
       <div class="grid gap-3 sm:grid-cols-3">
-        <div class="rounded-xl border border-sky-200 bg-sky-50/80 px-4 py-3">
-          <p class="text-2xl font-bold text-sky-700">{{ visitStats.scheduled }}</p>
-          <p class="text-xs text-sky-800/80">{{ ts("st.ws.scheduled") }}</p>
+        <div class="rounded-xl border border-sky-200 bg-sky-50/80 px-4 py-3 dark:border-sky-800 dark:bg-sky-500/15">
+          <p class="text-2xl font-bold text-sky-700 dark:text-sky-400">{{ visitStats.scheduled }}</p>
+          <p class="text-xs text-sky-800/80 dark:text-sky-400/80">{{ ts("st.ws.scheduled") }}</p>
         </div>
-        <div class="rounded-xl border border-amber-200 bg-amber-50/80 px-4 py-3">
-          <p class="text-2xl font-bold text-amber-700">{{ visitStats.inProgress }}</p>
-          <p class="text-xs text-amber-800/80">{{ ts("st.ws.inProgress") }}</p>
+        <div class="rounded-xl border border-amber-200 bg-amber-50/80 px-4 py-3 dark:border-amber-800 dark:bg-amber-500/15">
+          <p class="text-2xl font-bold text-amber-700 dark:text-amber-400">{{ visitStats.inProgress }}</p>
+          <p class="text-xs text-amber-800/80 dark:text-amber-400/80">{{ ts("st.ws.inProgress") }}</p>
         </div>
-        <div class="rounded-xl border border-emerald-200 bg-emerald-50/80 px-4 py-3">
-          <p class="text-2xl font-bold text-emerald-700">{{ visitStats.completed }}</p>
-          <p class="text-xs text-emerald-800/80">{{ ts("st.ws.completed") }}</p>
+        <div class="rounded-xl border border-emerald-200 bg-emerald-50/80 px-4 py-3 dark:border-emerald-800 dark:bg-emerald-500/15">
+          <p class="text-2xl font-bold text-emerald-700 dark:text-emerald-400">{{ visitStats.completed }}</p>
+          <p class="text-xs text-emerald-800/80 dark:text-emerald-400/80">{{ ts("st.ws.completed") }}</p>
         </div>
       </div>
-      <div class="border-t border-slate-200 pt-6">
+      <div class="border-t border-slate-200 pt-6 dark:border-slate-700">
         <SmartTable :rows="visitRows" :columns="visitColumns" :row-key="(v) => v.id">
           <template #cell-refNo="{ row }">
             <span class="font-mono text-xs">{{ row.refNo }}</span>
           </template>
           <template #cell-site="{ row }">
             <p class="font-medium">{{ row.siteName }}</p>
-            <p class="text-xs text-slate-400">{{ row.location }}</p>
-            <p v-if="row.outcome && screen === 'visit-reports'" class="mt-1 text-xs text-slate-600">{{ row.outcome }}</p>
+            <p class="text-xs text-slate-400 dark:text-slate-500">{{ row.location }}</p>
+            <p v-if="row.outcome && screen === 'visit-reports'" class="mt-1 text-xs text-slate-600 dark:text-slate-400">{{ row.outcome }}</p>
           </template>
           <template #cell-date="{ row }">
-            <span class="text-slate-600">{{ fmt(row.scheduledAt) }}</span>
+            <span class="text-slate-600 dark:text-slate-400">{{ fmt(row.scheduledAt) }}</span>
           </template>
           <template #cell-status="{ row }">
             <span :class="['rounded-full px-2.5 py-0.5 text-xs font-medium', statusClass(row.status)]">{{ row.status }}</span>
@@ -380,10 +374,10 @@ const committeeColumns = computed<SmartTableColumn<CommitteeRow>[]>(() => [
         </template>
         <template #cell-agenda="{ row }">
           <p class="font-medium">{{ row.title }}</p>
-          <p v-if="row.chair" class="text-xs text-slate-400">{{ row.chair }}</p>
+          <p v-if="row.chair" class="text-xs text-slate-400 dark:text-slate-500">{{ row.chair }}</p>
         </template>
         <template #cell-meeting="{ row }">
-          <span class="text-slate-600">{{ fmt(row.meetingDate) }}</span>
+          <span class="text-slate-600 dark:text-slate-400">{{ fmt(row.meetingDate) }}</span>
         </template>
         <template #cell-status="{ row }">
           <span :class="['rounded-full px-2.5 py-0.5 text-xs font-medium', statusClass(row.status)]">{{ row.status }}</span>

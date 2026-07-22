@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRoute } from "vue-router";
-import { Download, FileSearch, FileText, Gauge } from "lucide-vue-next";
+import { Download } from "lucide-vue-next";
 
 import { useLocale } from "@/composables/useLocale";
 import type { StMessageKey } from "@/i18n/st-messages";
@@ -13,6 +13,7 @@ import {
 } from "../../mock/workspace";
 import type { SmartTableColumn } from "../../composables/useSmartTable";
 import SmartTable from "../../components/SmartTable.vue";
+import StPageHero from "../../components/StPageHero.vue";
 
 const route = useRoute();
 const { ts, locale } = useLocale();
@@ -27,13 +28,6 @@ const titleKey = computed<StMessageKey>(() => {
     "reports-audit": "st.ws.auditTrail",
   };
   return map[screen.value] ?? "st.ws.workspace";
-});
-
-const icon = computed(() => {
-  if (screen.value === "reports-sla") return Gauge;
-  if (screen.value === "reports-audit") return FileSearch;
-  if (screen.value === "reports-export") return Download;
-  return FileText;
 });
 
 function fmt(iso: string): string {
@@ -66,35 +60,27 @@ const auditColumns = computed<SmartTableColumn<AuditRow>[]>(() => [
 
 <template>
   <div class="space-y-8">
-    <div class="flex items-start gap-3">
-      <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--accent-50)]">
-        <component :is="icon" class="h-5 w-5 text-[var(--accent-700)]" />
-      </div>
-      <div>
-        <h1 class="text-xl font-semibold text-slate-900">{{ ts(titleKey) }}</h1>
-        <p class="mt-0.5 text-sm text-slate-500">{{ ts("st.ws.analyticsSubtitle") }}</p>
-      </div>
-    </div>
+    <StPageHero :title="ts(titleKey)" :subtitle="ts('st.ws.analyticsSubtitle')" />
 
-    <p class="text-xs text-slate-400">{{ ts("st.common.mockNote") }}</p>
+    <p class="text-xs text-slate-400 dark:text-slate-500">{{ ts("st.common.mockNote") }}</p>
 
     <template v-if="screen === 'reports-airr'">
-      <div class="grid grid-cols-2 gap-y-5 sm:grid-cols-4 sm:divide-x sm:divide-slate-200">
+      <div class="grid grid-cols-2 gap-y-5 sm:grid-cols-4 sm:divide-x sm:divide-slate-200 dark:sm:divide-slate-700">
         <div
           v-for="(s, i) in AIRR_STATS"
           :key="i"
           class="px-0 sm:px-5 sm:first:pl-0"
         >
-          <p class="text-xs text-slate-500">{{ locale === "bi" ? s.labelBi : s.labelBm }}</p>
-          <p class="mt-1 text-3xl font-bold text-slate-900">{{ s.value.toLocaleString() }}</p>
-          <p :class="['mt-1 text-xs font-medium', s.delta >= 0 ? 'text-emerald-600' : 'text-rose-600']">
+          <p class="text-xs text-slate-500 dark:text-slate-400">{{ locale === "bi" ? s.labelBi : s.labelBm }}</p>
+          <p class="mt-1 text-3xl font-bold text-slate-900 dark:text-slate-100">{{ s.value.toLocaleString() }}</p>
+          <p :class="['mt-1 text-xs font-medium', s.delta >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400']">
             {{ s.delta >= 0 ? "+" : "" }}{{ s.delta }}% {{ ts("st.ws.vsPrev") }}
           </p>
         </div>
       </div>
-      <article class="border-t border-slate-200 pt-6">
-        <h2 class="text-sm font-semibold text-slate-800">{{ ts("st.ws.airrNote") }}</h2>
-        <p class="mt-2 text-sm text-slate-600">{{ ts("st.ws.airrBody") }}</p>
+      <article class="border-t border-slate-200 pt-6 dark:border-slate-700">
+        <h2 class="text-sm font-semibold text-slate-800 dark:text-slate-200">{{ ts("st.ws.airrNote") }}</h2>
+        <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">{{ ts("st.ws.airrBody") }}</p>
       </article>
     </template>
 
@@ -104,17 +90,17 @@ const auditColumns = computed<SmartTableColumn<AuditRow>[]>(() => [
           <span class="font-mono text-xs font-semibold">{{ row.module }}</span>
         </template>
         <template #cell-green="{ row }">
-          <span class="text-emerald-700">{{ row.green }}%</span>
+          <span class="text-emerald-700 dark:text-emerald-400">{{ row.green }}%</span>
         </template>
         <template #cell-yellow="{ row }">
-          <span class="text-amber-700">{{ row.yellow }}%</span>
+          <span class="text-amber-700 dark:text-amber-400">{{ row.yellow }}%</span>
         </template>
         <template #cell-red="{ row }">
-          <span class="text-rose-700">{{ row.red }}%</span>
+          <span class="text-rose-700 dark:text-rose-400">{{ row.red }}%</span>
         </template>
         <template #cell-distribution="{ row }">
           <div class="w-48">
-            <div class="flex h-2.5 overflow-hidden rounded-full bg-slate-100">
+            <div class="flex h-2.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
               <div class="bg-emerald-500" :style="{ width: `${row.green}%` }" />
               <div class="bg-amber-400" :style="{ width: `${row.yellow}%` }" />
               <div class="bg-rose-500" :style="{ width: `${row.red}%` }" />
@@ -137,13 +123,13 @@ const auditColumns = computed<SmartTableColumn<AuditRow>[]>(() => [
           ]"
           :key="item.k"
           type="button"
-          class="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-4 text-left shadow-sm hover:border-[var(--accent-300)] hover:bg-[var(--accent-50)]/40"
+          class="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-4 text-left shadow-sm hover:border-[var(--accent-300)] hover:bg-[var(--accent-50)]/40 dark:border-slate-700 dark:bg-slate-800"
         >
           <div>
-            <p class="text-sm font-semibold text-slate-800">{{ ts(item.k as StMessageKey) }}</p>
-            <p class="mt-0.5 text-xs text-slate-500">{{ item.f }} · {{ ts("st.ws.exportDemo") }}</p>
+            <p class="text-sm font-semibold text-slate-800 dark:text-slate-200">{{ ts(item.k as StMessageKey) }}</p>
+            <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{{ item.f }} · {{ ts("st.ws.exportDemo") }}</p>
           </div>
-          <Download class="h-4 w-4 text-slate-400" />
+          <Download class="h-4 w-4 text-slate-400 dark:text-slate-500" />
         </button>
       </div>
     </template>
@@ -151,14 +137,14 @@ const auditColumns = computed<SmartTableColumn<AuditRow>[]>(() => [
     <template v-else>
       <SmartTable :rows="AUDIT_EVENTS" :columns="auditColumns" :row-key="(e) => e.id">
         <template #cell-date="{ row }">
-          <span class="text-slate-600">{{ fmt(row.at) }}</span>
+          <span class="text-slate-600 dark:text-slate-400">{{ fmt(row.at) }}</span>
         </template>
         <template #cell-actor="{ row }">
           <span class="font-medium">{{ row.actor }}</span>
         </template>
         <template #cell-action="{ row }">
-          <p class="font-mono text-xs text-slate-700">{{ row.action }}</p>
-          <p class="text-xs text-slate-400">{{ row.detail }}</p>
+          <p class="font-mono text-xs text-slate-700 dark:text-slate-300">{{ row.action }}</p>
+          <p class="text-xs text-slate-400 dark:text-slate-500">{{ row.detail }}</p>
         </template>
         <template #cell-refNo="{ row }">
           <span class="font-mono text-xs">{{ row.refNo }}</span>

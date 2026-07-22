@@ -247,55 +247,55 @@ function submit() {
         <span
           :class="[
             'flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold',
-            i < step ? 'bg-emerald-500 text-white' : i === step ? 'bg-[var(--accent-600)] text-white' : 'bg-slate-200 text-slate-500',
+            i < step ? 'bg-emerald-500 text-white' : i === step ? 'bg-[var(--accent-600)] text-white' : 'bg-slate-200 text-slate-500 dark:bg-slate-600 dark:text-slate-400',
           ]"
         >
           <Check v-if="i < step" class="h-3.5 w-3.5" />
           <template v-else>{{ i + 1 }}</template>
         </span>
-        <span :class="['hidden truncate sm:inline', i === step ? 'font-medium text-slate-700' : 'text-slate-400']">{{ s }}</span>
-        <span v-if="i < STEPS.length - 1" class="h-px flex-1 bg-slate-200" />
+        <span :class="['hidden truncate sm:inline', i === step ? 'font-medium text-slate-700 dark:text-slate-300' : 'text-slate-400 dark:text-slate-500']">{{ s }}</span>
+        <span v-if="i < STEPS.length - 1" class="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
       </li>
     </ol>
 
-    <div class="border-t border-slate-200 pt-6">
+    <div class="border-t border-slate-200 pt-6 dark:border-slate-700">
       <!-- STEP 0: applicant / company -->
       <div v-if="step === 0" class="space-y-4">
         <div class="grid gap-4 sm:grid-cols-2">
           <label class="block">
-            <span class="mb-1 block text-sm font-medium text-slate-700">{{ isCE ? "Nama Wakil Syarikat" : "Nama Penuh" }}</span>
-            <input v-model="form.fullName" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-[var(--accent-500)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]/30" />
+            <span class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ isCE ? "Nama Wakil Syarikat" : "Nama Penuh" }}</span>
+            <input v-model="form.fullName" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-[var(--accent-500)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]/30 dark:border-slate-600" />
           </label>
           <label class="block">
-            <span class="mb-1 block text-sm font-medium text-slate-700">No. Kad Pengenalan</span>
-            <input v-model="form.icNumber" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-[var(--accent-500)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]/30" />
+            <span class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">No. Kad Pengenalan</span>
+            <input v-model="form.icNumber" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-[var(--accent-500)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]/30 dark:border-slate-600" />
           </label>
           <template v-if="isCE">
             <label class="block sm:col-span-2">
-              <span class="mb-1 block text-sm font-medium text-slate-700">Nama Syarikat</span>
-              <input v-model="form.companyName" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-[var(--accent-500)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]/30" />
+              <span class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Nama Syarikat</span>
+              <input v-model="form.companyName" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-[var(--accent-500)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]/30 dark:border-slate-600" />
             </label>
             <label class="block">
-              <span class="mb-1 block text-sm font-medium text-slate-700">No. Pendaftaran SSM</span>
-              <input v-model="form.companyRegNo" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-[var(--accent-500)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]/30" />
+              <span class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">No. Pendaftaran SSM</span>
+              <input v-model="form.companyRegNo" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-[var(--accent-500)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]/30 dark:border-slate-600" />
             </label>
           </template>
           <template v-else>
             <label class="block">
-              <span class="mb-1 block text-sm font-medium text-slate-700">Umur</span>
-              <input v-model.number="form.age" type="number" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-[var(--accent-500)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]/30" />
+              <span class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Umur</span>
+              <input v-model.number="form.age" type="number" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-[var(--accent-500)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]/30 dark:border-slate-600" />
             </label>
           </template>
           <label class="block">
-            <span class="mb-1 block text-sm font-medium text-slate-700">Telefon</span>
-            <input v-model="form.phone" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-[var(--accent-500)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]/30" />
+            <span class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Telefon</span>
+            <input v-model="form.phone" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-[var(--accent-500)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]/30 dark:border-slate-600" />
           </label>
           <label class="block">
-            <span class="mb-1 block text-sm font-medium text-slate-700">E-mel</span>
-            <input v-model="form.email" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-[var(--accent-500)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]/30" />
+            <span class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">E-mel</span>
+            <input v-model="form.email" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-[var(--accent-500)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]/30 dark:border-slate-600" />
           </label>
           <div class="sm:col-span-2">
-            <p class="mb-2 text-sm font-medium text-slate-700">{{ isCE ? "Alamat Syarikat" : "Alamat" }}</p>
+            <p class="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">{{ isCE ? "Alamat Syarikat" : "Alamat" }}</p>
             <AddressFieldset v-model="addressModel" />
           </div>
         </div>
@@ -304,39 +304,39 @@ function submit() {
       <!-- STEP 1: competency/class + period -->
       <div v-else-if="step === 1" class="space-y-4">
         <div v-if="!isCE">
-          <span class="mb-2 block text-sm font-medium text-slate-700">Kategori Kekompetenan</span>
+          <span class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Kategori Kekompetenan</span>
           <div class="grid gap-2 sm:grid-cols-2">
             <button
               v-for="c in COMPETENCY_CATEGORIES"
               :key="c.code"
               type="button"
-              :class="['rounded-lg border px-3 py-2.5 text-left transition-colors', form.competencyCategory === c.code ? 'border-[var(--accent-500)] bg-[var(--accent-50)]' : 'border-slate-200 hover:border-[var(--accent-ring)]']"
+              :class="['rounded-lg border px-3 py-2.5 text-left transition-colors', form.competencyCategory === c.code ? 'border-[var(--accent-500)] bg-[var(--accent-50)]' : 'border-slate-200 hover:border-[var(--accent-ring)] dark:border-slate-700']"
               @click="form.competencyCategory = c.code"
             >
-              <p class="text-sm font-semibold text-slate-800">{{ c.code }} — {{ c.label }}</p>
-              <p class="text-xs text-slate-500">{{ c.description }} · had umur {{ c.maxAge }}</p>
+              <p class="text-sm font-semibold text-slate-800 dark:text-slate-200">{{ c.code }} — {{ c.label }}</p>
+              <p class="text-xs text-slate-500 dark:text-slate-400">{{ c.description }} · had umur {{ c.maxAge }}</p>
             </button>
           </div>
         </div>
         <div v-else>
-          <span class="mb-2 block text-sm font-medium text-slate-700">Kelas Kontraktor</span>
+          <span class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Kelas Kontraktor</span>
           <div class="grid gap-2 sm:grid-cols-2">
             <button
               v-for="c in CONTRACTOR_CLASSES"
               :key="c.code"
               type="button"
-              :class="['rounded-lg border px-3 py-2.5 text-left transition-colors', form.contractorClass === c.code ? 'border-[var(--accent-500)] bg-[var(--accent-50)]' : 'border-slate-200 hover:border-[var(--accent-ring)]']"
+              :class="['rounded-lg border px-3 py-2.5 text-left transition-colors', form.contractorClass === c.code ? 'border-[var(--accent-500)] bg-[var(--accent-50)]' : 'border-slate-200 hover:border-[var(--accent-ring)] dark:border-slate-700']"
               @click="form.contractorClass = c.code"
             >
-              <p class="text-sm font-semibold text-slate-800">{{ c.label }}</p>
-              <p class="text-xs text-slate-500">{{ c.ceilingLabel }} · min {{ c.minCompetentPersons }} O.K.</p>
+              <p class="text-sm font-semibold text-slate-800 dark:text-slate-200">{{ c.label }}</p>
+              <p class="text-xs text-slate-500 dark:text-slate-400">{{ c.ceilingLabel }} · min {{ c.minCompetentPersons }} O.K.</p>
             </button>
           </div>
         </div>
 
         <label class="block">
-          <span class="mb-1 block text-sm font-medium text-slate-700">Tempoh Pendaftaran</span>
-          <select v-model.number="form.registrationPeriodYears" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-[var(--accent-500)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]/30">
+          <span class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Tempoh Pendaftaran</span>
+          <select v-model.number="form.registrationPeriodYears" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-[var(--accent-500)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]/30 dark:border-slate-600">
             <option v-for="p in periods" :key="p" :value="p">{{ p }} tahun</option>
           </select>
         </label>
@@ -345,15 +345,15 @@ function submit() {
       <!-- STEP 2: employer (OK) / competent person (CE) -->
       <div v-else-if="step === 2" class="space-y-3">
         <template v-if="!isCE">
-          <p class="text-sm text-slate-600">
-            Cari majikan melalui carian pintar (nama, No. Pendaftaran SSM, No. Pendaftaran ST, bandar atau negeri). Hanya pendaftaran <span class="font-medium text-emerald-700">AKTIF</span> dipaparkan.
+          <p class="text-sm text-slate-600 dark:text-slate-400">
+            Cari majikan melalui carian pintar (nama, No. Pendaftaran SSM, No. Pendaftaran ST, bandar atau negeri). Hanya pendaftaran <span class="font-medium text-emerald-700 dark:text-emerald-400">AKTIF</span> dipaparkan.
           </p>
           <div class="relative">
-            <Search class="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+            <Search class="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-slate-400 dark:text-slate-500" />
             <input
               v-model="search"
               placeholder="Cth: elektrik, 1245678, ST-CE, Petaling Jaya…"
-              class="w-full rounded-md border border-slate-300 py-2 pl-9 pr-3 text-sm focus:border-[var(--accent-500)] focus:outline-hidden focus:ring-2 focus:ring-[var(--accent-ring)]/30"
+              class="w-full rounded-md border border-slate-300 py-2 pl-9 pr-3 text-sm focus:border-[var(--accent-500)] focus:outline-hidden focus:ring-2 focus:ring-[var(--accent-ring)]/30 dark:border-slate-600"
             />
           </div>
           <div class="space-y-2">
@@ -361,136 +361,136 @@ function submit() {
               v-for="hit in employerHits"
               :key="hit.employer.id"
               type="button"
-              :class="['block w-full rounded-lg border px-3 py-2.5 text-left transition-colors', form.employerId === hit.employer.id ? 'border-[var(--accent-500)] bg-[var(--accent-50)]' : 'border-slate-200 hover:border-[var(--accent-ring)]']"
+              :class="['block w-full rounded-lg border px-3 py-2.5 text-left transition-colors', form.employerId === hit.employer.id ? 'border-[var(--accent-500)] bg-[var(--accent-50)]' : 'border-slate-200 hover:border-[var(--accent-ring)] dark:border-slate-700']"
               @click="form.employerId = hit.employer.id"
             >
               <div class="flex items-start justify-between gap-2">
-                <p class="text-sm font-semibold text-slate-800">{{ hit.employer.name }}</p>
-                <span class="shrink-0 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-500">
+                <p class="text-sm font-semibold text-slate-800 dark:text-slate-200">{{ hit.employer.name }}</p>
+                <span class="shrink-0 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-500 dark:bg-slate-700 dark:text-slate-400">
                   {{ hit.employer.category ? EMPLOYER_CATEGORY_LABEL[hit.employer.category] : "—" }}
                 </span>
               </div>
-              <p class="mt-0.5 text-xs text-slate-500">
+              <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                 {{ hit.employer.registrationNo }}
                 <template v-if="hit.employer.stRegNo"> · <span class="font-mono">{{ hit.employer.stRegNo }}</span></template>
               </p>
-              <p class="text-xs text-slate-400">{{ hit.employer.contactPerson }} · {{ hit.employer.city }}, {{ hit.employer.state }}</p>
+              <p class="text-xs text-slate-400 dark:text-slate-500">{{ hit.employer.contactPerson }} · {{ hit.employer.city }}, {{ hit.employer.state }}</p>
               <p v-if="search.trim() && hit.matchedField" class="mt-1 text-[11px] text-[var(--accent-700)]">
                 dipadan pada: {{ hit.matchedField }}
               </p>
             </button>
-            <p v-if="employerHits.length === 0" class="py-4 text-center text-sm text-slate-400">Tiada majikan sepadan.</p>
+            <p v-if="employerHits.length === 0" class="py-4 text-center text-sm text-slate-400 dark:text-slate-500">Tiada majikan sepadan.</p>
           </div>
         </template>
         <template v-else>
-          <p class="text-sm text-slate-600">Cari Orang Kompeten berdaftar mengikut No. MyKad atau nama, kemudian lantik bilangan/kategori yang menepati syarat kelas.</p>
+          <p class="text-sm text-slate-600 dark:text-slate-400">Cari Orang Kompeten berdaftar mengikut No. MyKad atau nama, kemudian lantik bilangan/kategori yang menepati syarat kelas.</p>
 
           <!-- Live class requirement checklist -->
-          <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
-            <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">Syarat Kelas {{ form.contractorClass }} — semakan automatik</p>
+          <div class="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/60">
+            <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Syarat Kelas {{ form.contractorClass }} — semakan automatik</p>
             <div class="flex flex-wrap gap-2">
               <span
                 v-for="row in okValidation.items"
                 :key="row.wirerType"
-                :class="['inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium', row.ok ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700']"
+                :class="['inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium', row.ok ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400' : 'bg-rose-50 text-rose-700 dark:bg-rose-500/15 dark:text-rose-400']"
               >
                 <Check v-if="row.ok" class="h-3.5 w-3.5" /><X v-else class="h-3.5 w-3.5" />
                 {{ row.wirerType }}: {{ row.have }}/{{ row.need }}
               </span>
             </div>
-            <p :class="['mt-2 text-xs font-medium', okValidation.valid ? 'text-emerald-700' : 'text-rose-600']">
+            <p :class="['mt-2 text-xs font-medium', okValidation.valid ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400']">
               {{ okValidation.valid ? "Syarat kelas dipenuhi — permohonan boleh dihantar." : "Syarat kelas belum dipenuhi — lantik lebih ramai Orang Kompeten." }}
             </p>
           </div>
 
           <div class="relative">
-            <Search class="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-            <input v-model="okSearch" placeholder="Cari nama atau No. MyKad Orang Kompeten..." class="w-full rounded-md border border-slate-300 py-2 pl-9 pr-3 text-sm focus:border-[var(--accent-500)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]/30" />
+            <Search class="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-slate-400 dark:text-slate-500" />
+            <input v-model="okSearch" placeholder="Cari nama atau No. MyKad Orang Kompeten..." class="w-full rounded-md border border-slate-300 py-2 pl-9 pr-3 text-sm focus:border-[var(--accent-500)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]/30 dark:border-slate-600" />
           </div>
           <div class="space-y-2">
             <button
               v-for="o in okResults"
               :key="o.id"
               type="button"
-              :class="['flex w-full items-center justify-between rounded-lg border px-3 py-2.5 text-left transition-colors', selectedOkIds.includes(o.id) ? 'border-[var(--accent-500)] bg-[var(--accent-50)]' : 'border-slate-200 hover:border-[var(--accent-ring)]']"
+              :class="['flex w-full items-center justify-between rounded-lg border px-3 py-2.5 text-left transition-colors', selectedOkIds.includes(o.id) ? 'border-[var(--accent-500)] bg-[var(--accent-50)]' : 'border-slate-200 hover:border-[var(--accent-ring)] dark:border-slate-700']"
               @click="toggleOk(o.id)"
             >
               <span>
-                <span class="block text-sm font-semibold text-slate-800">{{ o.name }}</span>
-                <span class="block font-mono text-xs text-slate-500">{{ o.mykad }}</span>
+                <span class="block text-sm font-semibold text-slate-800 dark:text-slate-200">{{ o.name }}</span>
+                <span class="block font-mono text-xs text-slate-500 dark:text-slate-400">{{ o.mykad }}</span>
               </span>
               <span class="flex items-center gap-2">
-                <span class="rounded bg-slate-100 px-1.5 py-0.5 text-[11px] font-semibold text-slate-600">{{ o.wirerType }}</span>
+                <span class="rounded bg-slate-100 px-1.5 py-0.5 text-[11px] font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-400">{{ o.wirerType }}</span>
                 <span v-if="selectedOkIds.includes(o.id)" class="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--accent-600)] text-white"><Check class="h-3 w-3" /></span>
               </span>
             </button>
-            <p v-if="okResults.length === 0" class="py-4 text-center text-sm text-slate-400">Tiada Orang Kompeten sepadan.</p>
+            <p v-if="okResults.length === 0" class="py-4 text-center text-sm text-slate-400 dark:text-slate-500">Tiada Orang Kompeten sepadan.</p>
           </div>
-          <p class="text-xs text-slate-500">{{ selectedOks.length }} Orang Kompeten dilantik.</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400">{{ selectedOks.length }} Orang Kompeten dilantik.</p>
         </template>
       </div>
 
       <!-- STEP 3: documents -->
       <div v-else-if="step === 3" class="space-y-3">
-        <p class="text-sm text-slate-600">Muat naik dokumen sokongan yang diperlukan. (Simulasi — klik untuk memuat naik fail contoh.)</p>
+        <p class="text-sm text-slate-600 dark:text-slate-400">Muat naik dokumen sokongan yang diperlukan. (Simulasi — klik untuk memuat naik fail contoh.)</p>
         <DocumentUploadField v-model="documents" :labels="DOC_LABELS" />
       </div>
 
       <!-- STEP 4: review -->
       <div v-else class="space-y-4">
-        <h2 class="text-sm font-semibold text-slate-700">Semakan Permohonan</h2>
-        <dl class="divide-y divide-slate-100 text-sm">
-          <div class="flex justify-between py-2"><dt class="text-slate-500">Jenis</dt><dd class="font-medium text-slate-800">{{ workflowLabel(workflowType) }}</dd></div>
-          <div class="flex justify-between py-2"><dt class="text-slate-500">{{ isCE ? "Wakil" : "Pemohon" }}</dt><dd class="text-slate-800">{{ form.fullName }}</dd></div>
-          <div v-if="isCE" class="flex justify-between py-2"><dt class="text-slate-500">Syarikat</dt><dd class="text-slate-800">{{ form.companyName }}</dd></div>
+        <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-300">Semakan Permohonan</h2>
+        <dl class="divide-y divide-slate-100 text-sm dark:divide-slate-800">
+          <div class="flex justify-between py-2"><dt class="text-slate-500 dark:text-slate-400">Jenis</dt><dd class="font-medium text-slate-800 dark:text-slate-200">{{ workflowLabel(workflowType) }}</dd></div>
+          <div class="flex justify-between py-2"><dt class="text-slate-500 dark:text-slate-400">{{ isCE ? "Wakil" : "Pemohon" }}</dt><dd class="text-slate-800 dark:text-slate-200">{{ form.fullName }}</dd></div>
+          <div v-if="isCE" class="flex justify-between py-2"><dt class="text-slate-500 dark:text-slate-400">Syarikat</dt><dd class="text-slate-800 dark:text-slate-200">{{ form.companyName }}</dd></div>
           <div class="flex justify-between py-2">
-            <dt class="text-slate-500">{{ isCE ? "Kelas" : "Kekompetenan" }}</dt>
-            <dd class="text-slate-800">{{ isCE ? form.contractorClass : form.competencyCategory }}</dd>
+            <dt class="text-slate-500 dark:text-slate-400">{{ isCE ? "Kelas" : "Kekompetenan" }}</dt>
+            <dd class="text-slate-800 dark:text-slate-200">{{ isCE ? form.contractorClass : form.competencyCategory }}</dd>
           </div>
-          <div class="flex justify-between py-2"><dt class="text-slate-500">Tempoh</dt><dd class="text-slate-800">{{ form.registrationPeriodYears }} tahun</dd></div>
+          <div class="flex justify-between py-2"><dt class="text-slate-500 dark:text-slate-400">Tempoh</dt><dd class="text-slate-800 dark:text-slate-200">{{ form.registrationPeriodYears }} tahun</dd></div>
           <div class="flex justify-between py-2">
-            <dt class="text-slate-500">{{ isCE ? "Orang Kompeten Dilantik" : "Majikan" }}</dt>
-            <dd class="text-right text-slate-800">{{ isCE ? (selectedOks.map((o) => `${o.name} (${o.wirerType})`).join(", ") || "—") : (selectedEmployer?.name ?? "—") }}</dd>
+            <dt class="text-slate-500 dark:text-slate-400">{{ isCE ? "Orang Kompeten Dilantik" : "Majikan" }}</dt>
+            <dd class="text-right text-slate-800 dark:text-slate-200">{{ isCE ? (selectedOks.map((o) => `${o.name} (${o.wirerType})`).join(", ") || "—") : (selectedEmployer?.name ?? "—") }}</dd>
           </div>
-          <div class="flex justify-between py-2"><dt class="text-slate-500">Dokumen</dt><dd class="text-slate-800">{{ documents.length }} fail</dd></div>
+          <div class="flex justify-between py-2"><dt class="text-slate-500 dark:text-slate-400">Dokumen</dt><dd class="text-slate-800 dark:text-slate-200">{{ documents.length }} fail</dd></div>
         </dl>
 
-        <p v-if="isCE && !okValidation.valid" class="rounded-md bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700">
+        <p v-if="isCE && !okValidation.valid" class="rounded-md bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 dark:bg-rose-500/15 dark:text-rose-400">
           Syarat kelas {{ form.contractorClass }} belum dipenuhi. Kembali ke langkah "Orang Kompeten" untuk melantik lebih ramai.
         </p>
 
         <!-- Declaration (Pengakuan) -->
-        <div class="space-y-2 rounded-lg border border-slate-200 p-3">
-          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Pengakuan Pemohon</p>
-          <label class="flex items-start gap-2 text-sm text-slate-700">
-            <input v-model="declarations.truthful" type="checkbox" class="mt-0.5 h-4 w-4 rounded border-slate-300 text-[var(--accent-600)] focus:ring-[var(--accent-ring)]" />
+        <div class="space-y-2 rounded-lg border border-slate-200 p-3 dark:border-slate-700">
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Pengakuan Pemohon</p>
+          <label class="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
+            <input v-model="declarations.truthful" type="checkbox" class="mt-0.5 h-4 w-4 rounded border-slate-300 text-[var(--accent-600)] focus:ring-[var(--accent-ring)] dark:border-slate-600" />
             <span>Saya mengaku bahawa semua maklumat yang diberikan adalah benar dan tepat.</span>
           </label>
-          <label class="flex items-start gap-2 text-sm text-slate-700">
-            <input v-model="declarations.terms" type="checkbox" class="mt-0.5 h-4 w-4 rounded border-slate-300 text-[var(--accent-600)] focus:ring-[var(--accent-ring)]" />
+          <label class="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
+            <input v-model="declarations.terms" type="checkbox" class="mt-0.5 h-4 w-4 rounded border-slate-300 text-[var(--accent-600)] focus:ring-[var(--accent-ring)] dark:border-slate-600" />
             <span>Saya memahami syarat-syarat pendaftaran yang ditetapkan oleh Suruhanjaya Tenaga.</span>
           </label>
-          <label class="flex items-start gap-2 text-sm text-slate-700">
-            <input v-model="declarations.consent" type="checkbox" class="mt-0.5 h-4 w-4 rounded border-slate-300 text-[var(--accent-600)] focus:ring-[var(--accent-ring)]" />
+          <label class="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
+            <input v-model="declarations.consent" type="checkbox" class="mt-0.5 h-4 w-4 rounded border-slate-300 text-[var(--accent-600)] focus:ring-[var(--accent-ring)] dark:border-slate-600" />
             <span>Saya bersetuju dengan terma penggunaan dan pemprosesan data peribadi.</span>
           </label>
         </div>
 
         <!-- Security PIN -->
         <label class="block">
-          <span class="mb-1 block text-sm font-medium text-slate-700">PIN Keselamatan</span>
+          <span class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">PIN Keselamatan</span>
           <input
             v-model="submitPin"
             type="password"
             inputmode="numeric"
             maxlength="6"
             placeholder="Masukkan PIN keselamatan untuk menghantar"
-            class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm tracking-[0.3em] focus:border-[var(--accent-500)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]/30"
+            class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm tracking-[0.3em] focus:border-[var(--accent-500)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]/30 dark:border-slate-600"
           />
-          <span class="mt-1 block text-[11px] text-slate-400">PIN demo: <span class="font-mono">{{ DEMO_SUBMIT_PIN }}</span></span>
+          <span class="mt-1 block text-[11px] text-slate-400 dark:text-slate-500">PIN demo: <span class="font-mono">{{ DEMO_SUBMIT_PIN }}</span></span>
         </label>
 
-        <p class="rounded-md bg-[var(--accent-50)] px-3 py-2 text-xs text-slate-600">
+        <p class="rounded-md bg-[var(--accent-50)] px-3 py-2 text-xs text-slate-600 dark:text-slate-400">
           Selepas dihantar, {{ isCE ? "Orang Kompeten yang dilantik" : "majikan" }} akan menerima notifikasi untuk mengesahkan lantikan.
         </p>
       </div>
@@ -498,7 +498,7 @@ function submit() {
       <!-- nav -->
       <div class="mt-6 flex justify-between gap-2">
         <button
-          class="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+          class="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:text-slate-400 dark:hover:bg-slate-800/60"
           :disabled="step === 0"
           @click="back"
         >

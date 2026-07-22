@@ -5,6 +5,7 @@ import { ArrowLeft, Download, Printer } from "lucide-vue-next";
 
 import { useStWorkflowStore } from "../stores/workflow";
 import ReceiptCard from "../components/ReceiptCard.vue";
+import StPageHero from "../components/StPageHero.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -79,25 +80,28 @@ function downloadReceipt() {
 
 <template>
   <div v-if="app" class="space-y-5">
-    <div class="flex items-center justify-between print:hidden">
-      <button class="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800" @click="router.push(`/st/applications/${app.id}`)">
-        <ArrowLeft class="h-4 w-4" /> Kembali ke permohonan
-      </button>
-      <div v-if="payments.length" class="flex items-center gap-2">
-        <button
-          class="flex items-center gap-1.5 rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50"
-          @click="downloadReceipt"
-        >
-          <Download class="h-4 w-4" /> Muat Turun
-        </button>
-        <button
-          class="flex items-center gap-1.5 rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50"
-          @click="printPage"
-        >
-          <Printer class="h-4 w-4" /> Cetak
-        </button>
-      </div>
-    </div>
+    <button class="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 print:hidden dark:text-slate-400 dark:hover:text-slate-100" @click="router.push(`/st/applications/${app.id}`)">
+      <ArrowLeft class="h-4 w-4" /> Kembali ke permohonan
+    </button>
+
+    <StPageHero title="Resit Bayaran" :subtitle="app.refNo" class="print:hidden">
+      <template #action>
+        <div v-if="payments.length" class="flex items-center gap-2">
+          <button
+            class="flex items-center gap-1.5 rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-400 dark:hover:bg-slate-800/60"
+            @click="downloadReceipt"
+          >
+            <Download class="h-4 w-4" /> Muat Turun
+          </button>
+          <button
+            class="flex items-center gap-1.5 rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-400 dark:hover:bg-slate-800/60"
+            @click="printPage"
+          >
+            <Printer class="h-4 w-4" /> Cetak
+          </button>
+        </div>
+      </template>
+    </StPageHero>
 
     <template v-if="payments.length">
       <ReceiptCard
@@ -108,10 +112,10 @@ function downloadReceipt() {
         :payer-name="app.applicant.fullName"
       />
     </template>
-    <div v-else class="py-16 text-center text-sm text-slate-500">
+    <div v-else class="py-16 text-center text-sm text-slate-500 dark:text-slate-400">
       Tiada resit bayaran untuk permohonan ini.
     </div>
   </div>
 
-  <div v-else class="py-16 text-center text-slate-500">Permohonan tidak dijumpai.</div>
+  <div v-else class="py-16 text-center text-slate-500 dark:text-slate-400">Permohonan tidak dijumpai.</div>
 </template>

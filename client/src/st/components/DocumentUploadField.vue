@@ -32,20 +32,20 @@ function simulate(label: string) {
     <div
       v-for="label in labels"
       :key="label"
-      class="flex items-center justify-between gap-3 rounded-md border border-slate-200 px-3 py-2.5"
+      class="flex items-center justify-between gap-3 rounded-md border border-slate-200 px-3 py-2.5 dark:border-slate-700"
     >
       <div class="min-w-0">
-        <p class="text-sm font-medium text-slate-700">{{ label }}</p>
+        <p class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ label }}</p>
         <p v-if="docFor(label)" class="truncate text-xs text-emerald-600">
           {{ docFor(label)!.fileName }} · {{ docFor(label)!.sizeKb }} KB
         </p>
-        <p v-else class="text-xs text-slate-400">PDF, maksimum 5MB</p>
+        <p v-else class="text-xs text-slate-400 dark:text-slate-500">PDF, maksimum 5MB</p>
       </div>
       <div class="flex shrink-0 items-center gap-2">
         <CheckCircle2 v-if="docFor(label)" class="h-5 w-5 text-emerald-500" />
         <button
           type="button"
-          class="flex items-center gap-1.5 rounded-md border border-slate-300 px-2.5 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:border-[var(--accent-ring)] hover:text-slate-900"
+          class="flex items-center gap-1.5 rounded-md border border-slate-300 px-2.5 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:border-[var(--accent-ring)] hover:text-slate-900 dark:border-slate-600 dark:text-slate-300 dark:hover:text-slate-100"
           @click="simulate(label)"
         >
           <UploadCloud class="h-3.5 w-3.5" />

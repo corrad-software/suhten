@@ -60,7 +60,7 @@ export function slaCountdownLabel(stageEnteredAt: string, targetHours: number, n
 }
 
 export const SLA_META: Record<SlaLevel, { label: string; dot: string; text: string; bg: string }> = {
-  green: { label: "Dalam Tempoh", dot: "bg-emerald-500", text: "text-emerald-700", bg: "bg-emerald-50" },
-  yellow: { label: "Hampir Tamat", dot: "bg-amber-500", text: "text-amber-700", bg: "bg-amber-50" },
-  red: { label: "Melebihi Tempoh", dot: "bg-rose-500", text: "text-rose-700", bg: "bg-rose-50" },
+  green: { label: "Dalam Tempoh", dot: "bg-emerald-500", text: "text-emerald-700 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/15" },
+  yellow: { label: "Hampir Tamat", dot: "bg-amber-500", text: "text-amber-700 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-500/15" },
+  red: { label: "Melebihi Tempoh", dot: "bg-rose-500", text: "text-rose-700 dark:text-rose-400", bg: "bg-rose-50 dark:bg-rose-500/15" },
 };

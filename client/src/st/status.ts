@@ -6,18 +6,18 @@ export interface StatusMeta {
 }
 
 export const STATUS_META: Record<ApplicationStatus, StatusMeta> = {
-  draft: { label: "Draf", classes: "bg-slate-100 text-slate-600" },
-  awaiting_employer_confirm: { label: "Menunggu Pengesahan Lantikan", classes: "bg-amber-100 text-amber-700" },
-  awaiting_final_submit: { label: "Menunggu Penghantaran Permohonan", classes: "bg-amber-100 text-amber-700" },
-  awaiting_processing_payment: { label: "Menunggu Bayaran Pemprosesan", classes: "bg-amber-100 text-amber-700" },
-  sos_review: { label: "Semakan SOS", classes: "bg-blue-100 text-blue-700" },
-  query_applicant: { label: "Pertanyaan Pemohon", classes: "bg-orange-100 text-orange-700" },
-  technical_review: { label: "Semakan Teknikal", classes: "bg-indigo-100 text-indigo-700" },
-  pending_approval: { label: "Menunggu Kelulusan", classes: "bg-violet-100 text-violet-700" },
-  awaiting_registration_payment: { label: "Menunggu Bayaran Pendaftaran", classes: "bg-amber-100 text-amber-700" },
-  certificate_issued: { label: "Sijil Dikeluarkan", classes: "bg-emerald-100 text-emerald-700" },
-  rejected: { label: "Ditolak", classes: "bg-rose-100 text-rose-700" },
-  withdrawn: { label: "Ditarik Balik", classes: "bg-slate-200 text-slate-600" },
+  draft: { label: "Draf", classes: "bg-slate-100 text-slate-600 dark:bg-slate-700/40 dark:text-slate-300" },
+  awaiting_employer_confirm: { label: "Menunggu Pengesahan Lantikan", classes: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400" },
+  awaiting_final_submit: { label: "Menunggu Penghantaran Permohonan", classes: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400" },
+  awaiting_processing_payment: { label: "Menunggu Bayaran Pemprosesan", classes: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400" },
+  sos_review: { label: "Semakan SOS", classes: "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400" },
+  query_applicant: { label: "Pertanyaan Pemohon", classes: "bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-400" },
+  technical_review: { label: "Semakan Teknikal", classes: "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-400" },
+  pending_approval: { label: "Menunggu Kelulusan", classes: "bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-400" },
+  awaiting_registration_payment: { label: "Menunggu Bayaran Pendaftaran", classes: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400" },
+  certificate_issued: { label: "Sijil Dikeluarkan", classes: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400" },
+  rejected: { label: "Ditolak", classes: "bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-400" },
+  withdrawn: { label: "Ditarik Balik", classes: "bg-slate-200 text-slate-600 dark:bg-slate-700/40 dark:text-slate-300" },
 };
 
 // Ordered "happy path" stages for the workflow stepper.

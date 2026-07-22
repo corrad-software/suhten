@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { Plus, RotateCcw, Settings2, Trash2 } from "lucide-vue-next";
+import { Plus, RotateCcw, Trash2 } from "lucide-vue-next";
 
 import { useLocale } from "@/composables/useLocale";
 import { useToast } from "@/composables/useToast";
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import { COMPETENCY_CATEGORIES } from "../../mock/competencies";
 import { useStReferenceSettingsStore } from "../../stores/reference-settings";
+import StPageHero from "../../components/StPageHero.vue";
 
 type TabId = "requirements" | "documents" | "payment" | "reminder" | "notif" | "status";
 
@@ -80,36 +81,29 @@ function saved() {
 }
 
 const inputCls =
-  "w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm focus:border-[var(--accent-500)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]/30";
-const thCls = "px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider text-slate-500";
+  "w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm focus:border-[var(--accent-500)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-ring)]/30 dark:border-slate-600";
+const thCls = "px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400";
 const tdCls = "px-3 py-2 align-middle";
 </script>
 
 <template>
   <div class="space-y-5">
-    <div class="flex flex-wrap items-start justify-between gap-3">
-      <div class="flex items-start gap-3">
-        <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--accent-50)]">
-          <Settings2 class="h-5 w-5 text-[var(--accent-700)]" />
-        </div>
-        <div>
-          <div class="flex flex-wrap items-center gap-2">
-            <h1 class="text-xl font-semibold text-slate-900">{{ ts("st.tetapan.title") }}</h1>
-            <span class="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs text-slate-600">D11 §7–9</span>
-          </div>
-          <p class="mt-0.5 max-w-2xl text-sm text-slate-500">{{ ts("st.tetapan.subtitle") }}</p>
-        </div>
+    <StPageHero :title="ts('st.tetapan.title')" :subtitle="ts('st.tetapan.subtitle')">
+      <template #action>
+        <button
+          type="button"
+          class="inline-flex items-center gap-1.5 rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800/60"
+          @click="resetAll"
+        >
+          <RotateCcw class="h-4 w-4" /> {{ ts("st.tetapan.reset") }}
+        </button>
+      </template>
+      <div class="mt-2 flex flex-wrap items-center gap-2">
+        <span class="rounded-md bg-slate-100 dark:bg-slate-700 px-2 py-0.5 font-mono text-xs text-slate-600 dark:text-slate-400">D11 §7–9</span>
       </div>
-      <button
-        type="button"
-        class="inline-flex items-center gap-1.5 rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-        @click="resetAll"
-      >
-        <RotateCcw class="h-4 w-4" /> {{ ts("st.tetapan.reset") }}
-      </button>
-    </div>
+    </StPageHero>
 
-    <div class="flex flex-wrap gap-1 border-b border-slate-200 pb-px">
+    <div class="flex flex-wrap gap-1 border-b border-slate-200 pb-px dark:border-slate-700">
       <button
         v-for="t in TABS"
         :key="t.id"
@@ -117,23 +111,23 @@ const tdCls = "px-3 py-2 align-middle";
         :class="[
           'rounded-t-md px-3 py-2 text-sm font-medium transition-colors',
           tab === t.id
-            ? 'border border-b-white border-slate-200 bg-white text-[var(--accent-700)]'
-            : 'text-slate-500 hover:text-slate-800',
+            ? 'border border-b-white border-slate-200 bg-white text-[var(--accent-700)] dark:border-b-slate-800 dark:border-slate-700 dark:bg-slate-800'
+            : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200',
         ]"
         @click="tab = t.id"
       >
-        <span class="mr-1.5 font-mono text-[10px] text-slate-400">{{ t.d11 }}</span>
+        <span class="mr-1.5 font-mono text-[10px] text-slate-400 dark:text-slate-500">{{ t.d11 }}</span>
         {{ t.label }}
       </button>
     </div>
 
     <!-- 7: Syarat + tempoh umur -->
     <div v-if="tab === 'requirements'" class="space-y-5">
-      <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+      <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+        <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-slate-800">
           <div>
-            <h2 class="text-sm font-semibold text-slate-900">{{ ts("st.tetapan.reqTitle") }}</h2>
-            <p class="text-xs text-slate-500">{{ ts("st.tetapan.reqHint") }}</p>
+            <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ ts("st.tetapan.reqTitle") }}</h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400">{{ ts("st.tetapan.reqHint") }}</p>
           </div>
           <button
             type="button"
@@ -145,7 +139,7 @@ const tdCls = "px-3 py-2 align-middle";
         </div>
         <div class="overflow-x-auto">
           <table class="min-w-full text-sm">
-            <thead class="bg-slate-50">
+            <thead class="bg-slate-50 dark:bg-slate-800/60">
               <tr>
                 <th :class="thCls">{{ ts("st.common.module") }}</th>
                 <th :class="thCls">{{ ts("st.tetapan.category") }}</th>
@@ -157,7 +151,7 @@ const tdCls = "px-3 py-2 align-middle";
                 <th :class="thCls" />
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
               <tr v-for="row in store.requirements" :key="row.id">
                 <td :class="tdCls">
                   <select v-model="row.moduleCode" :class="inputCls" @change="saved">
@@ -185,7 +179,7 @@ const tdCls = "px-3 py-2 align-middle";
                   <input v-model="row.active" type="checkbox" class="h-4 w-4" @change="saved" />
                 </td>
                 <td :class="tdCls">
-                  <button type="button" class="rounded p-1 text-rose-500 hover:bg-rose-50" @click="store.removeRequirement(row.id); saved()">
+                  <button type="button" class="rounded p-1 text-rose-500 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10" @click="store.removeRequirement(row.id); saved()">
                     <Trash2 class="h-4 w-4" />
                   </button>
                 </td>
@@ -195,11 +189,11 @@ const tdCls = "px-3 py-2 align-middle";
         </div>
       </section>
 
-      <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+      <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+        <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-slate-800">
           <div>
-            <h2 class="text-sm font-semibold text-slate-900">{{ ts("st.tetapan.periodTitle") }}</h2>
-            <p class="text-xs text-slate-500">{{ ts("st.tetapan.periodHint") }}</p>
+            <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ ts("st.tetapan.periodTitle") }}</h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400">{{ ts("st.tetapan.periodHint") }}</p>
           </div>
           <button
             type="button"
@@ -211,7 +205,7 @@ const tdCls = "px-3 py-2 align-middle";
         </div>
         <div class="overflow-x-auto">
           <table class="min-w-full text-sm">
-            <thead class="bg-slate-50">
+            <thead class="bg-slate-50 dark:bg-slate-800/60">
               <tr>
                 <th :class="thCls">{{ ts("st.tetapan.catGroup") }}</th>
                 <th :class="thCls">{{ ts("st.tetapan.ageMin") }}</th>
@@ -221,7 +215,7 @@ const tdCls = "px-3 py-2 align-middle";
                 <th :class="thCls" />
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
               <tr v-for="row in store.periodBands" :key="row.id">
                 <td :class="tdCls">
                   <select v-model="row.categoryGroup" :class="inputCls" @change="saved">
@@ -258,7 +252,7 @@ const tdCls = "px-3 py-2 align-middle";
                   <input v-model="row.active" type="checkbox" class="h-4 w-4" @change="saved" />
                 </td>
                 <td :class="tdCls">
-                  <button type="button" class="rounded p-1 text-rose-500 hover:bg-rose-50" @click="store.removePeriodBand(row.id); saved()">
+                  <button type="button" class="rounded p-1 text-rose-500 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10" @click="store.removePeriodBand(row.id); saved()">
                     <Trash2 class="h-4 w-4" />
                   </button>
                 </td>
@@ -270,11 +264,11 @@ const tdCls = "px-3 py-2 align-middle";
     </div>
 
     <!-- 8: Documents -->
-    <section v-else-if="tab === 'documents'" class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
+    <section v-else-if="tab === 'documents'" class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-3 dark:border-slate-800">
         <div>
-          <h2 class="text-sm font-semibold text-slate-900">{{ ts("st.tetapan.docTitle") }}</h2>
-          <p class="text-xs text-slate-500">{{ ts("st.tetapan.docHint") }}</p>
+          <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ ts("st.tetapan.docTitle") }}</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">{{ ts("st.tetapan.docHint") }}</p>
         </div>
         <div class="flex flex-wrap items-center gap-2">
           <select v-model="docModuleFilter" :class="inputCls" class="w-36">
@@ -283,7 +277,7 @@ const tdCls = "px-3 py-2 align-middle";
           </select>
           <button
             type="button"
-            class="inline-flex items-center gap-1 rounded-md border border-slate-300 px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+            class="inline-flex items-center gap-1 rounded-md border border-slate-300 px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800/60"
             @click="resetCeDocs"
           >
             <RotateCcw class="h-3.5 w-3.5" /> {{ ts("st.tetapan.resetCeDocs") }}
@@ -299,7 +293,7 @@ const tdCls = "px-3 py-2 align-middle";
       </div>
       <div class="overflow-x-auto">
         <table class="min-w-full text-sm">
-          <thead class="bg-slate-50">
+          <thead class="bg-slate-50 dark:bg-slate-800/60">
             <tr>
               <th :class="thCls">{{ ts("st.common.module") }}</th>
               <th :class="thCls">Kod</th>
@@ -312,7 +306,7 @@ const tdCls = "px-3 py-2 align-middle";
               <th :class="thCls" />
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100">
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
             <tr v-for="row in filteredDocumentTypes" :key="row.id">
               <td :class="tdCls">
                 <select v-model="row.moduleCode" :class="inputCls" @change="saved">
@@ -329,7 +323,7 @@ const tdCls = "px-3 py-2 align-middle";
               </td>
               <td :class="tdCls"><input v-model="row.active" type="checkbox" class="h-4 w-4" @change="saved" /></td>
               <td :class="tdCls">
-                <button type="button" class="rounded p-1 text-rose-500 hover:bg-rose-50" @click="store.removeDocumentType(row.id); saved()">
+                <button type="button" class="rounded p-1 text-rose-500 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10" @click="store.removeDocumentType(row.id); saved()">
                   <Trash2 class="h-4 w-4" />
                 </button>
               </td>
@@ -340,11 +334,11 @@ const tdCls = "px-3 py-2 align-middle";
     </section>
 
     <!-- 9a: Payment days -->
-    <section v-else-if="tab === 'payment'" class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+    <section v-else-if="tab === 'payment'" class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+      <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-slate-800">
         <div>
-          <h2 class="text-sm font-semibold text-slate-900">{{ ts("st.tetapan.payTitle") }}</h2>
-          <p class="text-xs text-slate-500">{{ ts("st.tetapan.payHint") }}</p>
+          <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ ts("st.tetapan.payTitle") }}</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">{{ ts("st.tetapan.payHint") }}</p>
         </div>
         <button
           type="button"
@@ -356,7 +350,7 @@ const tdCls = "px-3 py-2 align-middle";
       </div>
       <div class="overflow-x-auto">
         <table class="min-w-full text-sm">
-          <thead class="bg-slate-50">
+          <thead class="bg-slate-50 dark:bg-slate-800/60">
             <tr>
               <th :class="thCls">{{ ts("st.common.module") }}</th>
               <th :class="thCls">{{ ts("st.tetapan.feeKind") }}</th>
@@ -365,7 +359,7 @@ const tdCls = "px-3 py-2 align-middle";
               <th :class="thCls" />
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100">
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
             <tr v-for="row in store.paymentDays" :key="row.id">
               <td :class="tdCls">
                 <select v-model="row.moduleCode" :class="inputCls" @change="saved">
@@ -382,7 +376,7 @@ const tdCls = "px-3 py-2 align-middle";
               </td>
               <td :class="tdCls"><input v-model="row.active" type="checkbox" class="h-4 w-4" @change="saved" /></td>
               <td :class="tdCls">
-                <button type="button" class="rounded p-1 text-rose-500 hover:bg-rose-50" @click="store.removePaymentDays(row.id); saved()">
+                <button type="button" class="rounded p-1 text-rose-500 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10" @click="store.removePaymentDays(row.id); saved()">
                   <Trash2 class="h-4 w-4" />
                 </button>
               </td>
@@ -393,11 +387,11 @@ const tdCls = "px-3 py-2 align-middle";
     </section>
 
     <!-- 9b: Reminder days -->
-    <section v-else-if="tab === 'reminder'" class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+    <section v-else-if="tab === 'reminder'" class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+      <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-slate-800">
         <div>
-          <h2 class="text-sm font-semibold text-slate-900">{{ ts("st.tetapan.remTitle") }}</h2>
-          <p class="text-xs text-slate-500">{{ ts("st.tetapan.remHint") }}</p>
+          <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ ts("st.tetapan.remTitle") }}</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">{{ ts("st.tetapan.remHint") }}</p>
         </div>
         <button
           type="button"
@@ -409,7 +403,7 @@ const tdCls = "px-3 py-2 align-middle";
       </div>
       <div class="overflow-x-auto">
         <table class="min-w-full text-sm">
-          <thead class="bg-slate-50">
+          <thead class="bg-slate-50 dark:bg-slate-800/60">
             <tr>
               <th :class="thCls">{{ ts("st.common.module") }}</th>
               <th :class="thCls">Kod</th>
@@ -420,7 +414,7 @@ const tdCls = "px-3 py-2 align-middle";
               <th :class="thCls" />
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100">
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
             <tr v-for="row in store.reminderDays" :key="row.id">
               <td :class="tdCls">
                 <select v-model="row.moduleCode" :class="inputCls" @change="saved">
@@ -435,7 +429,7 @@ const tdCls = "px-3 py-2 align-middle";
               </td>
               <td :class="tdCls"><input v-model="row.active" type="checkbox" class="h-4 w-4" @change="saved" /></td>
               <td :class="tdCls">
-                <button type="button" class="rounded p-1 text-rose-500 hover:bg-rose-50" @click="store.removeReminderDays(row.id); saved()">
+                <button type="button" class="rounded p-1 text-rose-500 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10" @click="store.removeReminderDays(row.id); saved()">
                   <Trash2 class="h-4 w-4" />
                 </button>
               </td>
@@ -449,8 +443,8 @@ const tdCls = "px-3 py-2 align-middle";
     <section v-else-if="tab === 'notif'" class="space-y-3">
       <div class="flex items-center justify-between">
         <div>
-          <h2 class="text-sm font-semibold text-slate-900">{{ ts("st.tetapan.notifTitle") }}</h2>
-          <p class="text-xs text-slate-500">{{ ts("st.tetapan.notifHint") }}</p>
+          <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ ts("st.tetapan.notifTitle") }}</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">{{ ts("st.tetapan.notifHint") }}</p>
         </div>
         <button
           type="button"
@@ -463,34 +457,34 @@ const tdCls = "px-3 py-2 align-middle";
       <div
         v-for="row in store.notificationTexts"
         :key="row.id"
-        class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+        class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800"
       >
         <div class="mb-3 flex flex-wrap items-center gap-3">
           <input v-model="row.code" :class="inputCls" class="w-40 font-mono text-xs" @change="saved" />
           <input v-model="row.channel" :class="inputCls" class="w-32" @change="saved" />
-          <label class="flex items-center gap-1.5 text-xs text-slate-600">
+          <label class="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400">
             <input v-model="row.active" type="checkbox" class="h-4 w-4" @change="saved" />
             {{ ts("st.tetapan.active") }}
           </label>
-          <button type="button" class="ml-auto rounded p-1 text-rose-500 hover:bg-rose-50" @click="store.removeNotificationText(row.id); saved()">
+          <button type="button" class="ml-auto rounded p-1 text-rose-500 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10" @click="store.removeNotificationText(row.id); saved()">
             <Trash2 class="h-4 w-4" />
           </button>
         </div>
         <div class="grid gap-3 sm:grid-cols-2">
           <label class="block text-xs">
-            <span class="mb-1 block font-medium text-slate-600">{{ ts("st.tetapan.subjectBm") }}</span>
+            <span class="mb-1 block font-medium text-slate-600 dark:text-slate-400">{{ ts("st.tetapan.subjectBm") }}</span>
             <input v-model="row.subjectBm" :class="inputCls" @change="saved" />
           </label>
           <label class="block text-xs">
-            <span class="mb-1 block font-medium text-slate-600">{{ ts("st.tetapan.subjectBi") }}</span>
+            <span class="mb-1 block font-medium text-slate-600 dark:text-slate-400">{{ ts("st.tetapan.subjectBi") }}</span>
             <input v-model="row.subjectBi" :class="inputCls" @change="saved" />
           </label>
           <label class="block text-xs sm:col-span-2">
-            <span class="mb-1 block font-medium text-slate-600">{{ ts("st.tetapan.bodyBm") }}</span>
+            <span class="mb-1 block font-medium text-slate-600 dark:text-slate-400">{{ ts("st.tetapan.bodyBm") }}</span>
             <textarea v-model="row.bodyBm" rows="2" :class="inputCls" @change="saved" />
           </label>
           <label class="block text-xs sm:col-span-2">
-            <span class="mb-1 block font-medium text-slate-600">{{ ts("st.tetapan.bodyBi") }}</span>
+            <span class="mb-1 block font-medium text-slate-600 dark:text-slate-400">{{ ts("st.tetapan.bodyBi") }}</span>
             <textarea v-model="row.bodyBi" rows="2" :class="inputCls" @change="saved" />
           </label>
         </div>
@@ -498,16 +492,16 @@ const tdCls = "px-3 py-2 align-middle";
     </section>
 
     <!-- 9d: Status -->
-    <section v-else class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+    <section v-else class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+      <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-slate-800">
         <div>
-          <h2 class="text-sm font-semibold text-slate-900">{{ ts("st.tetapan.statusTitle") }}</h2>
-          <p class="text-xs text-slate-500">{{ ts("st.tetapan.statusHint") }}</p>
+          <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ ts("st.tetapan.statusTitle") }}</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">{{ ts("st.tetapan.statusHint") }}</p>
         </div>
       </div>
       <div class="overflow-x-auto">
         <table class="min-w-full text-sm">
-          <thead class="bg-slate-50">
+          <thead class="bg-slate-50 dark:bg-slate-800/60">
             <tr>
               <th :class="thCls">Kod</th>
               <th :class="thCls">{{ ts("st.tetapan.labelBm") }}</th>
@@ -516,9 +510,9 @@ const tdCls = "px-3 py-2 align-middle";
               <th :class="thCls">{{ ts("st.tetapan.active") }}</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100">
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
             <tr v-for="row in [...store.appStatuses].sort((a, b) => a.sortOrder - b.sortOrder)" :key="row.id">
-              <td :class="[tdCls, 'font-mono text-xs text-slate-600']">{{ row.code }}</td>
+              <td :class="[tdCls, 'font-mono text-xs text-slate-600 dark:text-slate-400']">{{ row.code }}</td>
               <td :class="tdCls"><input v-model="row.labelBm" :class="inputCls" @change="saved" /></td>
               <td :class="tdCls"><input v-model="row.labelBi" :class="inputCls" @change="saved" /></td>
               <td :class="tdCls">

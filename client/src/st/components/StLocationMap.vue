@@ -116,7 +116,7 @@ onBeforeUnmount(() => {
     <div class="mb-2 flex flex-wrap items-center gap-2">
       <button
         type="button"
-        class="inline-flex items-center gap-1.5 rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-60"
+        class="inline-flex items-center gap-1.5 rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-60 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800/60"
         :disabled="locating"
         @click="useMyLocation"
       >
@@ -124,18 +124,18 @@ onBeforeUnmount(() => {
         <LocateFixed v-else class="h-3.5 w-3.5" />
         {{ bm() ? 'Guna Lokasi Semasa' : 'Use Current Location' }}
       </button>
-      <span class="text-xs text-slate-400">
+      <span class="text-xs text-slate-400 dark:text-slate-500">
         {{ bm() ? 'atau klik / seret pin pada peta' : 'or click / drag the pin on the map' }}
       </span>
     </div>
 
-    <div ref="mapEl" class="w-full overflow-hidden rounded-lg border border-slate-200" style="height: 320px; z-index: 0" />
+    <div ref="mapEl" class="w-full overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700" style="height: 320px; z-index: 0" />
 
     <div class="mt-2 flex flex-wrap items-center justify-between gap-2">
-      <p v-if="modelValue" class="font-mono text-xs text-slate-500">
+      <p v-if="modelValue" class="font-mono text-xs text-slate-500 dark:text-slate-400">
         {{ modelValue.lat.toFixed(6) }}, {{ modelValue.lng.toFixed(6) }}
       </p>
-      <p v-else class="text-xs text-slate-400">{{ bm() ? 'Belum ada pin lokasi.' : 'No location pinned yet.' }}</p>
+      <p v-else class="text-xs text-slate-400 dark:text-slate-500">{{ bm() ? 'Belum ada pin lokasi.' : 'No location pinned yet.' }}</p>
       <p v-if="geoError" class="text-xs text-amber-600">{{ geoError }}</p>
     </div>
   </div>

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRoute } from "vue-router";
-import { Settings } from "lucide-vue-next";
 
 import { useLocale } from "@/composables/useLocale";
 import type { StMessageKey } from "@/i18n/st-messages";
@@ -17,6 +16,7 @@ import {
 } from "../../mock/workspace";
 import type { SmartTableColumn } from "../../composables/useSmartTable";
 import SmartTable from "../../components/SmartTable.vue";
+import StPageHero from "../../components/StPageHero.vue";
 
 const route = useRoute();
 const { ts, locale } = useLocale();
@@ -59,9 +59,9 @@ function money(n: number): string {
 }
 
 function integClass(s: string): string {
-  if (s === "connected") return "bg-emerald-100 text-emerald-800";
-  if (s === "planned") return "bg-slate-100 text-slate-600";
-  return "bg-amber-100 text-amber-800";
+  if (s === "connected") return "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-400";
+  if (s === "planned") return "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400";
+  return "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-400";
 }
 
 type RefTableRow = (typeof REF_TABLES)[number];
@@ -111,20 +111,13 @@ const auditColumns = computed<SmartTableColumn<AuditRow>[]>(() => [
 
 <template>
   <div class="space-y-8">
-    <div class="flex items-start gap-3">
-      <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--accent-50)]">
-        <Settings class="h-5 w-5 text-[var(--accent-700)]" />
+    <StPageHero :title="ts(titleKey)" :subtitle="ts('st.ws.adminSubtitle')">
+      <div class="mt-2 flex flex-wrap items-center gap-2">
+        <span class="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs text-slate-600 dark:bg-slate-700 dark:text-slate-400">ADMIN</span>
       </div>
-      <div>
-        <div class="flex flex-wrap items-center gap-2">
-          <h1 class="text-xl font-semibold text-slate-900">{{ ts(titleKey) }}</h1>
-          <span class="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs text-slate-600">ADMIN</span>
-        </div>
-        <p class="mt-0.5 text-sm text-slate-500">{{ ts("st.ws.adminSubtitle") }}</p>
-      </div>
-    </div>
+    </StPageHero>
 
-    <p class="text-xs text-slate-400">{{ ts("st.common.mockNote") }}</p>
+    <p class="text-xs text-slate-400 dark:text-slate-500">{{ ts("st.common.mockNote") }}</p>
 
     <template v-if="screen === 'admin-ref-tables'">
       <SmartTable :rows="REF_TABLES" :columns="refTableColumns" :row-key="(t) => t.id" :empty-text="ts('st.common.noResults')" />
@@ -163,17 +156,17 @@ const auditColumns = computed<SmartTableColumn<AuditRow>[]>(() => [
     <template v-else-if="screen === 'admin-roles' || screen === 'admin-permissions'">
       <SmartTable :rows="RBAC_ROLES" :columns="roleColumns" :row-key="(r) => r.id" :empty-text="ts('st.common.noResults')">
         <template #cell-scope="{ row }">
-          <span class="text-slate-600">{{ row.modules }}</span>
+          <span class="text-slate-600 dark:text-slate-400">{{ row.modules }}</span>
         </template>
       </SmartTable>
-      <p v-if="screen === 'admin-permissions'" class="mt-3 text-sm text-slate-500">{{ ts("st.ws.permsNote") }}</p>
+      <p v-if="screen === 'admin-permissions'" class="mt-3 text-sm text-slate-500 dark:text-slate-400">{{ ts("st.ws.permsNote") }}</p>
     </template>
 
     <template v-else-if="screen === 'admin-audit'">
       <SmartTable :rows="AUDIT_EVENTS" :columns="auditColumns" :row-key="(e) => e.id" :empty-text="ts('st.common.noResults')">
         <template #cell-action="{ row }">
           <p class="font-mono text-xs">{{ row.action }}</p>
-          <p class="text-xs text-slate-400">{{ row.detail }}</p>
+          <p class="text-xs text-slate-400 dark:text-slate-500">{{ row.detail }}</p>
         </template>
         <template #cell-refNo="{ row }">
           <span class="font-mono text-xs">{{ row.refNo }}</span>
@@ -186,11 +179,11 @@ const auditColumns = computed<SmartTableColumn<AuditRow>[]>(() => [
         <div
           v-for="i in INTEGRATIONS"
           :key="i.id"
-          class="flex items-center justify-between gap-3 border-b border-slate-100 py-3 last:border-0"
+          class="flex items-center justify-between gap-3 border-b border-slate-100 py-3 last:border-0 dark:border-slate-800"
         >
           <div>
-            <h2 class="text-sm font-semibold text-slate-800">{{ i.name }}</h2>
-            <p class="mt-0.5 text-xs text-slate-500">
+            <h2 class="text-sm font-semibold text-slate-800 dark:text-slate-200">{{ i.name }}</h2>
+            <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
               {{ ts("st.ws.lastSync") }}: {{ i.status === "planned" ? "—" : fmtDt(i.lastSync) }}
             </p>
           </div>

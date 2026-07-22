@@ -9,10 +9,10 @@ const props = defineProps<{ status: ComplianceStatus }>();
 const { ts } = useLocale();
 
 const classes: Record<ComplianceStatus, string> = {
-  active: "bg-emerald-100 text-emerald-700",
-  expiring_soon: "bg-amber-100 text-amber-800",
-  expired: "bg-rose-100 text-rose-700",
-  suspended: "bg-slate-200 text-slate-700",
+  active: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400",
+  expiring_soon: "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-400",
+  expired: "bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-400",
+  suspended: "bg-slate-200 text-slate-700 dark:bg-slate-700/40 dark:text-slate-300",
 };
 
 const label = computed(() => ts(`st.compliance.${props.status}` as StMessageKey));

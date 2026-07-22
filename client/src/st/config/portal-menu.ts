@@ -1,5 +1,5 @@
 import type { Component } from "vue";
-import { Bell, Building2, FilePlus2, FileText, Gauge, ShieldCheck } from "lucide-vue-next";
+import { Bell, Building2, FilePlus2, FileText, Gauge, ShieldCheck, UserCog } from "lucide-vue-next";
 
 import type { PersonaRole } from "../types";
 import { KAKITANGAN_ROLES, staffMenuFor } from "./staff-menu";
@@ -37,6 +37,7 @@ function publicMenuFor(role: PersonaRole): PortalMenuGroup[] {
           // Pemohon: Orang Kompeten (RG-KE) only — Kontraktor Elektrik is Majikan.
           { id: "new", label: "Permohonan Baharu", shortLabel: "Baharu", to: "/st/registration/ok-electric/applications/new", icon: FilePlus2 },
           NOTIFICATIONS,
+          { id: "profile", label: "Profil Saya", shortLabel: "Profil", to: "/st/profil", icon: UserCog },
         ],
       },
     ];

@@ -77,7 +77,7 @@ const columns = computed<SmartTableColumn<AppRow>[]>(() => {
     >
       <template v-if="!isEmployer" #action>
         <button
-          class="flex shrink-0 items-center gap-1.5 rounded-md bg-white px-4 py-2 text-sm font-medium text-[var(--accent-700)] transition-colors hover:bg-white/90"
+          class="flex shrink-0 items-center gap-1.5 rounded-md bg-[var(--accent-600)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--accent-700)]"
           @click="router.push('/st/registration/ok-electric/applications/new')"
         >
           <FilePlus2 class="h-4 w-4" /> Permohonan Baharu
@@ -85,7 +85,7 @@ const columns = computed<SmartTableColumn<AppRow>[]>(() => {
       </template>
       <template v-else #action>
         <button
-          class="flex shrink-0 items-center gap-1.5 rounded-md bg-white px-4 py-2 text-sm font-medium text-[var(--accent-700)] transition-colors hover:bg-white/90"
+          class="flex shrink-0 items-center gap-1.5 rounded-md bg-[var(--accent-600)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--accent-700)]"
           @click="router.push('/st/registration/contractor-electric/applications/new')"
         >
           <FilePlus2 class="h-4 w-4" /> Permohonan Baharu
@@ -102,10 +102,10 @@ const columns = computed<SmartTableColumn<AppRow>[]>(() => {
       @row-click="(a) => open(a.id)"
     >
       <template #cell-refNo="{ row }">
-        <span class="font-mono text-xs text-slate-700">{{ row.refNo }}</span>
+        <span class="font-mono text-xs text-slate-700 dark:text-slate-300">{{ row.refNo }}</span>
       </template>
       <template #cell-type="{ row }">
-        <span class="rounded bg-slate-100 px-1.5 py-0.5 text-[11px] font-medium text-slate-600">{{ workflowShort(row.workflowType) }}</span>
+        <span class="rounded bg-slate-100 px-1.5 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-400">{{ workflowShort(row.workflowType) }}</span>
       </template>
       <template #cell-status="{ row }">
         <StatusBadge :status="row.status" />

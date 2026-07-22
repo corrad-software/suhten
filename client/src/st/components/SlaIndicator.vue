@@ -26,5 +26,5 @@ const countdown = computed(() => slaCountdownLabel(props.stageEnteredAt, props.t
     <span :class="['h-2 w-2 rounded-full', meta.dot]" />
     <template v-if="showLabel">{{ countdown }}</template>
   </span>
-  <span v-else class="text-xs text-slate-400">—</span>
+  <span v-else class="text-xs text-slate-400 dark:text-slate-500">—</span>
 </template>
