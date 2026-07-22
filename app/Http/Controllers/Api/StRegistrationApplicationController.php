@@ -7,6 +7,8 @@ use App\Http\Requests\StoreStRegistrationApplicationRequest;
 use App\Http\Requests\UpdateStRegistrationApplicationRequest;
 use App\Http\Traits\ApiResponse;
 use App\Models\StRegistrationApplication;
+use App\Models\User;
+use App\Services\EmployerRegistrationScope;
 use App\Services\RegistrationWorkflowStarter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,6 +20,7 @@ class StRegistrationApplicationController extends Controller
 
     public function __construct(
         protected RegistrationWorkflowStarter $workflowStarter,
+        protected EmployerRegistrationScope $employerScope,
     ) {}
 
     /**
@@ -44,6 +47,12 @@ class StRegistrationApplicationController extends Controller
         $sortDir = strtolower((string) $sortDir) === 'asc' ? 'asc' : 'desc';
 
         $query = StRegistrationApplication::query();
+
+        /** @var User|null $user */
+        $user = $request->user();
+        if ($user) {
+            $query = $this->employerScope->apply($query, $user);
+        }
 
         if ($moduleCode) {
             $query->where('module_code', $moduleCode);
@@ -93,11 +102,7 @@ class StRegistrationApplicationController extends Controller
         }
 
         if (empty($data['ref_no'])) {
-            $prefix = 'ST/'.$data['module_code'].'/'.now()->format('Y').'/';
-            $seq = StRegistrationApplication::query()
-                ->where('module_code', $data['module_code'])
-                ->count() + 1;
-            $data['ref_no'] = $prefix.str_pad((string) $seq, 5, '0', STR_PAD_LEFT);
+            $data['ref_no'] = $this->nextUniqueRefNo((string) $data['module_code']);
         }
 
         $data['status'] = $data['status'] ?? 'draft';
@@ -112,13 +117,51 @@ class StRegistrationApplicationController extends Controller
     }
 
     /**
+     * Allocate ST/{module}/{year}/{nnnnn} after the highest existing numeric suffix
+     * (count()+1 collides with seeded gaps such as 00044 when total rows < 44).
+     */
+    private function nextUniqueRefNo(string $moduleCode): string
+    {
+        $prefix = 'ST/'.$moduleCode.'/'.now()->format('Y').'/';
+        $max = 0;
+
+        $refs = StRegistrationApplication::query()
+            ->where('module_code', $moduleCode)
+            ->where('ref_no', 'like', $prefix.'%')
+            ->pluck('ref_no');
+
+        foreach ($refs as $ref) {
+            $tail = substr((string) $ref, strlen($prefix));
+            if ($tail !== '' && ctype_digit($tail)) {
+                $max = max($max, (int) $tail);
+            }
+        }
+
+        for ($i = 1; $i <= 100; $i++) {
+            $candidate = $prefix.str_pad((string) ($max + $i), 5, '0', STR_PAD_LEFT);
+            $exists = StRegistrationApplication::query()->where('ref_no', $candidate)->exists();
+            if (! $exists) {
+                return $candidate;
+            }
+        }
+
+        return $prefix.str_pad((string) random_int(10000, 99999), 5, '0', STR_PAD_LEFT);
+    }
+
+    /**
      * Show a single registration application.
      */
-    public function show(int $id): JsonResponse
+    public function show(Request $request, int $id): JsonResponse
     {
         $row = StRegistrationApplication::find($id);
 
         if (! $row) {
+            return $this->sendError(404, 'NOT_FOUND', 'Registration application not found');
+        }
+
+        /** @var User|null $user */
+        $user = $request->user();
+        if ($user && ! $this->employerScope->canAccess($row, $user)) {
             return $this->sendError(404, 'NOT_FOUND', 'Registration application not found');
         }
 
@@ -128,11 +171,17 @@ class StRegistrationApplicationController extends Controller
     /**
      * Show by stable mock/frontend code (e.g. rg-ke-1).
      */
-    public function showByCode(string $code): JsonResponse
+    public function showByCode(Request $request, string $code): JsonResponse
     {
         $row = StRegistrationApplication::query()->where('code', $code)->first();
 
         if (! $row) {
+            return $this->sendError(404, 'NOT_FOUND', 'Registration application not found');
+        }
+
+        /** @var User|null $user */
+        $user = $request->user();
+        if ($user && ! $this->employerScope->canAccess($row, $user)) {
             return $this->sendError(404, 'NOT_FOUND', 'Registration application not found');
         }
 
@@ -150,6 +199,12 @@ class StRegistrationApplicationController extends Controller
             return $this->sendError(404, 'NOT_FOUND', 'Registration application not found');
         }
 
+        /** @var User|null $user */
+        $user = $request->user();
+        if ($user && ! $this->employerScope->canAccess($row, $user)) {
+            return $this->sendError(404, 'NOT_FOUND', 'Registration application not found');
+        }
+
         $row->update($request->validated());
 
         return $this->sendOk($row->fresh());
@@ -158,9 +213,21 @@ class StRegistrationApplicationController extends Controller
     /**
      * Delete a registration application.
      */
-    public function destroy(int $id): JsonResponse
+    public function destroy(Request $request, int $id): JsonResponse
     {
-        StRegistrationApplication::where('id', $id)->delete();
+        $row = StRegistrationApplication::find($id);
+
+        if (! $row) {
+            return $this->sendOk(['success' => true]);
+        }
+
+        /** @var User|null $user */
+        $user = $request->user();
+        if ($user && ! $this->employerScope->canAccess($row, $user)) {
+            return $this->sendError(404, 'NOT_FOUND', 'Registration application not found');
+        }
+
+        $row->delete();
 
         return $this->sendOk(['success' => true]);
     }

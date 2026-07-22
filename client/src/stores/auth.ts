@@ -26,16 +26,21 @@ export const useAuthStore = defineStore("auth", {
     async signIn(email: string, password: string) {
       this.loading = true;
       try {
-        await login(email, password);
-        const me = await getMe();
-        this.user = me.data.user;
+        // Login already returns the user — skip a second /api/auth/me round-trip.
+        const response = await login(email, password);
+        this.user = response.data.user;
       } finally {
         this.loading = false;
       }
     },
     async signOut() {
-      await logout();
+      // Clear local auth first so UI can leave immediately.
       this.user = null;
+      try {
+        await logout();
+      } catch {
+        // Ignore network errors — local session is already cleared.
+      }
     },
     async updateProfile(data: { name?: string; email?: string }) {
       const response = await apiUpdateProfile(data);

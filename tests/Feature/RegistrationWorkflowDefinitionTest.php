@@ -82,7 +82,7 @@ class RegistrationWorkflowDefinitionTest extends TestCase
         $this->seed(WorkflowDefinitionSeeder::class);
         $user = $this->authUser();
         $definition = \App\Models\WorkflowDefinition::query()->where('slug', 'pfd-rg-ce-na')->firstOrFail();
-        $this->assertSame('2.0', $definition->version);
+        $this->assertSame('2.1', $definition->version);
 
         $response = $this->actingAs($user)->postJson("/api/workflows/{$definition->id}/start", [
             'context' => [
@@ -105,6 +105,21 @@ class RegistrationWorkflowDefinitionTest extends TestCase
             ->where('assign_to_role', 'ok')
             ->first();
         $this->assertNotNull($task);
+    }
+
+    public function test_seeded_contractor_assigns_ce_specific_sos_and_technical_roles(): void
+    {
+        $this->seed(WorkflowDefinitionSeeder::class);
+        $definition = \App\Models\WorkflowDefinition::query()->where('slug', 'pfd-rg-ce-na')->firstOrFail();
+        $steps = collect($definition->definition['steps'] ?? []);
+
+        $sos = $steps->firstWhere('id', 'na-06-semakan-dokumen');
+        $technical = $steps->firstWhere('id', 'na-07-semakan-teknikal');
+        $approver = $steps->firstWhere('id', 'na-09-kelulusan');
+
+        $this->assertSame('sos_ce', $sos['parameters']['assign_to_role'] ?? null);
+        $this->assertSame('technical_ce', $technical['parameters']['assign_to_role'] ?? null);
+        $this->assertSame('approver', $approver['parameters']['assign_to_role'] ?? null);
     }
 
     public function test_ok_electric_sos_kemaskini_returns_to_sos_after_resubmit(): void

@@ -56,13 +56,27 @@ export type StaffMenuGroup = {
 /** Back-office roles that use the Kakitangan portal (excludes public applicants). */
 export const KAKITANGAN_ROLES: PersonaRole[] = [
   "sos",
+  "sos_ce",
+  "tp_sos",
   "technical",
+  "technical_ce",
   "approver",
   "committee",
   "admin",
 ];
 
-const OFFICER_ROLES: PersonaRole[] = ["sos", "technical", "approver", "committee", "admin"];
+const OFFICER_ROLES: PersonaRole[] = [
+  "sos",
+  "sos_ce",
+  "tp_sos",
+  "technical",
+  "technical_ce",
+  "approver",
+  "committee",
+  "admin",
+];
+const OK_STAFF_ROLES: PersonaRole[] = ["sos", "tp_sos", "technical", "approver", "committee", "admin"];
+const CE_STAFF_ROLES: PersonaRole[] = ["sos_ce", "tp_sos", "technical_ce", "approver", "committee", "admin"];
 const ADMIN_ONLY: PersonaRole[] = ["admin"];
 
 function moduleChildren(basePath: string, prefix: string): StaffMenuNode[] {
@@ -87,6 +101,7 @@ function serviceModule(
   moduleCode: string,
   phase: 1 | 2,
   prefix: string,
+  roles?: PersonaRole[],
 ): StaffMenuItemDef {
   return {
     id,
@@ -95,6 +110,7 @@ function serviceModule(
     icon,
     moduleCode,
     phase,
+    roles,
     children: moduleChildren(to, prefix),
   };
 }
@@ -132,9 +148,9 @@ export const STAFF_MENU: StaffMenuGroup[] = [
     id: "pendaftaran",
     label: "Pendaftaran",
     items: [
-      serviceModule("rg-ke", "OK Elektrik", "/st/registration/ok-electric", UserCog, "RG-KE", 1, "rg-ke"),
+      serviceModule("rg-ke", "OK Elektrik", "/st/registration/ok-electric", UserCog, "RG-KE", 1, "rg-ke", OK_STAFF_ROLES),
       serviceModule("rg-kg", "OK Gas", "/st/registration/ok-gas", UserCog, "RG-KG", 1, "rg-kg"),
-      serviceModule("rg-ce", "Kontraktor Elektrik", "/st/registration/contractor-electric", Building2, "RG-CE", 1, "rg-ce"),
+      serviceModule("rg-ce", "Kontraktor Elektrik", "/st/registration/contractor-electric", Building2, "RG-CE", 1, "rg-ce", CE_STAFF_ROLES),
       serviceModule("rg-cg", "Kontraktor Gas", "/st/registration/contractor-gas", Building2, "RG-CG", 1, "rg-cg"),
     ],
   },
@@ -279,6 +295,13 @@ export const STAFF_MENU: StaffMenuGroup[] = [
           { id: "admin-audit", label: "Audit Trail", to: "/st/admin/system/audit" },
           { id: "admin-integrations", label: "Integrasi Luaran", to: "/st/admin/system/integrations" },
         ],
+      },
+      {
+        id: "admin-tetapan",
+        label: "Tetapan",
+        to: "/st/admin/tetapan",
+        icon: Settings,
+        roles: ADMIN_ONLY,
       },
     ],
   },

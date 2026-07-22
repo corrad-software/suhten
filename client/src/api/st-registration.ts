@@ -130,8 +130,18 @@ export async function createStRegistrationApplication(input: StRegistrationAppli
   });
 }
 
+export async function updateStRegistrationApplication(
+  id: number,
+  input: Partial<StRegistrationApplicationInput>,
+) {
+  return apiRequest<{ data: StRegistrationApplicationDto }>(`/api/st/registration-applications/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(input),
+  });
+}
+
 export type StaffTaskNotifyInput = {
-  role: "sos" | "technical" | "approver";
+  role: "sos" | "sos_ce" | "technical" | "technical_ce" | "approver";
   refNo?: string;
   applicantName?: string;
   moduleCode?: string;
@@ -149,16 +159,61 @@ export async function notifyStaffWorkflowTask(input: StaffTaskNotifyInput) {
   });
 }
 
+export type ApplicantQueryNotifyInput = {
+  applicantEmail: string;
+  note: string;
+  refNo?: string;
+  applicantName?: string;
+  moduleCode?: string;
+  applicationId?: number;
+  applicationCode?: string;
+  actionPath?: string;
+};
+
+/** Fire-and-forget applicant Pertanyaan email (simulation override applies server-side). */
+export async function notifyApplicantQuery(input: ApplicantQueryNotifyInput) {
+  return apiRequest<{ data: { success: boolean } }>("/api/st/applicant-query-notify", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export type ApplicantRejectionNotifyInput = {
+  applicantEmail: string;
+  note?: string;
+  refNo?: string;
+  applicantName?: string;
+  moduleCode?: string;
+  applicationId?: number;
+  applicationCode?: string;
+  actionPath?: string;
+};
+
+/** Fire-and-forget applicant rejection email (simulation override applies server-side). */
+export async function notifyApplicantRejection(input: ApplicantRejectionNotifyInput) {
+  return apiRequest<{ data: { success: boolean } }>("/api/st/applicant-rejection-notify", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
 export async function getStaffTaskNotifyState(applicationCode: string) {
   return apiRequest<{
     data: {
-      role: "sos" | "technical" | "approver";
+      role: "sos" | "sos_ce" | "technical" | "technical_ce" | "approver";
       refNo?: string | null;
       moduleCode?: string | null;
       actionUrl?: string | null;
       notifiedAt?: string | null;
     };
   }>(`/api/st/staff-task-notify/${encodeURIComponent(applicationCode)}`);
+}
+
+/** Resolve opaque /st/go/{token} email deep-link to an internal SPA path. */
+export async function resolveStaffTaskLink(token: string) {
+  return apiRequest<{ data: { path: string } }>(
+    `/api/public/st/task-link/${encodeURIComponent(token)}`,
+  );
 }
 
 export async function listStRegisteredEntities(params = "") {

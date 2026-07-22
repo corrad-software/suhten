@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { ArrowRight, AlertCircle, Eye, EyeOff, FileText, ShieldCheck, CreditCard, BadgeCheck, Loader2 } from "lucide-vue-next";
 
 import { useLocale } from "@/composables/useLocale";
 import { useAuthStore } from "@/stores/auth";
 import { useSiteStore } from "@/stores/site";
 import { useUiThemeStore } from "@/stores/uiTheme";
+import { ensureCsrfCookie } from "@/api/client";
 import { API_BASE_URL } from "@/env";
 import { useStSessionStore } from "../stores/session";
 import { DEMO_PASSWORD } from "../mock/personas";
@@ -15,6 +16,7 @@ import { DEMO_PASSWORD } from "../mock/personas";
 const MYDIGITAL_DEMO_EMAIL = "ahmad.ismail@email.my";
 
 const router = useRouter();
+const route = useRoute();
 const auth = useAuthStore();
 const site = useSiteStore();
 const session = useStSessionStore();
@@ -43,12 +45,23 @@ function resolveUrl(url: string) {
   return `${API_BASE_URL}${url}`;
 }
 
+/** Honor email deep-link redirects after ST portal login. */
+function postLoginDestination(): string {
+  const raw = route.query.redirect;
+  if (typeof raw === "string" && raw.startsWith("/st") && !raw.startsWith("//")) {
+    return raw;
+  }
+  return session.homeRoute();
+}
+
 onMounted(async () => {
+  // Warm CSRF so submit does not wait on /sanctum/csrf-cookie.
+  void ensureCsrfCookie();
   if (!site.initialized) await site.load();
   await auth.initialize();
   session.syncFromAuth();
   if (auth.isAuthenticated && session.currentPersona) {
-    router.replace(session.homeRoute());
+    router.replace(postLoginDestination());
   }
 });
 
@@ -57,7 +70,7 @@ async function submit() {
   loading.value = true;
   try {
     await session.loginWithCredentials(email.value.trim(), password.value);
-    router.push(session.homeRoute());
+    void router.replace(postLoginDestination());
   } catch (e) {
     error.value =
       e instanceof Error && e.message === "ST_UNAUTHORIZED"
@@ -78,7 +91,7 @@ async function loginWithMyDigitalId() {
   try {
     await new Promise((resolve) => setTimeout(resolve, 900));
     await session.loginWithCredentials(MYDIGITAL_DEMO_EMAIL, DEMO_PASSWORD);
-    router.push(session.homeRoute());
+    void router.replace(postLoginDestination());
   } catch (e) {
     error.value = e instanceof Error ? e.message : t("login.failed");
   } finally {

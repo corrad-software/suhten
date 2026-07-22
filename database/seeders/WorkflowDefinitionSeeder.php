@@ -237,7 +237,7 @@ class WorkflowDefinitionSeeder extends Seeder
                 'description' => 'Production-shaped Electrical Competent Person new registration (RG-KE / BRS PFD-RG-KE-NA). '
                     .'Happy path: NA-01 → (company: NA-02→NA-03 | self-employed: skip) → NA-04 → NA-05 → NA-06 → NA-08 → NA-09 → NA-10. '
                     .'Branches: kemaskini (NA-07 return to querying role), ditolak (NA-11). '
-                    .'Staff Peti roles: sos, technical, approver. External waits: employer, applicant. '
+                    .'Staff Peti roles: sos, technical (OK Elektrik), approver (shared). External waits: employer, applicant. '
                     .'Context: employer_category=company|self_employed; decision drives transitions.',
                 'definition' => $this->withStepSla($definition),
                 'is_active' => true,
@@ -319,7 +319,7 @@ class WorkflowDefinitionSeeder extends Seeder
                     'name' => 'PFD-RG-CE-NA-06 · Membuat Semakan Dokumen',
                     'action' => 'human',
                     'parameters' => [
-                        'assign_to_role' => 'sos',
+                        'assign_to_role' => 'sos_ce',
                         'outcomes' => ['lengkap', 'kemaskini', 'ditolak'],
                         'sla_hours' => 4,
                         'tab' => 'new',
@@ -330,7 +330,7 @@ class WorkflowDefinitionSeeder extends Seeder
                     'name' => 'PFD-RG-CE-NA-07 · Membuat Semakan Teknikal',
                     'action' => 'human',
                     'parameters' => [
-                        'assign_to_role' => 'technical',
+                        'assign_to_role' => 'technical_ce',
                         'outcomes' => ['lengkap', 'kemaskini', 'ditolak'],
                         'sla_hours' => 24,
                         'tab' => 'new',
@@ -439,8 +439,8 @@ class WorkflowDefinitionSeeder extends Seeder
                 ['from' => 'na-07-semakan-teknikal', 'to' => 'na-08-kemaskini-permohonan', 'condition' => 'decision === kemaskini'],
                 ['from' => 'na-07-semakan-teknikal', 'to' => 'na-12-permohonan-ditolak', 'condition' => 'decision === ditolak'],
 
-                ['from' => 'na-08-kemaskini-permohonan', 'to' => 'na-06-semakan-dokumen', 'condition' => 'query_return_role === sos'],
-                ['from' => 'na-08-kemaskini-permohonan', 'to' => 'na-07-semakan-teknikal', 'condition' => 'query_return_role === technical'],
+                ['from' => 'na-08-kemaskini-permohonan', 'to' => 'na-06-semakan-dokumen', 'condition' => 'query_return_role === sos_ce'],
+                ['from' => 'na-08-kemaskini-permohonan', 'to' => 'na-07-semakan-teknikal', 'condition' => 'query_return_role === technical_ce'],
                 ['from' => 'na-08-kemaskini-permohonan', 'to' => 'na-09-kelulusan', 'condition' => 'query_return_role === approver'],
                 ['from' => 'na-08-kemaskini-permohonan', 'to' => 'na-12-permohonan-ditolak', 'condition' => 'decision === withdraw'],
 
@@ -461,11 +461,11 @@ class WorkflowDefinitionSeeder extends Seeder
             ['slug' => $slug],
             [
                 'name' => 'Pendaftaran Kontraktor Elektrik (PFD-RG-CE-NA)',
-                'version' => '2.0',
+                'version' => '2.1',
                 'description' => 'Production-shaped Electrical Contractor new registration (RG-CE / BRS PFD-RG-CE-NA). '
                     .'Happy path: NA-01 → NA-02 → NA-03 → NA-04 → NA-05 → NA-06 → NA-07 → NA-09 → NA-10 → NA-11. '
                     .'Branches: kemaskini (NA-08 return to querying role), ditolak (NA-12). '
-                    .'Staff Peti roles: sos, technical, approver. External waits: ok, applicant. '
+                    .'Staff Peti roles: sos_ce, technical_ce, approver (shared). External waits: ok, applicant. '
                     .'Context decision drives transitions after each human gate.',
                 'definition' => $this->withStepSla($definition),
                 'is_active' => true,

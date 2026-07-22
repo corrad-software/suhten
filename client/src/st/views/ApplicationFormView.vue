@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { Check, Search, X } from "lucide-vue-next";
 
@@ -37,6 +37,17 @@ const workflow = useStWorkflowStore();
 
 const workflowType = computed<WorkflowType>(() => (route.query.type === "CE" ? "CE" : "OK"));
 const isCE = computed(() => workflowType.value === "CE");
+
+// Kontraktor Elektrik is Majikan-only — redirect legacy ?type=CE to the CE wizard (or home for Pemohon).
+onMounted(() => {
+  if (!isCE.value) return;
+  if (session.role === "employer") {
+    router.replace("/st/registration/contractor-electric/applications/new");
+    return;
+  }
+  toast.error("Akses", "Pendaftaran Kontraktor Elektrik hanya untuk akaun Majikan.");
+  router.replace(session.homeRoute());
+});
 
 const persona = computed(() => session.currentPersona);
 

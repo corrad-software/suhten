@@ -5,12 +5,15 @@ import type {
   ApplicationStatus,
   AuditEntry,
   Certificate,
+  ContractorClass,
   Payment,
   PersonaRole,
+  WirerType,
 } from "../types";
 import { personaById } from "./personas";
 import { employerById } from "./employers";
 import { slaTargetFor } from "./charter";
+import { CLASS_REQUIREMENTS } from "./competencies";
 
 let seq = 0;
 
@@ -35,7 +38,55 @@ function docs(baseNow: number, labels: string[], status: AppDocument["status"] =
 }
 
 const OK_DOCS = ["Salinan Kad Pengenalan", "Sijil Kekompetenan", "Surat Tawaran Pekerjaan", "Gambar Pasport"];
-const CE_DOCS = ["Sijil Pendaftaran SSM", "Borang 49", "Surat Lantikan Orang Kompeten", "Penyata Kewangan"];
+const CE_DOCS = [
+  "Perjanjian sewa atau jual beli pejabat",
+  "Lesen perniagaan PBT",
+  "Annual return / Perakuan Pendaftaran",
+  "SOCSO Borang 8A (3 bulan) + resit",
+];
+
+/** Prototype OK set that satisfies CLASS_REQUIREMENTS for Peti Tugasan CE detail. */
+function appointedOksForClass(cls: ContractorClass, baseNow: number, employerId?: string): AppointedOk[] {
+  const req = CLASS_REQUIREMENTS[cls] ?? { PW4: 1 };
+  // Ahmad / Tan reserved for Tenaga Murni; ABC uses alternate pool.
+  const pool: Array<{ name: string; mykad: string; wirerType: WirerType; registeredOkId?: string; personaId?: string }> =
+    employerId === "emp-abc-elektrik"
+      ? [
+          { name: "Rizal bin Hassan", mykad: "870404-10-5512", wirerType: "PW4", registeredOkId: "ok-rizal" },
+          { name: "Suresh a/l Maniam", mykad: "880101-14-5099", wirerType: "PW3", registeredOkId: "ok-suresh" },
+          { name: "Lim Mei Ling", mykad: "900818-14-5220", wirerType: "PW3" },
+          { name: "Mohd Faizal bin Yusof", mykad: "910722-05-5331", wirerType: "PW2", registeredOkId: "ok-faizal" },
+          { name: "Azman bin Rahim", mykad: "830909-12-5443", wirerType: "PW1", registeredOkId: "ok-azman" },
+          { name: "Vimala a/p Krishnan", mykad: "920215-08-5688", wirerType: "PW1", registeredOkId: "ok-vimala" },
+        ]
+      : [
+          { name: "Ahmad bin Ismail", mykad: "840512-10-5523", wirerType: "PW4", registeredOkId: "ok-ahmad", personaId: "p-ahmad" },
+          { name: "Tan Chee Keong", mykad: "790238-08-6191", wirerType: "PW3", registeredOkId: "ok-tan", personaId: "p-tan" },
+          { name: "Chong Wei Liang", mykad: "860318-07-5217", wirerType: "PW1", registeredOkId: "ok-chong" },
+          { name: "Siti Aminah binti Osman", mykad: "930627-05-6024", wirerType: "PW2", registeredOkId: "ok-siti-osman" },
+          { name: "Ganesan a/l Muthu", mykad: "760213-10-5093", wirerType: "PW1", registeredOkId: "ok-ganesan" },
+        ];
+  const out: AppointedOk[] = [];
+  let i = 0;
+  for (const [wirerType, need] of Object.entries(req) as Array<[WirerType, number]>) {
+    for (let n = 0; n < need; n++) {
+      const src = pool.find((p) => p.wirerType === wirerType && !out.some((o) => o.mykad === p.mykad))
+        ?? pool[i % pool.length];
+      i++;
+      out.push({
+        registeredOkId: src.registeredOkId ?? `ok-seed-${cls}-${out.length}`,
+        personaId: src.personaId,
+        name: src.name,
+        mykad: src.mykad,
+        wirerType,
+        competencyCategory: "PW",
+        confirmed: true,
+        confirmedAt: iso(baseNow, 14),
+      });
+    }
+  }
+  return out;
+}
 
 function audit(
   baseNow: number,
@@ -178,7 +229,17 @@ export function seedApplications(baseNow: number): Application[] {
     const e = EXTRA[who % EXTRA.length];
     const type = opts.type ?? "OK";
     const role: PersonaRole | null =
-      status === "sos_review" ? "sos" : status === "technical_review" ? "technical" : status === "pending_approval" ? "approver" : null;
+      status === "sos_review"
+        ? type === "CE"
+          ? "sos_ce"
+          : "sos"
+        : status === "technical_review"
+          ? type === "CE"
+            ? "technical_ce"
+            : "technical"
+          : status === "pending_approval"
+            ? "approver"
+            : null;
     const paid: Payment[] = ["awaiting_employer_confirm", "awaiting_processing_payment"].includes(status)
       ? []
       : [paidPayment(baseNow, "processing", type === "OK" ? 50 : 100, opts.createdHoursAgo - 1)];
@@ -200,6 +261,7 @@ export function seedApplications(baseNow: number): Application[] {
       createdHoursAgo: opts.createdHoursAgo,
       documents: docs(baseNow, type === "OK" ? OK_DOCS : CE_DOCS, status === "sos_review" ? "pending" : "accepted"),
       payments: paid,
+      appointedOks: type === "CE" ? appointedOksForClass(opts.cls ?? "C", baseNow, EMPLOYER_IDS[who % EMPLOYER_IDS.length]) : undefined,
       auditTrail: audit(baseNow, [
         { actorPersonaId: e.id, action: "Menghantar permohonan", hoursAgo: opts.createdHoursAgo, actorRole: "applicant", actorName: e.p.fullName },
       ]),
@@ -264,10 +326,10 @@ export function seedApplications(baseNow: number): Application[] {
         { actorPersonaId: "p-zainab", action: "Meluluskan & menandatangani secara digital", hoursAgo: 1, toStatus: "awaiting_registration_payment" },
       ]),
     },
-    // 2) OK — SOS review, GREEN (1h)
+    // 2) OK — SOS review, GREEN (1h) — unassigned (first visit uses FIFO claim only)
     {
       ref: 103, type: "OK", status: "sos_review", applicantPersonaId: "p-tan", applicant: tan,
-      competencyCategory: "PE", period: 5, employerId: "emp-kuasa-bistari", assignedRole: "sos", assigneePersonaId: "p-faridah",
+      competencyCategory: "PE", period: 5, employerId: "emp-kuasa-bistari", assignedRole: "sos", assigneePersonaId: null,
       stageHoursAgo: 1, createdHoursAgo: 26, documents: docs(baseNow, OK_DOCS),
       payments: [paidPayment(baseNow, "processing", 50, 1.2)],
       auditTrail: audit(baseNow, [
@@ -276,15 +338,15 @@ export function seedApplications(baseNow: number): Application[] {
         { actorPersonaId: "p-tan", action: "Membayar yuran pemprosesan", hoursAgo: 1.2, toStatus: "sos_review" },
       ]),
     },
-    // 3) OK — SOS review, YELLOW (3h)
+    // 3) OK — SOS review, YELLOW (~3.2h) — exceeds 3h → flagged to TP SOS
     {
       ref: 104, type: "OK", status: "sos_review", applicantPersonaId: "p-tan", applicant: tan,
-      competencyCategory: "PW", period: 1, employerId: "emp-kuasa-bistari", assignedRole: "sos", assigneePersonaId: "p-faridah",
-      stageHoursAgo: 3, createdHoursAgo: 28, documents: docs(baseNow, OK_DOCS),
-      payments: [paidPayment(baseNow, "processing", 50, 3.1)],
+      competencyCategory: "PW", period: 1, employerId: "emp-kuasa-bistari", assignedRole: "sos", assigneePersonaId: null,
+      stageHoursAgo: 3.2, createdHoursAgo: 28, documents: docs(baseNow, OK_DOCS),
+      payments: [paidPayment(baseNow, "processing", 50, 3.3)],
       auditTrail: audit(baseNow, [
         { actorPersonaId: "p-tan", action: "Menghantar permohonan", hoursAgo: 28 },
-        { actorPersonaId: "p-tan", action: "Membayar yuran pemprosesan", hoursAgo: 3.1, toStatus: "sos_review" },
+        { actorPersonaId: "p-tan", action: "Membayar yuran pemprosesan", hoursAgo: 3.3, toStatus: "sos_review" },
       ]),
       identityVerified: true,
     },
@@ -371,16 +433,25 @@ export function seedApplications(baseNow: number): Application[] {
         applicationId: "", // filled below
         holderName: "Ahmad bin Ismail",
         competencyCategory: "PW",
+        categoryGrade: "PW4",
+        perakuanNo: "PW-T-4-B-0110-2026",
+        icNumber: "840512-10-5523",
+        dob: "1984-05-12",
+        restrictions: "Voltan Rendah (LV)",
+        issuedPlace: "KUALA LUMPUR",
+        issuedVia: "ST PORTAL",
+        signatoryName: "IR AHMAD FAUZI BIN HASAN",
+        signatoryAgency: "Suruhanjaya Tenaga",
         issuedAt: iso(baseNow, 1),
         expiresAt: new Date(baseNow + 5 * 365 * 24 * 3_600_000).toISOString(),
         qrPayload: "https://verify.st.gov.my/cert/ST-OK-2026-00110",
         trustmarkId: "ST-TRUST-00110",
       },
     },
-    // 10) CE — SOS review, YELLOW (assigned to Faridah — one of the active 3)
+    // 10) CE — SOS review, YELLOW — unassigned (first visit uses FIFO claim only)
     {
       ref: 202, type: "CE", status: "sos_review", applicantPersonaId: "p-lim", applicant: lim,
-      contractorClass: "B", period: 2, employerId: "emp-elektrik-maju", assignedRole: "sos", assigneePersonaId: "p-faridah",
+      contractorClass: "B", period: 2, employerId: "emp-elektrik-maju", assignedRole: "sos_ce", assigneePersonaId: null,
       stageHoursAgo: 2.5, createdHoursAgo: 20, documents: docs(baseNow, CE_DOCS),
       payments: [paidPayment(baseNow, "processing", 100, 2.6)],
       // Class B needs PW4×1 + PW3×1 + PW1×1 — satisfied & confirmed.
@@ -393,7 +464,6 @@ export function seedApplications(baseNow: number): Application[] {
         { actorPersonaId: "p-lim", action: "Menghantar permohonan kontraktor", hoursAgo: 20 },
         { actorPersonaId: "p-tan", action: "Mengesahkan lantikan Orang Kompeten", hoursAgo: 14 },
         { actorPersonaId: "p-lim", action: "Membayar yuran pemprosesan", hoursAgo: 2.6, toStatus: "sos_review" },
-        { actorPersonaId: "p-faridah", action: "Mengambil tugasan", hoursAgo: 2.4 },
       ]),
     },
 
@@ -406,20 +476,27 @@ export function seedApplications(baseNow: number): Application[] {
     mk(305, "pending_approval", 4, { cat: "PK", stageHoursAgo: 9, createdHoursAgo: 92, assignee: "p-zainab", identityVerified: true }),
     mk(306, "pending_approval", 5, { type: "CE", cls: "A", stageHoursAgo: 2, createdHoursAgo: 66, assignee: "p-zainab", identityVerified: true }),
 
-    // Teknikal queue — mixed SLA (24j charter: <70% hijau, 70–100% kuning, >100% merah).
+    // Teknikal queue — some already claimed by officer 1 / 2; rest unassigned for FIFO
+    // (other officer sees Telah Dituntut — same Peti Tugasan Tindakan as SOS).
     mk(311, "technical_review", 6, { cat: "PW", stageHoursAgo: 4, createdHoursAgo: 40, assignee: "p-kumar", identityVerified: true }),
-    mk(312, "technical_review", 7, { cat: "JPE", stageHoursAgo: 14, createdHoursAgo: 52, assignee: "p-kumar", identityVerified: true }),
+    mk(312, "technical_review", 7, { cat: "JPE", stageHoursAgo: 14, createdHoursAgo: 52, assignee: "p-chong", identityVerified: true }),
     mk(313, "technical_review", 8, { cat: "PE", stageHoursAgo: 19, createdHoursAgo: 58, assignee: "p-kumar", identityVerified: true }),
     mk(314, "technical_review", 9, { cat: "PJ", stageHoursAgo: 27, createdHoursAgo: 66, assignee: null, identityVerified: true }),
-    mk(315, "technical_review", 10, { type: "CE", cls: "D", stageHoursAgo: 8, createdHoursAgo: 44, assignee: null, identityVerified: true }),
+    mk(317, "technical_review", 1, { cat: "PW", stageHoursAgo: 6, createdHoursAgo: 42, assignee: null, identityVerified: true }),
+    mk(318, "technical_review", 2, { cat: "JEK", stageHoursAgo: 10, createdHoursAgo: 48, assignee: null, identityVerified: true }),
+    mk(315, "technical_review", 10, { type: "CE", cls: "D", stageHoursAgo: 8, createdHoursAgo: 44, assignee: "p-priya", identityVerified: true }),
+    mk(316, "technical_review", 11, { type: "CE", cls: "C", stageHoursAgo: 12, createdHoursAgo: 50, assignee: "p-daniel", identityVerified: true }),
+    mk(319, "technical_review", 3, { type: "CE", cls: "B", stageHoursAgo: 5, createdHoursAgo: 40, assignee: null, identityVerified: true }),
 
-    // SOS queue — mixed SLA (4j charter: <2j hijau, 2–4j kuning, >4j merah).
-    mk(321, "sos_review", 11, { cat: "PW", stageHoursAgo: 0.6, createdHoursAgo: 24 }),
-    mk(322, "sos_review", 0, { cat: "PK", stageHoursAgo: 1.4, createdHoursAgo: 26 }),
+    // SOS queue — some already claimed by officer 1 / 2; rest unassigned for FIFO.
+    mk(321, "sos_review", 11, { cat: "PW", stageHoursAgo: 0.6, createdHoursAgo: 24, assignee: "p-faridah" }),
+    mk(322, "sos_review", 0, { cat: "PK", stageHoursAgo: 1.4, createdHoursAgo: 26, assignee: "p-rosli" }),
     mk(323, "sos_review", 1, { cat: "PE", stageHoursAgo: 2.8, createdHoursAgo: 28 }),
     mk(324, "sos_review", 2, { cat: "JEK", stageHoursAgo: 3.6, createdHoursAgo: 30 }),
     mk(325, "sos_review", 3, { cat: "PJ", stageHoursAgo: 5.5, createdHoursAgo: 34 }),
-    mk(326, "sos_review", 4, { type: "CE", cls: "B", stageHoursAgo: 7.2, createdHoursAgo: 38 }),
+    mk(326, "sos_review", 4, { type: "CE", cls: "B", stageHoursAgo: 7.2, createdHoursAgo: 38, assignee: "p-halim" }),
+    mk(327, "sos_review", 5, { type: "CE", cls: "A", stageHoursAgo: 3.1, createdHoursAgo: 36, assignee: "p-siti" }),
+    mk(328, "sos_review", 6, { type: "CE", cls: "D", stageHoursAgo: 1.2, createdHoursAgo: 22 }),
 
     // Menunggu tindakan pemohon / bayaran.
     mk(331, "awaiting_processing_payment", 5, { cat: "PW", stageHoursAgo: 3, createdHoursAgo: 12 }),
@@ -449,6 +526,7 @@ export function seedApplications(baseNow: number): Application[] {
       applicantPersonaId: s.applicantPersonaId,
       competencyCategory: s.competencyCategory,
       contractorClass: s.contractorClass,
+      contractorKind: s.type === "CE" ? "electrical" : undefined,
       appointedOks: s.appointedOks,
       registrationPeriodYears: s.period,
       employer,

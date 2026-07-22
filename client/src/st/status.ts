@@ -8,6 +8,7 @@ export interface StatusMeta {
 export const STATUS_META: Record<ApplicationStatus, StatusMeta> = {
   draft: { label: "Draf", classes: "bg-slate-100 text-slate-600" },
   awaiting_employer_confirm: { label: "Menunggu Pengesahan Lantikan", classes: "bg-amber-100 text-amber-700" },
+  awaiting_final_submit: { label: "Menunggu Penghantaran Permohonan", classes: "bg-amber-100 text-amber-700" },
   awaiting_processing_payment: { label: "Menunggu Bayaran Pemprosesan", classes: "bg-amber-100 text-amber-700" },
   sos_review: { label: "Semakan SOS", classes: "bg-blue-100 text-blue-700" },
   query_applicant: { label: "Pertanyaan Pemohon", classes: "bg-orange-100 text-orange-700" },
@@ -29,6 +30,7 @@ export interface StepDef {
 export const WORKFLOW_STEPS: StepDef[] = [
   { key: "submit", label: "Permohonan", statuses: ["draft"] },
   { key: "confirm", label: "Pengesahan Lantikan", statuses: ["awaiting_employer_confirm"] },
+  { key: "final_submit", label: "Hantar Permohonan", statuses: ["awaiting_final_submit"] },
   { key: "processing", label: "Bayaran Pemprosesan", statuses: ["awaiting_processing_payment"] },
   { key: "sos", label: "Semakan SOS", statuses: ["sos_review", "query_applicant"] },
   { key: "technical", label: "Semakan Teknikal", statuses: ["technical_review"] },

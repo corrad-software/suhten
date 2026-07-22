@@ -150,8 +150,8 @@ export async function getPublicPageBySlug(slug: string) {
 }
 
 // Users
-export async function listUsers() {
-  return apiRequest<{ data: UserDetail[] }>("/api/users");
+export async function listUsers(params = "") {
+  return apiRequest<{ data: UserDetail[]; meta: Record<string, unknown> }>(`/api/users${params}`);
 }
 
 export async function getUser(id: number) {

@@ -20,7 +20,7 @@ const confirmDialog = useConfirmDialog();
 const toast = useToast();
 
 async function load() {
-  const res = await listUsers();
+  const res = await listUsers("?page=1&limit=100");
   users.value = res.data;
 }
 

@@ -23,25 +23,48 @@ class RoleSeeder extends Seeder
             ],
             [
                 'name' => 'applicant',
-                'description' => 'Pemohon — individu atau wakil membuat permohonan',
+                'description' => 'Pemohon — individu membuat permohonan Orang Kompeten',
                 'permissions' => [
                     Permission::REGISTRATION_VIEW,
                     Permission::REGISTRATION_CREATE,
+                    // Needed so pemohon can persist payment / withdraw status to the API.
+                    Permission::REGISTRATION_EDIT,
                     Permission::CHAT_USE,
                 ],
             ],
             [
                 'name' => 'employer',
-                'description' => 'Majikan — pengesahan lantikan Orang Kompeten',
+                'description' => 'Majikan — pendaftaran Kontraktor Elektrik & pengesahan lantikan Orang Kompeten',
                 'permissions' => [
                     Permission::REGISTRATION_VIEW,
+                    Permission::REGISTRATION_CREATE,
                     Permission::REGISTRATION_EDIT,
                     Permission::CHAT_USE,
                 ],
             ],
             [
                 'name' => 'sos',
-                'description' => 'Pegawai SOS — semakan kelengkapan dokumen',
+                'description' => 'Pegawai SOS — OK Elektrik (semakan kelengkapan dokumen)',
+                'permissions' => [
+                    Permission::AUDIT_READ,
+                    Permission::REGISTRATION_VIEW,
+                    Permission::REGISTRATION_EDIT,
+                    Permission::CHAT_USE,
+                ],
+            ],
+            [
+                'name' => 'sos_ce',
+                'description' => 'Pegawai SOS — Kontraktor Elektrik (semakan kelengkapan dokumen)',
+                'permissions' => [
+                    Permission::AUDIT_READ,
+                    Permission::REGISTRATION_VIEW,
+                    Permission::REGISTRATION_EDIT,
+                    Permission::CHAT_USE,
+                ],
+            ],
+            [
+                'name' => 'tp_sos',
+                'description' => 'TP SOS — eskalasi SLA & penyerahan semula tugasan SOS',
                 'permissions' => [
                     Permission::AUDIT_READ,
                     Permission::REGISTRATION_VIEW,
@@ -51,7 +74,17 @@ class RoleSeeder extends Seeder
             ],
             [
                 'name' => 'technical',
-                'description' => 'Pegawai Teknikal — semakan teknikal pematuhan',
+                'description' => 'Pegawai Teknikal — OK Elektrik (semakan teknikal pematuhan)',
+                'permissions' => [
+                    Permission::AUDIT_READ,
+                    Permission::REGISTRATION_VIEW,
+                    Permission::REGISTRATION_EDIT,
+                    Permission::CHAT_USE,
+                ],
+            ],
+            [
+                'name' => 'technical_ce',
+                'description' => 'Pegawai Teknikal — Kontraktor Elektrik (semakan teknikal pematuhan)',
                 'permissions' => [
                     Permission::AUDIT_READ,
                     Permission::REGISTRATION_VIEW,
@@ -61,7 +94,7 @@ class RoleSeeder extends Seeder
             ],
             [
                 'name' => 'approver',
-                'description' => 'Pelulus — kelulusan permohonan mengikut LOA',
+                'description' => 'Pelulus — kelulusan permohonan mengikut LOA (OK & Kontraktor Elektrik)',
                 'permissions' => [
                     Permission::AUDIT_READ,
                     Permission::REGISTRATION_VIEW,

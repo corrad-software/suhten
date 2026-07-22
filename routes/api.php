@@ -12,6 +12,9 @@ use App\Http\Controllers\Api\PublicController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\SettingController;
 use App\Http\Controllers\Api\StRegisteredEntityController;
+use App\Http\Controllers\Api\ApplicantQueryNotifyController;
+use App\Http\Controllers\Api\ApplicantRejectionNotifyController;
+use App\Http\Controllers\Api\StaffTaskLinkController;
 use App\Http\Controllers\Api\StaffWorkflowTaskNotifyController;
 use App\Http\Controllers\Api\StRegistrationApplicationController;
 use App\Http\Controllers\Api\UserChatController;
@@ -26,6 +29,9 @@ Route::prefix('public')->group(function () {
     Route::get('/site', [PublicController::class, 'site']);
     Route::get('/pages/frontpage', [PublicController::class, 'frontpage']);
     Route::get('/pages/{slug}', [PublicController::class, 'pageBySlug']);
+    // Opaque staff-task email deep-link (token is the secret; path stays hidden in mail)
+    Route::get('/st/task-link/{token}', [StaffTaskLinkController::class, 'show'])
+        ->where('token', '[A-Za-z0-9_-]+');
 });
 
 // Auth routes
@@ -90,6 +96,14 @@ Route::middleware('auth:sanctum')->group(function () {
         ->middleware('permission:registration.edit');
     Route::get('/st/staff-task-notify/{code}', [StaffWorkflowTaskNotifyController::class, 'show'])
         ->middleware('permission:registration.view');
+
+    // Applicant query (Pertanyaan) email — mock UI raise_query
+    Route::post('/st/applicant-query-notify', [ApplicantQueryNotifyController::class, 'store'])
+        ->middleware('permission:registration.edit');
+
+    // Applicant rejection email — mock UI reject
+    Route::post('/st/applicant-rejection-notify', [ApplicantRejectionNotifyController::class, 'store'])
+        ->middleware('permission:registration.edit');
 
     Route::get('/st/registered-entities', [StRegisteredEntityController::class, 'index'])
         ->middleware('permission:registration.view');

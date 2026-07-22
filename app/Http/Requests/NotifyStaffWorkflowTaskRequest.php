@@ -12,7 +12,7 @@ class NotifyStaffWorkflowTaskRequest extends BaseFormRequest
     public function rules(): array
     {
         return [
-            'role' => 'required|string|in:sos,technical,approver',
+            'role' => 'required|string|in:sos,sos_ce,technical,technical_ce,approver',
             'ref_no' => 'nullable|string|max:100',
             'applicant_name' => 'nullable|string|max:255',
             'module_code' => 'nullable|string|max:20',

@@ -3,6 +3,7 @@ import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { Shield, ArrowRight, AlertCircle, Eye, EyeOff } from "lucide-vue-next";
 
+import { ensureCsrfCookie } from "@/api/client";
 import { useLocale } from "@/composables/useLocale";
 import { useAuthStore } from "@/stores/auth";
 import { useSiteStore } from "@/stores/site";
@@ -36,6 +37,7 @@ function resolvePostLoginPath(): string {
 }
 
 onMounted(() => {
+  void ensureCsrfCookie();
   if (!site.initialized) site.load();
 });
 
@@ -43,7 +45,7 @@ async function submit() {
   error.value = "";
   try {
     await auth.signIn(email.value, password.value);
-    router.push(resolvePostLoginPath());
+    void router.replace(resolvePostLoginPath());
   } catch (e) {
     error.value = e instanceof Error ? e.message : t("login.failed");
   }

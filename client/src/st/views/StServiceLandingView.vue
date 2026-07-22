@@ -12,18 +12,22 @@ const router = useRouter();
 const session = useStSessionStore();
 const { locale, ml } = useLocale();
 
-// D11 §4.2.1 / §5.2.1: after login the applicant sees the services offered by ST
-// and picks a registration service. Electric registration is live; gas is upcoming.
-const services = computed(() =>
-  Object.values(REGISTRATION_MODULES).map((m) => ({
-    code: m.code,
-    title: ml(m.menuId, m.code),
-    icon: m.icon,
-    actRef: m.actRef,
-    available: m.energy === "electric",
-    applyPath: `${m.basePath}/applications/new`,
-  })),
-);
+// D11 §4.2.1 / §5.2.1: after login, public users pick an ST registration service.
+// Pemohon → Orang Kompeten (RG-KE/KG); Majikan → Kontraktor (RG-CE/CG).
+// Electric is live; gas is upcoming.
+const services = computed(() => {
+  const domain = session.role === "employer" ? "contractor" : "ok";
+  return Object.values(REGISTRATION_MODULES)
+    .filter((m) => m.domain === domain)
+    .map((m) => ({
+      code: m.code,
+      title: ml(m.menuId, m.code),
+      icon: m.icon,
+      actRef: m.actRef,
+      available: m.energy === "electric",
+      applyPath: `${m.basePath}/applications/new`,
+    }));
+});
 
 const greeting = computed(() => session.currentPersona?.name ?? "");
 
@@ -73,12 +77,25 @@ function open(applyPath: string, available: boolean) {
     </div>
 
     <div class="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-500 shadow-sm">
-      {{ locale === 'bm'
-        ? 'Permohonan anda yang sedia ada boleh dilihat di menu “Permohonan Saya”.'
-        : 'Your existing applications are available under “My Applications”.' }}
-      <button class="ml-1 font-medium text-[var(--accent-700)] hover:underline" @click="router.push('/st/applications')">
-        {{ locale === 'bm' ? 'Lihat Permohonan Saya' : 'View My Applications' }}
-      </button>
+      <template v-if="session.role === 'employer'">
+        {{ locale === 'bm'
+          ? 'Permohonan kontraktor anda yang sedia ada boleh dilihat di menu “Permohonan Kontraktor”.'
+          : 'Your existing contractor applications are available under “Contractor Applications”.' }}
+        <button
+          class="ml-1 font-medium text-[var(--accent-700)] hover:underline"
+          @click="router.push('/st/registration/contractor-electric/applications')"
+        >
+          {{ locale === 'bm' ? 'Lihat Permohonan Kontraktor' : 'View Contractor Applications' }}
+        </button>
+      </template>
+      <template v-else>
+        {{ locale === 'bm'
+          ? 'Permohonan anda yang sedia ada boleh dilihat di menu “Permohonan Saya”.'
+          : 'Your existing applications are available under “My Applications”.' }}
+        <button class="ml-1 font-medium text-[var(--accent-700)] hover:underline" @click="router.push('/st/applications')">
+          {{ locale === 'bm' ? 'Lihat Permohonan Saya' : 'View My Applications' }}
+        </button>
+      </template>
     </div>
   </div>
 </template>

@@ -55,7 +55,7 @@ class WorkflowCatalog
                 'description' => 'Pause for a staff role decision; creates a Peti Tugasan task',
                 'action' => 'human',
                 'fields' => [
-                    ['key' => 'assign_to_role', 'label' => 'Assign to role', 'type' => 'select', 'required' => true, 'options' => ['sos', 'technical', 'approver']],
+                    ['key' => 'assign_to_role', 'label' => 'Assign to role', 'type' => 'select', 'required' => true, 'options' => ['sos', 'sos_ce', 'technical', 'technical_ce', 'approver']],
                     ['key' => 'outcomes', 'label' => 'Outcomes (comma-separated)', 'type' => 'text', 'required' => false, 'placeholder' => 'lengkap,kemaskini,ditolak'],
                     // SLA is edited as a first-class step field (sla_target_hours) in the workflow editor.
                     ['key' => 'tab', 'label' => 'Inbox tab', 'type' => 'select', 'required' => false, 'options' => ['new', 'query'], 'default' => 'new'],

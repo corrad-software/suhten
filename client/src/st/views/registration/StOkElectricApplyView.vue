@@ -18,17 +18,16 @@ import {
   PLACE_RESTRICTIONS,
   VOLTAGE_RESTRICTIONS,
   ageFromDob,
-  allowedPeriods,
   canSelfEmploy,
-  maxPeriodForAge,
   oshRequired,
   parseMyKadDob,
   type EmployerCategory,
   type PlaceRestriction,
   type VoltageRestriction,
 } from "../../registration/ok-rules";
+import { useStReferenceSettingsStore } from "../../stores/reference-settings";
 
-const DRAFT_KEY = "st.rg-ke.apply.draft.v1";
+const DRAFT_KEY_PREFIX = "st.rg-ke.apply.draft.v1";
 const CDP_BONUS = 12;
 
 const route = useRoute();
@@ -37,6 +36,7 @@ const toast = useToast();
 const { ts, locale } = useLocale();
 const session = useStSessionStore();
 const regStore = useStRegistrationStore();
+const refSettings = useStReferenceSettingsStore();
 
 const portalBase = computed(() => (route.path.startsWith("/admin/st") ? "/admin/st" : "/st"));
 
@@ -52,6 +52,12 @@ const STEPS = computed(() => [
 ]);
 
 const persona = computed(() => session.currentPersona);
+
+/** Drafts are per-persona so one Pemohon does not inherit another's form. */
+function draftStorageKey(): string {
+  const id = session.currentPersonaId || session.currentPersona?.email || "guest";
+  return `${DRAFT_KEY_PREFIX}.${id}`;
+}
 
 const form = reactive({
   fullName: "",
@@ -80,8 +86,8 @@ const employerSearch = ref("");
 const declarations = reactive({ truthful: false, terms: false, consent: false });
 const submitPin = ref("");
 
-const periods = computed(() => allowedPeriods(form.age, form.competencyCategory));
-const maxPeriod = computed(() => maxPeriodForAge(form.age, form.competencyCategory));
+const periods = computed(() => refSettings.allowedPeriods(form.age, form.competencyCategory));
+const maxPeriod = computed(() => refSettings.maxPeriodForAge(form.age, form.competencyCategory));
 const needsOsh = computed(() => oshRequired(form.age, form.competencyCategory));
 const selfOk = computed(() => canSelfEmploy(form.competencyCategory));
 
@@ -90,16 +96,9 @@ const employerResults = computed(() =>
 );
 const selectedEmployer = computed(() => EMPLOYERS.find((e) => e.id === form.employerId));
 
-const DOC_LABELS = computed(() => {
-  const base =
-    locale.value === "bi"
-      ? ["Copy of MyKad", "Competency certificate copy", "Passport photograph", "Letter of employment"]
-      : ["Salinan Kad Pengenalan", "Salinan perakuan kekompetenan", "Gambar berukuran pasport", "Surat tawaran pekerjaan"];
-  if (form.employerCategory === "self_employed") {
-    return base.filter((_, i) => i !== 3);
-  }
-  return base;
-});
+const DOC_LABELS = computed(() =>
+  refSettings.documentLabels("RG-KE", locale.value === "bi" ? "bi" : "bm", form.employerCategory === "self_employed"),
+);
 
 const eligibility = computed(() => {
   if (form.certificateSuspended) return { ok: false, key: "st.okApply.eligibilityFailSuspend" as const };
@@ -141,8 +140,12 @@ function placeLabel(code: PlaceRestriction): string {
 
 function prefill() {
   form.fullName = persona.value?.name ?? "";
-  form.icNumber = persona.value?.icNumber ?? "850101105432";
+  form.icNumber = persona.value?.icNumber ?? "";
   form.email = persona.value?.email ?? "";
+  // Gender defaults female for new female personas when name hint is unavailable — leave male unless known.
+  if (persona.value?.name && /binti|a\/p/i.test(persona.value.name)) {
+    form.gender = "female";
+  }
   applyDobFromMyKad();
 }
 
@@ -150,6 +153,7 @@ type DraftPayload = Partial<typeof form> & {
   documents?: AppDocument[];
   step?: number;
   maxReachedStep?: number;
+  personaId?: string;
 };
 
 function persistDraft() {
@@ -159,8 +163,9 @@ function persistDraft() {
     documents: documents.value,
     step: step.value,
     maxReachedStep: maxReachedStep.value,
+    personaId: session.currentPersonaId ?? undefined,
   };
-  localStorage.setItem(DRAFT_KEY, JSON.stringify(payload));
+  localStorage.setItem(draftStorageKey(), JSON.stringify(payload));
 }
 
 // Structured address entry; kept flattened in form.address so the draft and the
@@ -174,13 +179,24 @@ watch(
   { deep: true },
 );
 
-function loadDraft() {
-  if (typeof window === "undefined") return;
-  const raw = localStorage.getItem(DRAFT_KEY);
-  if (!raw) return;
+/** Returns true when a draft for the current persona was restored. */
+function loadDraft(): boolean {
+  if (typeof window === "undefined") return false;
+  const raw = localStorage.getItem(draftStorageKey());
+  if (!raw) return false;
   try {
     const d = JSON.parse(raw) as DraftPayload;
-    const { documents: docs, step: savedStep, maxReachedStep: savedMax, ...fields } = d;
+    const currentId = session.currentPersonaId;
+    // Reject drafts that belong to another persona (legacy shared key or stale data).
+    if (d.personaId && currentId && d.personaId !== currentId) {
+      localStorage.removeItem(draftStorageKey());
+      return false;
+    }
+    if (d.email && persona.value?.email && d.email.toLowerCase() !== persona.value.email.toLowerCase()) {
+      localStorage.removeItem(draftStorageKey());
+      return false;
+    }
+    const { documents: docs, step: savedStep, maxReachedStep: savedMax, personaId: _pid, ...fields } = d;
     Object.assign(form, fields);
     if (docs) documents.value = docs;
     if (typeof savedStep === "number" && savedStep >= 0) {
@@ -191,8 +207,9 @@ function loadDraft() {
     } else {
       maxReachedStep.value = step.value;
     }
+    return true;
   } catch {
-    /* ignore */
+    return false;
   }
 }
 
@@ -204,12 +221,30 @@ function saveDraft(showToast = true) {
 }
 
 function clearDraft() {
-  localStorage.removeItem(DRAFT_KEY);
+  localStorage.removeItem(draftStorageKey());
+  // Drop legacy shared draft from earlier builds.
+  localStorage.removeItem(DRAFT_KEY_PREFIX);
 }
 
 onMounted(() => {
+  // RG-KE apply is for Pemohon (Orang Kompeten). Staff may open for support; Majikan is redirected.
+  if (session.role === "employer") {
+    toast.error("Akses", "Pendaftaran Orang Kompeten hanya untuk akaun Pemohon.");
+    router.replace(session.homeRoute());
+    return;
+  }
+  // Always start from the signed-in persona; only overlay a matching draft.
   prefill();
-  loadDraft();
+  const restored = loadDraft();
+  if (!restored) {
+    // Ensure profile fields stay tied to the current account when no draft exists.
+    prefill();
+  } else if (persona.value) {
+    // Draft may have competency edits, but identity must match the signed-in account.
+    form.fullName = persona.value.name;
+    form.icNumber = persona.value.icNumber ?? form.icNumber;
+    form.email = persona.value.email;
+  }
   applyDobFromMyKad();
   // Re-hydrate the structured address from whatever the draft/prefill left behind.
   addressForm.value = parseAddress(form.address);
